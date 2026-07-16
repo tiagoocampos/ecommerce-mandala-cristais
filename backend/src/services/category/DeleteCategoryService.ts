@@ -5,7 +5,7 @@ interface DeleteCategoryServiceProps {
     id: string;
 }
 
-export class DeleteCategoryService {
+class DeleteCategoryService {
     async execute({ id }: DeleteCategoryServiceProps) {
         try {
             const category = await prismaClient.category.findFirst({ where: { id } });
@@ -23,3 +23,5 @@ export class DeleteCategoryService {
         }
     }
 }
+
+export { DeleteCategoryService };
