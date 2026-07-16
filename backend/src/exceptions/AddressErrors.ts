@@ -42,3 +42,12 @@ export class AddressNotOwnedError extends Error {
         Object.setPrototypeOf(this, AddressNotOwnedError.prototype);
     }
 }
+
+export class UpdateAddressError extends Error {
+    public statusCode: number = 400
+    constructor() {
+        super("Erro ao atualizar endereço");
+        this.name = "UpdateAddressError";
+        Object.setPrototypeOf(this, UpdateAddressError.prototype);
+    }
+}

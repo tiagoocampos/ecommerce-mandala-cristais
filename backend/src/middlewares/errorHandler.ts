@@ -2,12 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { UserAlreadyExistsError } from '../exceptions/UserAlreadyExistsError.js';
 import { PasswordNotMatchError } from '../exceptions/passwordNotMatch.js';
-import { UserNotFoundError } from '../exceptions/UserNotFoundError.js';
+import { ForbiddenError, UnauthorizedUserError, UserNotFoundError } from '../exceptions/UserErrors.js';
 import { InvalidToken } from '../exceptions/InvalidToken.js';
-import { CategoryNotFoundError, CreateCategoryError, ListCategoriesError } from '../exceptions/CategoryErrors.js';
+import { CategoryAlreadyExistsError, CategoryNotFoundError, CreateCategoryError, DeleteCategoryError, ListCategoriesError, UpdateCategoryError } from '../exceptions/CategoryErrors.js';
 import { DeleteProductError, ListProductsError } from '../exceptions/ProductErrors.js';
 import { AddItemError, CreateOrderError, ItemNotFoundError, OrderNotFoundError, RemoveItemError } from '../exceptions/OrdersErrors.js';
-import { AddressNotFoundError, AddressNotOwnedError, CreateAddressError, DeleteAddressError, ListAddressError } from '../exceptions/AddressErrors.js';
+import { AddressNotFoundError, AddressNotOwnedError, CreateAddressError, DeleteAddressError, ListAddressError, UpdateAddressError } from '../exceptions/AddressErrors.js';
 
 
 
@@ -140,6 +140,42 @@ export const errorHandler = (
     }
 
     if(error instanceof AddressNotFoundError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof UnauthorizedUserError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof ForbiddenError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof CategoryAlreadyExistsError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof UpdateCategoryError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof UpdateAddressError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof DeleteCategoryError){
         return res.status(error.statusCode).json({
             error: error.message,
         })

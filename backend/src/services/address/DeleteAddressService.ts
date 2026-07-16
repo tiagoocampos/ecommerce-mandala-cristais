@@ -1,5 +1,8 @@
 import { AddressNotFoundError, AddressNotOwnedError, DeleteAddressError } from "../../exceptions/AddressErrors.js";
 import prismaClient from "../../prisma/index.js";
+import { findAddressOrFail } from "./findAddressOrFail.js";
+
+
 
 interface DeleteAddressServiceProps {
     id: string;
@@ -8,14 +11,10 @@ interface DeleteAddressServiceProps {
 
 class DeleteAddressService {
     async execute({ id, user_id }: DeleteAddressServiceProps) {
+        
+
         try {
-            const address = await prismaClient.address.findFirst({ where: { id } });
-                if (!address) {
-                    throw new AddressNotFoundError();
-                }
-                if(address.user_id !== user_id){
-                    throw new AddressNotOwnedError();
-                }
+            await findAddressOrFail({ id, user_id });
 
         await prismaClient.address.delete({ where: { id } });
 

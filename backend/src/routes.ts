@@ -9,7 +9,7 @@ import { DetailUserController } from './controllers/user/DetailUserController.js
 import { isAuthenticated } from './middlewares/IsAuthenticated.js';
 import { CreateCategoryController } from './controllers/category/CreateCategoryController.js';
 import { isAdmin } from './middlewares/IsAdmin.js';
-import { createCategorySchema } from './schemas/categorySchema.js';
+import { createCategorySchema, updateCategorySchema } from './schemas/categorySchema.js';
 import { ListCategoriesController } from './controllers/category/ListCategoriesController.js';
 import { CreateProductController } from './controllers/product/CreateProductController.js';
 import { CreateProductSchema } from './schemas/productSchema.js';
@@ -33,10 +33,13 @@ import { UpdateUserRoleAdminController } from './controllers/user/admin/UpdateUs
 import { DeleteUserAdminController } from './controllers/user/admin/DeleteUserAdminController.js';
 import { updateUserRoleParamsSchema, updateUserRoleSchema } from './schemas/userAdminSchema.js';
 import { validateSchema } from './middlewares/validateSchema.js';
-import { createAddressSchema, deleteAddressSchema } from './schemas/adressSchema.js';
+import { createAddressSchema, deleteAddressSchema, updateAddressSchema } from './schemas/adressSchema.js';
 import { CreateAddressController } from './controllers/address/CreateAddressController.js';
 import { ListAddressController } from './controllers/address/ListAddressController.js';
 import { DeleteAddressController } from './controllers/address/DeleteAddressController.js';
+import { UpdateCategoryController } from './controllers/category/UpdateCategoryController.js';
+import { UpdateAddressController } from './controllers/address/UpdateAddressController.js';
+import { DeleteCategoryController } from './controllers/category/DeleteCategoryController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -50,10 +53,13 @@ router.get("/me", isAuthenticated, new DetailUserController().handle)
 
 router.get("/category", new ListCategoriesController().handle);
 router.post("/category", isAuthenticated, isAdmin, validateSchema(createCategorySchema), new CreateCategoryController().handle);
+router.put("/category/:id", isAuthenticated, isAdmin, validateSchema(updateCategorySchema), new UpdateCategoryController().handle);
+router.delete("/category/:id", isAuthenticated, isAdmin, new DeleteCategoryController().handle);
 
 router.post("/address", isAuthenticated, validateSchema(createAddressSchema), new CreateAddressController().handle);
 router.get("/address", isAuthenticated, new ListAddressController().handle);
 router.delete("/address", isAuthenticated, validateSchema(deleteAddressSchema),new DeleteAddressController().handle);
+router.put("/address", isAuthenticated, validateSchema(updateAddressSchema), new UpdateAddressController().handle);
 
 router.post("/product", isAuthenticated, isAdmin, upload.single("file"), validateSchema(CreateProductSchema), new CreateProductController().handle);
 router.get("/products", isAuthenticated, validateSchema(ListProductsSchema), new ListProductsController().handle)

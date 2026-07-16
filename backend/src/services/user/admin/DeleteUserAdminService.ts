@@ -1,5 +1,5 @@
 import prismaClient from "../../../prisma/index.js";
-import { UserNotFoundError } from "../../../exceptions/UserNotFoundError.js";
+import { UserNotFoundError } from "../../../exceptions/UserErrors.js";
 
 class DeleteUserAdminService {
   async execute({ id }: { id: string }) {

@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -46,29 +44,32 @@ model User {
   role     Role   @default(CUSTOMER)
 
   addresses Address[]
+  cart      Cart?
   orders    Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("users")
 }
 
 model Address {
-  id            String  @id @default(uuid())
-  street        String
-  number        String
-  complement    String?
-  neighborhood  String
-  city          String
-  state         String
-  zip_code      String
+  id           String @id @default(uuid())
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zip_code     String
 
   user_id String
-  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   orders Order[]
 
   createdAt DateTime @default(now())
+
   @@map("addresses")
 }
 
@@ -81,13 +82,14 @@ model Category {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("categories")
 }
 
 model Product {
-  id          String  @id @default(uuid())
+  id          String @id @default(uuid())
   name        String
-  slug        String  @unique
+  slug        String @unique
   price       Int
   promo_price Int?
   description String
@@ -96,24 +98,56 @@ model Product {
   disabled    Boolean @default(false)
 
   category_id String
-  category    Category    @relation(fields: [category_id], references: [id], onDelete: Cascade)
-  orderItems  OrderItem[]
+  category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("products")
 }
 
+model Cart {
+  id String @id @default(uuid())
+
+  user_id String @unique
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  quantity Int
+
+  cart_id String
+  cart    Cart @relation(fields: [cart_id], references: [id], onDelete: Cascade)
+
+  product_id String
+  product    Product @relation(fields: [product_id], references: [id])
+
+  @@unique([cart_id, product_id])
+
+  @@map("cart_items")
+}
+
 model Order {
-  id             String      @id @default(uuid())
-  status         OrderStatus @default(PENDING)
-  subtotal       Int
-  discount       Int         @default(0)
-  shipping_cost  Int         @default(0)
-  total          Int
+  id            String      @id @default(uuid())
+  status        OrderStatus @default(PENDING)
+  subtotal      Int
+  discount      Int         @default(0)
+  shipping_cost Int         @default(0)
+  total         Int
 
   user_id String
-  user    User   @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
 
   address_id String
   address    Address @relation(fields: [address_id], references: [id])
@@ -126,6 +160,7 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("orders")
 }
 
@@ -135,7 +170,7 @@ model OrderItem {
   unit_price Int
 
   order_id String
-  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  order    Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
   product_id String
   product    Product @relation(fields: [product_id], references: [id])
@@ -152,16 +187,17 @@ model Payment {
   raw_payload         Json?
 
   order_id String @unique
-  order    Order  @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  order    Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("payments")
 }
 
 model Coupon {
-  id         String     @id @default(uuid())
-  code       String     @unique
+  id         String @id @default(uuid())
+  code       String @unique
   type       CouponType
   value      Int
   active     Boolean    @default(true)
@@ -170,5 +206,6 @@ model Coupon {
   orders Order[]
 
   createdAt DateTime @default(now())
+
   @@map("coupons")
 }

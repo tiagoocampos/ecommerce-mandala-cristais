@@ -2,7 +2,7 @@ import { compare } from "bcrypt";
 import prismaClient from "../../prisma/index.js";
 import jwt from "jsonwebtoken";
 import { PasswordNotMatchError } from "../../exceptions/passwordNotMatch.js";
-import { UserNotFoundError } from "../../exceptions/UserNotFoundError.js";
+import { UserNotFoundError } from "../../exceptions/UserErrors.js";
 
 interface AuthUserProps {
     email: string;

@@ -1,4 +1,4 @@
-import { UserNotFoundError } from "../../exceptions/UserNotFoundError.js";
+import { UserNotFoundError } from "../../exceptions/UserErrors.js";
 import prismaClient from "../../prisma/index.js"
 
 class DetailUserService {

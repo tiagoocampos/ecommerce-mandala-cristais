@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MandalaHome } from "./pages/store/Home";
+import { Login } from "./pages/login";
+import { Register } from "./pages/register";
+
 
 // Conforme os módulos forem sendo construídos no backend, adicione aqui:
 // /produtos, /produto/:slug, /categoria/:slug, /carrinho, /checkout,
@@ -9,6 +12,9 @@ export function RoutesApp() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<MandalaHome />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
             </Routes>
         </BrowserRouter>
     );

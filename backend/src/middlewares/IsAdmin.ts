@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction } from "express";
-import { UserNotFoundError } from "../exceptions/UserNotFoundError.js";
+import { ForbiddenError, UnauthorizedUserError, UserNotFoundError } from "../exceptions/UserErrors.js";
 import prismaClient from "../prisma/index.js";
 
 export const isAdmin = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -19,7 +19,7 @@ export const isAdmin = async(req: Request, res: Response, next: NextFunction): P
     })
 
     if(user?.role !== "ADMIN") {
-        throw new UserNotFoundError();
+        throw new ForbiddenError();
     }
 
     return next();
