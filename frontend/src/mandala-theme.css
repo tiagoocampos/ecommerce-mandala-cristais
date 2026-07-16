@@ -1,0 +1,52 @@
+/* ============================================================
+   Mandala Cristais — Design Tokens
+   Cole este bloco no final do seu src/index.css (depois dos
+   imports do Tailwind/shadcn já existentes).
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&display=swap");
+
+@theme inline {
+  --font-display: "Fraunces", serif;
+
+  /* Ametista — cor primária da marca */
+  --color-mc-violet-950: #2c1044;
+  --color-mc-violet-800: #3d1660;
+  --color-mc-violet-700: #4c1b6b;
+  --color-mc-violet-500: #7a3fa0;
+  --color-mc-violet-300: #b98fd1;
+
+  /* Citrino — dourado de destaque/ação */
+  --color-mc-gold-600: #a97f2c;
+  --color-mc-gold-500: #c89b3c;
+  --color-mc-gold-300: #e3c583;
+
+  /* Quartzo rosa — acento suave */
+  --color-mc-blush-200: #efd9e8;
+  --color-mc-blush-100: #f7ebf3;
+
+  /* Areia — fundo quente (não branco puro) */
+  --color-mc-sand-50: #fbf6ef;
+  --color-mc-sand-100: #f4ecdf;
+
+  --color-mc-ink: #241934;
+}
+
+/* Corte de faceta — elemento de assinatura da marca.
+   Usar com moderação: moldura do hero, imagem de produto, CTA principal. */
+.facet-cut {
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+}
+
+.facet-cut-sm {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+
+.mc-glow {
+  background: radial-gradient(
+    60% 60% at 50% 40%,
+    rgba(200, 155, 60, 0.18) 0%,
+    rgba(76, 27, 107, 0.12) 45%,
+    transparent 75%
+  );
+}
