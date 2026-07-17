@@ -5,7 +5,7 @@ import { PasswordNotMatchError } from '../exceptions/passwordNotMatch.js';
 import { ForbiddenError, UnauthorizedUserError, UserNotFoundError } from '../exceptions/UserErrors.js';
 import { InvalidToken } from '../exceptions/InvalidToken.js';
 import { CategoryAlreadyExistsError, CategoryNotFoundError, CreateCategoryError, DeleteCategoryError, ListCategoriesError, UpdateCategoryError } from '../exceptions/CategoryErrors.js';
-import { DeleteProductError, ListProductsError } from '../exceptions/ProductErrors.js';
+import { DeleteProductError, ImageRequiredError, ListProductsError, ProductAlreadyExistsError, ProductNotFoundError, UpdateProductError } from '../exceptions/ProductErrors.js';
 import { AddItemError, CreateOrderError, ItemNotFoundError, OrderNotFoundError, RemoveItemError } from '../exceptions/OrdersErrors.js';
 import { AddressNotFoundError, AddressNotOwnedError, CreateAddressError, DeleteAddressError, ListAddressError, UpdateAddressError } from '../exceptions/AddressErrors.js';
 
@@ -181,7 +181,29 @@ export const errorHandler = (
         })
     }
 
-    return res.status(500).json({ error: "Erro interno" });
+    if(error instanceof ImageRequiredError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof ProductNotFoundError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof UpdateProductError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+    if(error instanceof ProductAlreadyExistsError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+    
 };
 
 

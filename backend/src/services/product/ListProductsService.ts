@@ -20,13 +20,15 @@ class ListProductsService {
           banner: true,
           disabled: true,
           category_id: true,
+          slug: true,
+          promo_price: true,
           createdAt: true,
         },
         orderBy: {
           createdAt: "desc",
         },
       });
-
+      
       return products;
     } catch (error) {
       throw new ListProductsError();

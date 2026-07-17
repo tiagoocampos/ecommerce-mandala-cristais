@@ -29,6 +29,9 @@ class ListProductsByCategoryService {
           id: true,
           name: true,
           price: true,
+          slug: true,
+          stock: true,
+          promo_price: true,
           description: true,
           banner: true,
           disabled: true,
@@ -48,7 +51,9 @@ class ListProductsByCategoryService {
 
       return products;
     } catch (error) {
-      console.log(error);
+      if(error instanceof CategoryNotFoundError){
+        throw error;
+      }
       throw new ListProductsError();
     }
   }

@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, User, Menu, X, Sparkles } from "lucide-react";
+import {
+    Search,
+    ShoppingBag,
+    User,
+    Menu,
+    X,
+    Sparkles,
+    ChevronDown,
+    LogOut,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
+import { clearAuth, getStoredUser } from "../../lib/auth";
 
 const CATEGORIES = [
     "Pedras",
@@ -14,6 +24,7 @@ const CATEGORIES = [
     "Iniciante",
     "Kits",
 ];
+
 
 interface StoreHeaderProps {
     cartCount?: number;
@@ -59,28 +70,106 @@ export function StoreHeader({ cartCount = 0 }: StoreHeaderProps) {
                     </div>
 
                     <div className="flex items-center gap-1 sm:gap-3">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="hidden sm:flex text-mc-violet-950 hover:bg-mc-blush-100"
-                            onClick={() => navigate("/login")}
-                        >
-                            <User size={20} />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="relative text-mc-violet-950 hover:bg-mc-blush-100"
-                            onClick={() => navigate("/cart")}
-                        >
-                            <ShoppingBag size={20} />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 bg-mc-gold-500 text-mc-violet-950 text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </Button>
+                        {(() => {
+                            const user = getStoredUser();
+                            const isLogged = !!user;
+                            return (
+                                <>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="hidden sm:flex text-mc-violet-950 hover:bg-mc-blush-100 cursor-pointer"
+                                        onClick={() => navigate(isLogged ? "/profile" : "/login")}
+                                    >
+                                        <User size={20} />
+                                    </Button>
+
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="relative text-mc-violet-950 hover:bg-mc-blush-100 cursor-pointer"
+                                        onClick={() => navigate("/cart")}
+                                    >
+                                        <ShoppingBag size={20} />
+                                        {cartCount > 0 && (
+                                            <span className="absolute -top-0.5 -right-0.5 bg-mc-gold-500 text-mc-violet-950 text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center">
+                                                {cartCount}
+                                            </span>
+                                        )}
+                                    </Button>
+
+                                    {isLogged && (
+                                        <div className="relative">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-mc-violet-950 hover:bg-mc-blush-100 cursor-pointer"
+                                                onClick={() => {
+                                                    const el = document.getElementById("mc-account-dropdown");
+                                                    if (el) el.classList.toggle("hidden");
+                                                }}
+                                            >
+                                                <User size={20} />
+                                            </Button>
+
+                                            <div
+                                                id="mc-account-dropdown"
+                                                className="hidden absolute right-0 mt-2 w-56 rounded-md border border-mc-violet-950/10 bg-mc-sand-50/95 backdrop-blur shadow-lg overflow-hidden z-50"
+                                            >
+                                                <button
+                                                    className="w-full text-left px-4 py-3 text-sm text-mc-ink/80 hover:bg-mc-blush-100 cursor-pointer"
+                                                    onClick={() => {
+                                                        const el = document.getElementById("mc-account-dropdown");
+                                                        el?.classList.add("hidden");
+                                                        navigate("/profile");
+                                                    }}
+                                                >
+                                                    Meus dados
+                                                </button>
+                                                <button
+                                                    className="w-full text-left px-4 py-3 text-sm text-mc-ink/80 hover:bg-mc-blush-100 cursor-pointer"
+                                                    onClick={() => {
+                                                        const el = document.getElementById("mc-account-dropdown");
+                                                        el?.classList.add("hidden");
+                                                        navigate("/profile");
+                                                    }}
+                                                >
+                                                    Endereços
+                                                </button>
+                                                <button
+                                                    className="w-full text-left px-4 py-3 text-sm text-mc-ink/80 hover:bg-mc-blush-100 cursor-pointer"
+                                                    onClick={() => {
+                                                        const el = document.getElementById("mc-account-dropdown");
+                                                        el?.classList.add("hidden");
+                                                        navigate("/orders");
+                                                    }}
+                                                >
+                                                    Pedidos
+                                                </button>
+
+                                                <div className="border-t border-mc-violet-950/10" />
+
+                                                <button
+                                                    className="w-full text-left px-4 py-3 text-sm text-mc-violet-950 hover:bg-mc-blush-200 cursor-pointer flex items-center justify-between"
+                                                    onClick={() => {
+                                                        const el = document.getElementById("mc-account-dropdown");
+                                                        el?.classList.add("hidden");
+                                                        clearAuth();
+                                                        navigate("/login");
+                                                    }}
+                                                >
+                                                    Sair
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+
+                            );
+                        })()}
                     </div>
+
                 </div>
 
                 {/* navegação de categorias */}
