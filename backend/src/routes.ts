@@ -41,6 +41,11 @@ import { UpdateCategoryController } from './controllers/category/UpdateCategoryC
 import { UpdateAddressController } from './controllers/address/UpdateAddressController.js';
 import { DeleteCategoryController } from './controllers/category/DeleteCategoryController.js';
 import { UpdateProductController } from './controllers/product/UpdateProductController.js';
+import { GetOrCreateCartController } from './controllers/cart/GetOrCreateCartController.js';
+import { AddCartItemController } from './controllers/cart/AddCartItemController.js';
+import { addCartItemSchema, updateCartItemSchema } from './schemas/cartSchema.js';
+import { DeleteCartItemController } from './controllers/cart/DeleteCartItemController.js';
+import { UpdateCartItemController } from './controllers/cart/UpdateCartItemController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -76,9 +81,15 @@ router.delete("/order/remove", isAuthenticated, validateSchema(RemoveItemSchema)
 router.put("/order/send", isAuthenticated, validateSchema(SendOrderSchema),new SendOrderController().handle)
 router.put("/order/finish", isAuthenticated, validateSchema(FinishOrderSchema),new FinishOrderController().handle)
 router.delete("/order", isAuthenticated, validateSchema(DeleteOrderSchema),new DeleteOrderController().handle)
+
 router.get("/admin/users", isAuthenticated, isAdmin, new ListUsersAdminController().handle)
 router.put("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(updateUserRoleParamsSchema), validateSchema(updateUserRoleSchema), new UpdateUserRoleAdminController().handle)
 router.delete("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(updateUserRoleParamsSchema), new DeleteUserAdminController().handle)
+
+router.get("/cart", isAuthenticated, new GetOrCreateCartController().handle)
+router.post("/cart/items", isAuthenticated, validateSchema(addCartItemSchema),new AddCartItemController().handle)
+router.delete("/cart/items/:id", isAuthenticated, new DeleteCartItemController().handle)
+router.patch("/cart/items/:id", isAuthenticated, validateSchema(updateCartItemSchema), new UpdateCartItemController().handle)
 
 export { router };
 

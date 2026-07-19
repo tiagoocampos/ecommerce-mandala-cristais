@@ -6,8 +6,9 @@ import { ForbiddenError, UnauthorizedUserError, UserNotFoundError } from '../exc
 import { InvalidToken } from '../exceptions/InvalidToken.js';
 import { CategoryAlreadyExistsError, CategoryNotFoundError, CreateCategoryError, DeleteCategoryError, ListCategoriesError, UpdateCategoryError } from '../exceptions/CategoryErrors.js';
 import { DeleteProductError, ImageRequiredError, ListProductsError, ProductAlreadyExistsError, ProductNotFoundError, UpdateProductError } from '../exceptions/ProductErrors.js';
-import { AddItemError, CreateOrderError, ItemNotFoundError, OrderNotFoundError, RemoveItemError } from '../exceptions/OrdersErrors.js';
+import { AddItemError, CreateOrderError, OrderNotFoundError, RemoveItemError } from '../exceptions/OrdersErrors.js';
 import { AddressNotFoundError, AddressNotOwnedError, CreateAddressError, DeleteAddressError, ListAddressError, UpdateAddressError } from '../exceptions/AddressErrors.js';
+import { CartNotFoundError, ItemNotFoundError } from '../exceptions/CartErrors.js';
 
 
 
@@ -96,13 +97,7 @@ export const errorHandler = (
             error: error.message,
         })
     }
-
-    if(error instanceof ItemNotFoundError){
-        return res.status(error.statusCode).json({
-            error: error.message,
-        })
-    }
-
+    
     if(error instanceof RemoveItemError){
         return res.status(error.statusCode).json({
             error: error.message,
@@ -199,6 +194,18 @@ export const errorHandler = (
         })
     }
     if(error instanceof ProductAlreadyExistsError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof CartNotFoundError){
+        return res.status(error.statusCode).json({
+            error: error.message,
+        })
+    }
+
+    if(error instanceof ItemNotFoundError){
         return res.status(error.statusCode).json({
             error: error.message,
         })

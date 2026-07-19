@@ -2,16 +2,16 @@ import { AddressNotFoundError, AddressNotOwnedError, UpdateAddressError } from "
 import prismaClient from "../../prisma/index.js";
 import { findAddressOrFail } from "./findAddressOrFail.js";
 
-interface UpdateProductServiceProps {
-    product_id: string;
-    name?: string | undefined;
-    price?: number | undefined;
-    promo_price?: number | null | undefined;
-    stock?: number | undefined;
-    description?: string | undefined;
-    category_id?: string | undefined;
-    imageBuffer?: Buffer | undefined;
-    imageName?: string | undefined;
+interface UpdateAddressProps {
+    user_id: string;
+    street?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    id: string;
 }
 
 class UpdateAddressService {
