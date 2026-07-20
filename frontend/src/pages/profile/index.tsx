@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import axios, { type AxiosError } from "axios";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 
 import { api } from "../../services/api";
 import { StoreHeader } from "../../components/store/StoreHeader";
@@ -12,17 +13,6 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { ConfirmDelete } from "../../components/ui/confirm-delete";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../../components/ui/alert-dialog";
 
 import {
   clearAuth,
@@ -44,7 +34,7 @@ type Address = {
 
 type FieldErrors = Partial<Record<string, string>>;
 
-function isAxiosErrorWithData(error: unknown): error is axios.AxiosError<any> {
+function isAxiosErrorWithData(error: unknown): error is AxiosError<any> {
   return axios.isAxiosError(error);
 }
 
@@ -55,8 +45,8 @@ function getErrorToastMessages(error: unknown, fallback = "Ocorreu um erro") {
   if (data?.error && data?.details) {
     const details = Array.isArray(data.details) ? data.details : [];
     const msgs = details
-      .filter((d) => typeof d?.message === "string")
-      .map((d) => d.message);
+      .filter((d: { message?: unknown }) => typeof d?.message === "string")
+      .map((d: { message: string }) => d.message);
     return msgs.length ? msgs : [data.error];
   }
 
@@ -102,8 +92,6 @@ export function Profile() {
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
-  const headers = useMemo(() => getAuthHeaders(), []);
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     setFieldErrors({});
@@ -124,7 +112,7 @@ export function Profile() {
       setAddresses(addressesRes.data);
     } catch (error) {
       const msgs = getErrorToastMessages(error, "Erro ao carregar sua conta");
-      msgs.forEach((m) => toast.error(m, { position: "top-center" }));
+      msgs.forEach((m: string) => toast.error(m, { position: "top-center" }));
     } finally {
       setLoading(false);
     }
@@ -180,17 +168,31 @@ export function Profile() {
       const ok = applyFieldErrors(error, setFieldErrors);
       if (!ok) {
         const msgs = getErrorToastMessages(error, "Erro ao adicionar endereço");
-        msgs.forEach((m) => toast.error(m, { position: "top-center" }));
+        msgs.forEach((m: string) => toast.error(m, { position: "top-center" }));
       }
     } finally {
       setCreating(false);
     }
   }
 
+  async function handleDeleteAddress(id: string) {
+    const auth = getAuthHeaders();
+    if (!auth) return;
+
+    try {
+      await api.delete(`/address?address_id=${id}`, { headers: auth });
+      toast.success("Endereço removido", { position: "top-center" });
+      setAddresses((prev) => prev.filter((a) => a.id !== id));
+    } catch (error) {
+      const msgs = getErrorToastMessages(error, "Erro ao remover endereço");
+      msgs.forEach((m: string) => toast.error(m, { position: "top-center" }));
+    }
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-mc-sand-50 flex flex-col">
-        <StoreHeader cartCount={0} />
+        <StoreHeader />
 
         <main className="flex-1">
           <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -385,22 +387,35 @@ export function Profile() {
                           {addresses.map((a) => (
                             <div
                               key={a.id}
-                              className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-md p-4"
+                              className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-md p-4 flex items-start justify-between gap-3"
                             >
-                              <div className="text-xs uppercase tracking-wide text-mc-ink/50">
-                                {a.street}, {a.number}
-                              </div>
-                              <div className="text-sm font-medium text-mc-violet-950 mt-1">
-                                {a.city} - {a.state}
-                              </div>
-                              <div className="text-sm text-mc-ink/70 mt-1">
-                                {a.neighborhood} · {a.zip_code}
-                              </div>
-                              {a.complement ? (
-                                <div className="text-sm text-mc-ink/70 mt-1">
-                                  Compl.: {a.complement}
+                              <div className="min-w-0">
+                                <div className="text-xs uppercase tracking-wide text-mc-ink/50">
+                                  {a.street}, {a.number}
                                 </div>
-                              ) : null}
+                                <div className="text-sm font-medium text-mc-violet-950 mt-1">
+                                  {a.city} - {a.state}
+                                </div>
+                                <div className="text-sm text-mc-ink/70 mt-1">
+                                  {a.neighborhood} · {a.zip_code}
+                                </div>
+                                {a.complement ? (
+                                  <div className="text-sm text-mc-ink/70 mt-1">
+                                    Compl.: {a.complement}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <ConfirmDelete
+                                trigger={
+                                  <button className="shrink-0 text-red-600 hover:bg-red-100 p-1.5 rounded-full">
+                                    <Trash2 size={15} />
+                                  </button>
+                                }
+                                title="Remover endereço"
+                                description="Tem certeza que deseja remover este endereço? Essa ação não pode ser desfeita."
+                                confirmText="Remover"
+                                onConfirm={() => handleDeleteAddress(a.id)}
+                              />
                             </div>
                           ))}
                         </div>

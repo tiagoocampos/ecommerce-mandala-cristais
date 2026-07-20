@@ -1,17 +1,17 @@
 import prismaClient from "../../prisma/index.js";
 
-interface ListOrdersServiceProps {
+interface GetOrderServiceProps {
     user_id: string;
+    order_id: string;
 }
 
-class ListOrdersService {
-    async execute({ user_id }: ListOrdersServiceProps) {
-        const orders = await prismaClient.order.findMany({
+class GetOrderService {
+    async execute({ user_id, order_id }: GetOrderServiceProps) {
+
+        const order = await prismaClient.order.findFirst({
             where: {
+                id: order_id,
                 user_id,
-            },
-            orderBy: {
-                createdAt: "desc",
             },
             include: {
                 items: {
@@ -29,8 +29,9 @@ class ListOrdersService {
                 },
             },
         });
-        return orders;
+
+        return order;
     }
 }
 
-export { ListOrdersService };
+export { GetOrderService };

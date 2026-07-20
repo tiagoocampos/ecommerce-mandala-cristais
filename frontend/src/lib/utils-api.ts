@@ -44,7 +44,10 @@ export const buttonClassName =
 export const labelClassName = "text-sm text-gray-100";
 
 export function formatPrice(cents: number): string {
-    return `R$ ${(cents / 100).toFixed(2)}`;
+    return (cents / 100).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    });
 }
 
 export function formatDate(date: string): string {

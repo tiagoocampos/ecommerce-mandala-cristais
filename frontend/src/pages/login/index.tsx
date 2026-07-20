@@ -14,7 +14,6 @@ import { Label } from "../../components/ui/label";
 
 import { api } from "../../services/api";
 import { applyFieldErrors, inputClassName } from "../../lib/utils-api";
-import { getAuthHeaders } from "../../lib/auth";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -80,7 +79,7 @@ export function Login() {
   return (
     <div className="min-h-screen bg-mc-sand-50 flex flex-col">
       <AnnouncementBar />
-      <StoreHeader cartCount={0} />
+      <StoreHeader />
 
       <main className="flex-1">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">

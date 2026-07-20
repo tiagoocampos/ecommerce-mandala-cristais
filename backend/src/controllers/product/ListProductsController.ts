@@ -5,7 +5,6 @@ class ListProductsController {
   async handle(req: Request, res: Response) {
     const disabled = req.query.disabled as string;
 
-    console.log(typeof disabled);
 
     const listProductsService = new ListProductsService();
     const products = await listProductsService.execute({ disabled: disabled });

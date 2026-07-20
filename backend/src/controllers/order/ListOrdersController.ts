@@ -3,13 +3,15 @@ import { ListOrdersService } from "../../services/order/ListOrdersService.js";
 
 class ListOrdersController {
     async handle(req: Request, res: Response) {
-        const draft = req.query?.draft as string;
-        const listOrders = new ListOrdersService();
-        const orders = await listOrders.execute({ draft: draft });
-        return res.status(200).json(orders);
+        const user_id = req.user_id;
+
+        const listOrdersService = new ListOrdersService();
+        const orders = await listOrdersService.execute({ user_id });
+
+        return res.json(orders);
+
     }
 }
-
 
 export { ListOrdersController };
 

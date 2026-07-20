@@ -92,7 +92,7 @@ export function Register() {
   return (
     <div className="min-h-screen bg-mc-sand-50 flex flex-col">
       <AnnouncementBar />
-      <StoreHeader cartCount={0} />
+      <StoreHeader />
 
       <main className="flex-1">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
