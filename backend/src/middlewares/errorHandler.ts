@@ -27,6 +27,7 @@ import {
 import {
   AddItemError,
   CreateOrderError,
+  InsufficientStockError,
   OrderNotFoundError,
   RemoveItemError,
 } from "../exceptions/OrdersErrors.js";
@@ -242,6 +243,12 @@ export const errorHandler = (
   }
 
   if (error instanceof EmptyCartError) {
+    return res.status(error.statusCode).json({
+      error: error.message,
+    });
+  }
+
+  if (error instanceof InsufficientStockError) {
     return res.status(error.statusCode).json({
       error: error.message,
     });

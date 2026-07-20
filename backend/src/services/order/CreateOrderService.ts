@@ -1,5 +1,6 @@
 import { AddressNotFoundError } from "../../exceptions/AddressErrors.js";
 import { EmptyCartError } from "../../exceptions/CartErrors.js";
+import { InsufficientStockError } from "../../exceptions/OrdersErrors.js";
 import prismaClient from "../../prisma/index.js";
 
 interface CreateOrderServiceProps {
@@ -22,7 +23,7 @@ class CreateOrderService {
       },
     });
 
-    console.log(cart)
+
 
     if (!cart || cart.items.length === 0) {
       throw new EmptyCartError();
@@ -47,6 +48,12 @@ class CreateOrderService {
       return total + price * item.quantity;
     }, 0);
 
+    for (const item of cart.items) {
+      if (item.product.stock < item.quantity) {
+        throw new InsufficientStockError();
+      }
+    }
+
     const order = await prismaClient.order.create({
       data: {
         user_id,
@@ -66,6 +73,19 @@ class CreateOrderService {
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.product.promo_price ?? item.product.price,
+        },
+      });
+    }
+
+    for (const item of cart.items) {
+      await prismaClient.product.update({
+        where: {
+          id: item.product_id,
+        },
+        data: {
+          stock: {
+            decrement: item.quantity,
+          }
         },
       });
     }

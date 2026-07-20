@@ -43,5 +43,14 @@ export class OrderNotFoundError extends Error {
     }
 }
 
+export class InsufficientStockError extends Error {
+    public statusCode: number = 400
+    constructor() {
+        super("O produto não possui estoque suficiente para a quantidade solicitada.");
+        this.name = "InsufficientStockError";
+        Object.setPrototypeOf(this, InsufficientStockError.prototype);
+    }
+}
+
 
 
