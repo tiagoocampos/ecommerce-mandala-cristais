@@ -1,20 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Trash2, Minus, Plus, ShoppingBag, ArrowLeft } from "lucide-react";
+import {
+    Trash2,
+    Minus,
+    Plus,
+    ShoppingBag,
+    ArrowLeft,
+    MapPin,
+    Loader2,
+} from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
 import { Loading } from "../../components/Loading";
 import { Button } from "../../components/ui/button";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
-import { formatPrice, showApiError } from "../../lib/utils-api";
+import { formatPrice, showApiError, getApiErrorMessage } from "../../lib/utils-api";
 import { useCart } from "../../contexts/CartContext";
+import { api } from "../../services/api";
+import type { Address } from "../../types";
 
 export function CartPage() {
     const navigate = useNavigate();
-    const { cart, loading, updateItem, removeItem } = useCart();
+    const { cart, loading, updateItem, removeItem, refreshCart } = useCart();
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [addressesLoading, setAddressesLoading] = useState(true);
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const [checkingOut, setCheckingOut] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        async function fetchAddresses() {
+            setAddressesLoading(true);
+            try {
+                const { data } = await api.get<Address[]>("/address");
+                if (!mounted) return;
+                setAddresses(data);
+                if (data.length === 1) {
+                    setSelectedAddressId(data[0].id);
+                }
+            } catch {
+                if (!mounted) return;
+                setAddresses([]);
+            } finally {
+                if (mounted) setAddressesLoading(false);
+            }
+        }
+        fetchAddresses();
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     async function handleQuantityChange(item_id: string, quantity: number) {
         if (quantity < 1) return;
@@ -40,6 +79,42 @@ export function CartPage() {
         }
     }
 
+    async function handleCheckout() {
+        if (!selectedAddressId) return;
+        setCheckingOut(true);
+        try {
+            const { data } = await api.post<{ id: string }>("/order", {
+                address_id: selectedAddressId,
+            });
+            toast.success("Pedido realizado com sucesso!", {
+                position: "top-center",
+            });
+            await refreshCart();
+            navigate(`/pedido/${data.id}`, { replace: true });
+        } catch (error: unknown) {
+            const msg = getApiErrorMessage(error, "");
+            if (msg === "Carrinho vazio") {
+                toast.error("Seu carrinho está vazio.", { position: "top-center" });
+            } else if (msg === "Endereço não encontrado") {
+                toast.error("Endereço não encontrado. Selecione outro endereço.", {
+                    position: "top-center",
+                });
+            } else if (
+                msg.includes("Estoque insuficiente") ||
+                msg.includes("estoque")
+            ) {
+                toast.error(
+                    "Estoque insuficiente para algum item. Remova ou reduza a quantidade.",
+                    { position: "top-center" }
+                );
+            } else {
+                showApiError(error, "Erro ao finalizar compra");
+            }
+        } finally {
+            setCheckingOut(false);
+        }
+    }
+
     const items = cart?.items ?? [];
     const subtotal = items.reduce((sum, item) => {
         const price =
@@ -48,6 +123,8 @@ export function CartPage() {
                 : item.product.price;
         return sum + price * item.quantity;
     }, 0);
+
+    const isCartReady = items.length > 0;
 
     return (
         <ProtectedRoute>
@@ -86,7 +163,7 @@ export function CartPage() {
                                 </Button>
                             </div>
                         ) : (
-                            <div className="grid lg:grid-cols-[1fr_320px] gap-8 items-start">
+                            <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
                                 {/* lista de itens */}
                                 <div className="space-y-4">
                                     {items.map((item) => {
@@ -181,36 +258,123 @@ export function CartPage() {
                                     })}
                                 </div>
 
-                                {/* resumo */}
-                                <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:sticky sm:top-24">
-                                    <h2 className="font-display text-lg text-mc-violet-950 mb-4">
-                                        Resumo do pedido
-                                    </h2>
-                                    <div className="flex justify-between text-sm text-mc-ink/70 mb-2">
-                                        <span>Subtotal</span>
-                                        <span>{formatPrice(subtotal)}</span>
+                                {/* resumo + endereço */}
+                                <div className="space-y-4 sm:sticky sm:top-24">
+                                    {/* seleção de endereço */}
+                                    <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
+                                        <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
+                                            <MapPin size={18} className="text-mc-gold-600" />
+                                            Endereço de entrega
+                                        </h2>
+
+                                        {addressesLoading ? (
+                                            <div className="flex justify-center py-4">
+                                                <Loading />
+                                            </div>
+                                        ) : addresses.length === 0 ? (
+                                            <div className="text-center py-3 flex flex-col items-center gap-3">
+                                                <p className="text-sm text-mc-ink/60">
+                                                    Você precisa cadastrar um endereço antes de
+                                                    finalizar a compra.
+                                                </p>
+                                                <Button
+                                                    onClick={() => navigate("/profile")}
+                                                    className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full"
+                                                >
+                                                    Cadastrar endereço
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {addresses.map((addr) => {
+                                                    const isSelected = selectedAddressId === addr.id;
+                                                    return (
+                                                        <button
+                                                            key={addr.id}
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setSelectedAddressId(addr.id)
+                                                            }
+                                                            className={`w-full text-left border rounded-lg p-3 transition-all ${
+                                                                isSelected
+                                                                    ? "border-mc-gold-600 bg-mc-blush-100 ring-1 ring-mc-gold-600/30"
+                                                                    : "border-mc-violet-950/10 bg-mc-sand-50 hover:bg-mc-blush-100"
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-start gap-2">
+                                                                <div
+                                                                    className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                                                                        isSelected
+                                                                            ? "border-mc-gold-600"
+                                                                            : "border-mc-violet-950/30"
+                                                                    }`}
+                                                                >
+                                                                    {isSelected && (
+                                                                        <div className="w-2 h-2 rounded-full bg-mc-gold-600" />
+                                                                    )}
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <span className="text-sm font-medium text-mc-violet-950">
+                                                                        {addr.street}, {addr.number}
+                                                                    </span>
+                                                                    <div className="text-xs text-mc-ink/60 mt-0.5">
+                                                                        {addr.neighborhood} —{" "}
+                                                                        {addr.city}, {addr.state}
+                                                                    </div>
+                                                                    {addr.complement && (
+                                                                        <div className="text-xs text-mc-ink/50">
+                                                                            {addr.complement}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
-                                    <p className="text-xs text-mc-ink/50 mb-4">
-                                        Frete calculado no checkout.
-                                    </p>
-                                    <div className="border-t border-mc-violet-950/10 pt-4 flex justify-between mb-5">
-                                        <span className="text-sm font-medium text-mc-violet-950">
-                                            Total
-                                        </span>
-                                        <span className="text-lg font-semibold text-mc-violet-950">
-                                            {formatPrice(subtotal)}
-                                        </span>
+
+                                    {/* resumo financeiro */}
+                                    <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5">
+                                        <h2 className="font-display text-lg text-mc-violet-950 mb-4">
+                                            Resumo do pedido
+                                        </h2>
+                                        <div className="flex justify-between text-sm text-mc-ink/70 mb-2">
+                                            <span>Subtotal</span>
+                                            <span>{formatPrice(subtotal)}</span>
+                                        </div>
+                                        <p className="text-xs text-mc-ink/50 mb-4">
+                                            Frete calculado no checkout.
+                                        </p>
+                                        <div className="border-t border-mc-violet-950/10 pt-4 flex justify-between mb-5">
+                                            <span className="text-sm font-medium text-mc-violet-950">
+                                                Total
+                                            </span>
+                                            <span className="text-lg font-semibold text-mc-violet-950">
+                                                {formatPrice(subtotal)}
+                                            </span>
+                                        </div>
+                                        <Button
+                                            disabled={
+                                                !selectedAddressId ||
+                                                addresses.length === 0 ||
+                                                checkingOut ||
+                                                !isCartReady
+                                            }
+                                            onClick={handleCheckout}
+                                            className="w-full bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full disabled:bg-mc-violet-950/30 disabled:cursor-not-allowed"
+                                        >
+                                            {checkingOut ? (
+                                                <span className="flex items-center gap-2">
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                    Finalizando...
+                                                </span>
+                                            ) : (
+                                                "Finalizar compra"
+                                            )}
+                                        </Button>
                                     </div>
-                                    <Button
-                                        disabled
-                                        title="Finalização de compra em breve"
-                                        className="w-full bg-mc-violet-950/40 text-mc-sand-50 rounded-full cursor-not-allowed"
-                                    >
-                                        Finalizar compra (em breve)
-                                    </Button>
-                                    <p className="text-[11px] text-mc-ink/40 text-center mt-2">
-                                        O checkout com pagamento está sendo finalizado.
-                                    </p>
                                 </div>
                             </div>
                         )}

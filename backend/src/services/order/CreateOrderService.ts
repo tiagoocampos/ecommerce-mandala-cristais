@@ -54,49 +54,60 @@ class CreateOrderService {
       }
     }
 
-    const order = await prismaClient.order.create({
-      data: {
-        user_id,
-        address_id,
 
-        subtotal,
-        discount: 0,
-        shipping_cost: 0,
-        total: subtotal,
-      },
-    });
-
-    for (const item of cart.items) {
-      await prismaClient.orderItem.create({
+    //parte de transação
+    const transaction = await prismaClient.$transaction(async (tx) => {
+      const order = await tx.order.create({
         data: {
-          order_id: order.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.product.promo_price ?? item.product.price,
+          user_id,
+          address_id,
+
+          subtotal,
+          discount: 0,
+          shipping_cost: 0,
+          total: subtotal,
         },
       });
-    }
 
-    for (const item of cart.items) {
-      await prismaClient.product.update({
+
+
+      for (const item of cart.items) {
+        await tx.orderItem.create({
+          data: {
+            order_id: order.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            unit_price: item.product.promo_price ?? item.product.price,
+          },
+        });
+
+        await tx.product.update({
+          where: {
+            id: item.product_id,
+          },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            }
+          },
+        });
+      }
+
+
+
+      await tx.cartItem.deleteMany({
         where: {
-          id: item.product_id,
-        },
-        data: {
-          stock: {
-            decrement: item.quantity,
-          }
+          cart_id: cart.id,
         },
       });
-    }
 
-    await prismaClient.cartItem.deleteMany({
-      where: {
-        cart_id: cart.id,
-      },
-    });
+      return order;
 
-    return order;
+    })
+
+    return transaction;
+
+
   }
 }
 

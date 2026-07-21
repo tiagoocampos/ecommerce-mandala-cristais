@@ -41,6 +41,8 @@ import { UpdateCartItemController } from './controllers/cart/UpdateCartItemContr
 import { GetOrderController } from './controllers/order/GetOrderController.js';
 import { ListOrdersController } from './controllers/order/ListOrdersController.js';
 import { UpdateOrderStatusController } from './controllers/order/UpdateOrderStatusController.js';
+import { ListAllOrdersAdminController } from './controllers/order/ListAllOrdersAdminController.js';
+import { GetOrderAdminController } from './controllers/order/GetOrderAdminController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -73,9 +75,13 @@ router.get("/order/:order_id", isAuthenticated, validateSchema(getOrderSchema), 
 router.get("/orders", isAuthenticated, new ListOrdersController().handle)
 router.patch("/order/:order_id/status", isAuthenticated, isAdmin, new UpdateOrderStatusController().handle)
 
+router.get("/admin/orders", isAuthenticated, isAdmin, new ListAllOrdersAdminController().handle)
+router.get("/admin/orders/:order_id", isAuthenticated, isAdmin, new GetOrderAdminController().handle)
+
 router.get("/admin/users", isAuthenticated, isAdmin, new ListUsersAdminController().handle)
 router.put("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(updateUserRoleParamsSchema), validateSchema(updateUserRoleSchema), new UpdateUserRoleAdminController().handle)
 router.delete("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(updateUserRoleParamsSchema), new DeleteUserAdminController().handle)
+
 
 router.get("/cart", isAuthenticated, new GetOrCreateCartController().handle)
 router.post("/cart/items", isAuthenticated, validateSchema(addCartItemSchema), new AddCartItemController().handle)

@@ -57,28 +57,33 @@ export interface Cart {
     items: CartItem[];
 }
 
-// O modelo de Order atual do backend ainda segue o padrão original de
-// comanda de restaurante (mesa + rascunho), não um checkout de e-commerce
-// de verdade (sem endereço, sem pagamento). Mantido aqui só para não
-// quebrar a página de pedidos existente.
-export interface Item {
+export type OrderStatus = "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELED";
+
+export interface OrderItemProduct {
     id: string;
-    amount: number;
-    product: {
-        id: string;
-        name: string;
-        price: number;
-        description: string;
-        banner: string;
-    };
+    name: string;
+    price: number;
+    promo_price: number | null;
+    banner: string;
+}
+
+export interface OrderItem {
+    id: string;
+    quantity: number;
+    unit_price: number;
+    product: OrderItemProduct;
 }
 
 export interface Order {
     id: string;
-    table: number;
-    status: boolean;
-    draft: boolean;
-    name: string | null;
+    status: OrderStatus;
+    subtotal: number;
+    discount: number;
+    shipping_cost: number;
+    total: number;
+    user_id: string;
+    address_id: string;
     createdAt: string;
-    items?: Item[];
+    updatedAt: string;
+    items: OrderItem[];
 }

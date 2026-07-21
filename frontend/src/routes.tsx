@@ -9,8 +9,16 @@ import { Products } from "./pages/products";
 import { ProductDetail } from "./pages/product-detail";
 import { CartPage } from "./pages/cart";
 import { Orders } from "./pages/orders";
-import { PainelAdmin } from "./pages/admin/PainelAdmin";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { OrderDetail } from "./pages/order-detail";
+
+// admin
+import { AdminLayout } from "./pages/admin/AdminLayout";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { AdminProducts } from "./pages/admin/AdminProducts";
+import { AdminCategories } from "./pages/admin/AdminCategories";
+import { AdminOrders } from "./pages/admin/AdminOrders";
+import { AdminOrderDetail } from "./pages/admin/AdminOrderDetail";
+import { AdminUsers } from "./pages/admin/AdminUsers";
 
 export function RoutesApp() {
     return (
@@ -29,14 +37,17 @@ export function RoutesApp() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/carrinho" element={<CartPage />} />
                 <Route path="/pedidos" element={<Orders />} />
-                <Route
-                    path="/admin"
-                    element={
-                        <ProtectedRoute>
-                            <PainelAdmin />
-                        </ProtectedRoute>
-                    }
-                />
+                <Route path="/pedido/:order_id" element={<OrderDetail />} />
+
+                {/* admin */}
+                <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="produtos" element={<AdminProducts />} />
+                    <Route path="categorias" element={<AdminCategories />} />
+                    <Route path="pedidos" element={<AdminOrders />} />
+                    <Route path="pedidos/:order_id" element={<AdminOrderDetail />} />
+                    <Route path="usuarios" element={<AdminUsers />} />
+                </Route>
             </Routes>
         </BrowserRouter>
     );

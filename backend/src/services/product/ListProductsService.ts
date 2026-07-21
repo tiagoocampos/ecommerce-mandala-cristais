@@ -23,12 +23,13 @@ class ListProductsService {
           slug: true,
           promo_price: true,
           createdAt: true,
+          stock: true,
         },
         orderBy: {
           createdAt: "desc",
         },
       });
-      
+
       return products;
     } catch (error) {
       throw new ListProductsError();
