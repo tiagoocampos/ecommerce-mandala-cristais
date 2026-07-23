@@ -43,6 +43,7 @@ import { ListOrdersController } from './controllers/order/ListOrdersController.j
 import { UpdateOrderStatusController } from './controllers/order/UpdateOrderStatusController.js';
 import { ListAllOrdersAdminController } from './controllers/order/ListAllOrdersAdminController.js';
 import { GetOrderAdminController } from './controllers/order/GetOrderAdminController.js';
+import { CreatePreferenceController } from './controllers/payment/CreatePreferenceController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -87,5 +88,7 @@ router.get("/cart", isAuthenticated, new GetOrCreateCartController().handle)
 router.post("/cart/items", isAuthenticated, validateSchema(addCartItemSchema), new AddCartItemController().handle)
 router.delete("/cart/items/:id", isAuthenticated, new DeleteCartItemController().handle)
 router.patch("/cart/items/:id", isAuthenticated, validateSchema(updateCartItemSchema), new UpdateCartItemController().handle)
+
+router.post("/payment/preference", isAuthenticated, new CreatePreferenceController().handle)
 
 export { router };
