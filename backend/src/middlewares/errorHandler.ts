@@ -44,6 +44,7 @@ import {
   EmptyCartError,
   ItemNotFoundError,
 } from "../exceptions/CartErrors.js";
+import { PaymentCreationError } from "../exceptions/PaymentErrors.js";
 
 export const errorHandler = (
   error: Error,
@@ -249,6 +250,12 @@ export const errorHandler = (
   }
 
   if (error instanceof InsufficientStockError) {
+    return res.status(error.statusCode).json({
+      error: error.message,
+    });
+  }
+
+  if (error instanceof PaymentCreationError) {
     return res.status(error.statusCode).json({
       error: error.message,
     });

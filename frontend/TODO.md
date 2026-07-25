@@ -1,14 +1,11 @@
-# TODO: Reconstrução do Painel Admin
+# Fluxo de Compra — Telas Finais
 
-## Etapas
-
-- [x] 1. Criar plano de implementação
-- [x] 2. Criar `AdminLayout.tsx` — layout com sidebar + checagem de admin
-- [x] 3. Criar `AdminDashboard.tsx` — cards de resumo
-- [x] 4. Criar `AdminProducts.tsx` — CRUD de produtos
-- [x] 5. Criar `AdminCategories.tsx` — CRUD de categorias
-- [x] 6. Criar `AdminOrders.tsx` — listagem de pedidos (admin)
-- [x] 7. Criar `AdminOrderDetail.tsx` — detalhe do pedido + atualização de status
-- [x] 8. Criar `AdminUsers.tsx` — gerenciamento de usuários
-- [x] 9. Atualizar `src/routes.tsx` — nova estrutura de rotas admin
+## ✅ Concluído
+- [x] `frontend/src/pages/checkout/index.tsx` — CheckoutPage (seleciona endereço → cria pedido → `/payment/:id`)
+- [x] `frontend/src/pages/payment/index.tsx` — PaymentPage (mostra pedido + botão "Pagar com Mercado Pago")
+- [x] `frontend/src/pages/payment-success/index.tsx` — PaymentSuccessPage
+- [x] `frontend/src/pages/payment-failure/index.tsx` — PaymentFailurePage
+- [x] `frontend/src/pages/payment-pending/index.tsx` — PaymentPendingPage
+- [x] `frontend/src/pages/cart/index.tsx` — Botão "Finalizar compra" navega para `/checkout`
+- [x] `frontend/src/routes.tsx` — Todas as rotas adicionadas
 

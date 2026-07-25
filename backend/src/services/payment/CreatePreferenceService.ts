@@ -2,6 +2,7 @@ import { Preference } from "mercadopago";
 import { client } from "../../config/mercadopago.js";
 import prismaClient from "../../prisma/index.js";
 import { OrderNotFoundError } from "../../exceptions/OrdersErrors.js";
+import { PaymentCreationError } from "../../exceptions/PaymentErrors.js";
 
 interface CreatePreferenceServiceProps {
     order_id: string;
@@ -71,7 +72,7 @@ class CreatePreferenceService {
             });
 
             if (!response.id) {
-                throw new Error("A preferência foi criada, mas o Mercado Pago não retornou um ID.");
+                throw new PaymentCreationError();
             }
 
             if (!paymentExists) {
@@ -85,17 +86,23 @@ class CreatePreferenceService {
 
 
 
+            // return {
+            //     order_id: order.id,
+            //     checkout_url: response.sandbox_init_point,
+            // };
+
             return {
                 order_id: order.id,
-                checkout_url: response.sandbox_init_point,
+                checkout_url: response.init_point,
             };
+            // return response;
         } catch (error) {
             console.error(error);
-            throw new Error;
+            throw new PaymentCreationError();
         }
 
 
-        // return response;
+
 
     }
 }

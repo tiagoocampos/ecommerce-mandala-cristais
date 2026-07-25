@@ -16,7 +16,7 @@ import { StoreFooter } from "../../components/store/StoreFooter";
 import { Loading } from "../../components/Loading";
 import { Button } from "../../components/ui/button";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
-import { formatPrice, showApiError, getApiErrorMessage } from "../../lib/utils-api";
+import { formatPrice, showApiError } from "../../lib/utils-api";
 import { useCart } from "../../contexts/CartContext";
 import { api } from "../../services/api";
 import type { Address } from "../../types";
@@ -83,33 +83,10 @@ export function CartPage() {
         if (!selectedAddressId) return;
         setCheckingOut(true);
         try {
-            const { data } = await api.post<{ id: string }>("/order", {
-                address_id: selectedAddressId,
-            });
-            toast.success("Pedido realizado com sucesso!", {
-                position: "top-center",
-            });
             await refreshCart();
-            navigate(`/pedido/${data.id}`, { replace: true });
-        } catch (error: unknown) {
-            const msg = getApiErrorMessage(error, "");
-            if (msg === "Carrinho vazio") {
-                toast.error("Seu carrinho está vazio.", { position: "top-center" });
-            } else if (msg === "Endereço não encontrado") {
-                toast.error("Endereço não encontrado. Selecione outro endereço.", {
-                    position: "top-center",
-                });
-            } else if (
-                msg.includes("Estoque insuficiente") ||
-                msg.includes("estoque")
-            ) {
-                toast.error(
-                    "Estoque insuficiente para algum item. Remova ou reduza a quantidade.",
-                    { position: "top-center" }
-                );
-            } else {
-                showApiError(error, "Erro ao finalizar compra");
-            }
+            navigate("/checkout");
+        } catch {
+            showApiError(new Error("Erro ao preparar checkout"), "Erro ao acessar checkout");
         } finally {
             setCheckingOut(false);
         }

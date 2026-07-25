@@ -8,8 +8,13 @@ import { CategoryDetail } from "./pages/category-detail";
 import { Products } from "./pages/products";
 import { ProductDetail } from "./pages/product-detail";
 import { CartPage } from "./pages/cart";
+import { CheckoutPage } from "./pages/checkout";
+import { PaymentPage } from "./pages/payment";
 import { Orders } from "./pages/orders";
 import { OrderDetail } from "./pages/order-detail";
+import { PaymentSuccessPage } from "./pages/payment-success";
+import { PaymentFailurePage } from "./pages/payment-failure";
+import { PaymentPendingPage } from "./pages/payment-pending";
 
 // admin
 import { AdminLayout } from "./pages/admin/AdminLayout";
@@ -36,8 +41,15 @@ export function RoutesApp() {
                 {/* protegidas (o próprio componente exige login) */}
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/carrinho" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/payment/:order_id" element={<PaymentPage />} />
                 <Route path="/pedidos" element={<Orders />} />
                 <Route path="/pedido/:order_id" element={<OrderDetail />} />
+
+                {/* páginas públicas de retorno do pagamento */}
+                <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                <Route path="/payment/failure" element={<PaymentFailurePage />} />
+                <Route path="/payment/pending" element={<PaymentPendingPage />} />
 
                 {/* admin */}
                 <Route path="/admin" element={<AdminLayout />}>
