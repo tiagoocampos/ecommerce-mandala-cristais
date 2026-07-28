@@ -9,7 +9,8 @@ class ListCategoriesService {
                     id: true,
                     name: true,
                     createdAt: true,
-                    slug: true
+                    slug: true,
+                    products: true,
                 },
                 orderBy: {
                     createdAt: "desc",

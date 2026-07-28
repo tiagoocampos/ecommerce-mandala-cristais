@@ -51,7 +51,7 @@ export function Login() {
 
       toast.success("Login realizado com sucesso!", { position: "top-center" });
       // Fluxo mais natural: após login, ir para a área do cliente.
-      navigate("/profile");
+      navigate("/");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const data = error.response?.data;

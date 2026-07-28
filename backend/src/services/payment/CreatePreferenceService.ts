@@ -85,16 +85,15 @@ class CreatePreferenceService {
             }
 
 
+            console.log(response);
 
-            // return {
-            //     order_id: order.id,
-            //     checkout_url: response.sandbox_init_point,
-            // };
 
             return {
                 order_id: order.id,
                 checkout_url: response.init_point,
             };
+
+
             // return response;
         } catch (error) {
             console.error(error);

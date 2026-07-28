@@ -24,6 +24,7 @@ class ListProductsService {
           promo_price: true,
           createdAt: true,
           stock: true,
+          category: true
         },
         orderBy: {
           createdAt: "desc",

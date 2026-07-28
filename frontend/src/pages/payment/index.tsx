@@ -76,7 +76,7 @@ export function PaymentPage() {
                 checkout_url: string;
                 order_id: string;
             }>("/payment/preference", {
-                params: { order_id },
+                 order_id ,
             });
 
             window.location.href = data.checkout_url;
