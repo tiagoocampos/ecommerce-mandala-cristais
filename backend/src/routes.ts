@@ -44,6 +44,7 @@ import { UpdateOrderStatusController } from './controllers/order/UpdateOrderStat
 import { ListAllOrdersAdminController } from './controllers/order/ListAllOrdersAdminController.js';
 import { GetOrderAdminController } from './controllers/order/GetOrderAdminController.js';
 import { CreatePreferenceController } from './controllers/payment/CreatePreferenceController.js';
+import { WebhookController } from './controllers/payment/WebhookController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -90,5 +91,5 @@ router.delete("/cart/items/:id", isAuthenticated, new DeleteCartItemController()
 router.patch("/cart/items/:id", isAuthenticated, validateSchema(updateCartItemSchema), new UpdateCartItemController().handle)
 
 router.post("/payment/preference", isAuthenticated, new CreatePreferenceController().handle)
-
+router.post("/payment/webhook", new WebhookController().handle)
 export { router };

@@ -15,7 +15,7 @@ class CreatePreferenceService {
     async execute({ order_id, user_id }: CreatePreferenceServiceProps) {
 
         const frontendUrl = process.env.FRONTEND_URL as string;
-
+        const backendUrl = process.env.BACKEND_URL as string;
         const order = await prismaClient.order.findFirst({
             where: {
                 id: order_id,
@@ -52,6 +52,9 @@ class CreatePreferenceService {
                 failure: `${frontendUrl}/payment/failure`,
                 pending: `${frontendUrl}/payment/pending`,
             },
+
+            notification_url: `${backendUrl}/payment/webhook`,
+
             auto_return: "approved",
         };
 

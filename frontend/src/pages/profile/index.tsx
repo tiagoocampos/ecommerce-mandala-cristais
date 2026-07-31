@@ -34,9 +34,7 @@ type Address = {
 
 type FieldErrors = Partial<Record<string, string>>;
 
-function searchCep(){
-  
-}
+
 
 function isAxiosErrorWithData(error: unknown): error is AxiosError<any> {
   return axios.isAxiosError(error);
