@@ -1,0 +1,1 @@
+{"version":3,"file":"DeleteProductController.d.ts","sourceRoot":"","sources":["../../../src/controllers/product/DeleteProductController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG3C,cAAM,uBAAuB;IACnB,MAAM,CAAC,GAAG,EAAE,OAAO,EAAE,GAAG,EAAE,QAAQ;CAW3C;AAED,OAAO,EAAE,uBAAuB,EAAE,CAAC"}

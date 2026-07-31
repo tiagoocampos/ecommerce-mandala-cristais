@@ -1,0 +1,1 @@
+{"version":3,"file":"UpdateUserRoleAdminService.d.ts","sourceRoot":"","sources":["../../../../src/services/user/admin/UpdateUserRoleAdminService.ts"],"names":[],"mappings":"AAGA,cAAM,0BAA0B;IACxB,OAAO,CAAC,EAAE,EAAE,EAAE,IAAI,EAAE,EAAE;QAAE,EAAE,EAAE,MAAM,CAAC;QAAC,IAAI,EAAE,OAAO,GAAG,OAAO,CAAA;KAAE;;;;;;;;;;CAoBpE;AAED,OAAO,EAAE,0BAA0B,EAAE,CAAC"}

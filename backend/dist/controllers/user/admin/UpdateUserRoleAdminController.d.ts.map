@@ -1,0 +1,1 @@
+{"version":3,"file":"UpdateUserRoleAdminController.d.ts","sourceRoot":"","sources":["../../../../src/controllers/user/admin/UpdateUserRoleAdminController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG5C,cAAM,6BAA6B;IAC3B,MAAM,CAAC,GAAG,EAAE,OAAO,EAAE,GAAG,EAAE,QAAQ;CASzC;AAED,OAAO,EAAE,6BAA6B,EAAE,CAAC"}

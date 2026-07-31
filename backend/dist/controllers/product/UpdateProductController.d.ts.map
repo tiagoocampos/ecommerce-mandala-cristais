@@ -1,0 +1,1 @@
+{"version":3,"file":"UpdateProductController.d.ts","sourceRoot":"","sources":["../../../src/controllers/product/UpdateProductController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAC,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAI3C,cAAM,uBAAuB;IACnB,MAAM,CAAC,GAAG,EAAE,OAAO,EAAE,GAAG,EAAE,QAAQ;CAwB3C;AACD,OAAO,EAAE,uBAAuB,EAAE,CAAC"}
