@@ -66,6 +66,16 @@ class CreateOrderService {
           discount: 0,
           shipping_cost: 0,
           total: subtotal,
+
+          payment: {
+            create: {
+              status: "PENDING",
+              provider: "mercado_pago",
+            },
+          },
+        },
+        include: {
+          payment: true,
         },
       });
 

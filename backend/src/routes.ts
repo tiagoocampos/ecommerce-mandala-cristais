@@ -90,6 +90,10 @@ router.post("/cart/items", isAuthenticated, validateSchema(addCartItemSchema), n
 router.delete("/cart/items/:id", isAuthenticated, new DeleteCartItemController().handle)
 router.patch("/cart/items/:id", isAuthenticated, validateSchema(updateCartItemSchema), new UpdateCartItemController().handle)
 
+router.get("/health", (req, res) => {
+    return res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 router.post("/payment/preference", isAuthenticated, new CreatePreferenceController().handle)
 router.post("/payment/webhook", new WebhookController().handle)
 export { router };

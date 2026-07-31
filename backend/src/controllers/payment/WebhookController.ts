@@ -1,15 +1,14 @@
 import { Request, Response } from "express";
-import { WebhookService } from "../../services/payment/WebhookService.js";
-
 
 class WebhookController {
     async handle(req: Request, res: Response) {
 
-        const webhookService = new WebhookService();
+        console.log("CHEGOU!");
 
-        await webhookService.execute(req.body);
+        return res.status(200).json({
+            ok: true
+        });
 
-        return res.sendStatus(200);
     }
 }
 
