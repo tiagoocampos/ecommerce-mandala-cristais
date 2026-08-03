@@ -9,6 +9,7 @@ import {
     Sparkles,
     LogOut,
 } from "lucide-react";
+import mandalaLogo from "../../assets/mandala-logo.png";
 import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
 import { clearAuth, getStoredUser } from "../../lib/auth";
@@ -32,8 +33,7 @@ export function StoreHeader() {
             .get<Category[]>("/category")
             .then(({ data }) => setCategories(data))
             .catch(() => {
-                // Se o catálogo de categorias não carregar, a navegação
-                // principal do site continua funcionando normalmente.
+               
             });
     }, []);
 
@@ -61,7 +61,7 @@ export function StoreHeader() {
 
     return (
         <header className="sticky top-0 z-40 bg-mc-sand-50/95 backdrop-blur border-b border-mc-violet-950/10">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6">
                 {/* linha principal */}
                 <div className="flex items-center justify-between gap-2 sm:gap-4 py-3 sm:py-4">
                     <button
@@ -76,10 +76,11 @@ export function StoreHeader() {
                         onClick={() => navigate("/")}
                         className="flex items-center gap-1.5 sm:gap-2 shrink-0"
                     >
-                        <Sparkles className="text-mc-gold-500" size={20} />
-                        <span className="font-display italic text-lg sm:text-2xl text-mc-violet-950 tracking-tight whitespace-nowrap">
+                        
+                        <img src={mandalaLogo} alt="Mandala Cristais" className="h-20 w-20 sm:h-20 sm:w-20" />
+                        {/* <span className="font-display italic text-lg sm:text-2xl text-mc-violet-950 tracking-tight whitespace-nowrap">
                             Mandala Cristais
-                        </span>
+                        </span> */}
                     </button>
 
                     <form

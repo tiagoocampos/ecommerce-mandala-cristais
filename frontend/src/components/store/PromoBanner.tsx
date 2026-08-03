@@ -22,7 +22,7 @@ export function PromoBanner() {
                         precisa se blindar e recomeçar.
                     </p>
                     <Button
-                        onClick={() => navigate("/categoria/energia")}
+                        onClick={() => navigate("/categoria/kits")}
                         className="bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 rounded-full px-7 py-6 text-sm font-semibold"
                     >
                         Ver kits

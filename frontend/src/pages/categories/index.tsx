@@ -8,17 +8,6 @@ import { api } from "../../services/api";
 import { showApiError } from "../../lib/utils-api";
 import type { Category } from "../../types";
 
-const EMOJI_BY_SLUG: Record<string, string> = {
-    pedras: "💎",
-    incensos: "🕯️",
-    energia: "🔮",
-    "para-casa": "🏡",
-    acessorios: "📿",
-    "bem-estar": "🌿",
-    iniciante: "🌱",
-    kits: "🎁",
-};
-
 export function Categories() {
     const navigate = useNavigate();
     const [categories, setCategories] = useState<Category[]>([]);
@@ -26,6 +15,7 @@ export function Categories() {
 
     useEffect(() => {
         let mounted = true;
+
         api
             .get<Category[]>("/category")
             .then(({ data }) => {
@@ -37,6 +27,7 @@ export function Categories() {
             .finally(() => {
                 if (mounted) setLoading(false);
             });
+
         return () => {
             mounted = false;
         };
@@ -49,11 +40,15 @@ export function Categories() {
 
             <main className="flex-1">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
-                    <h1 className="font-display text-3xl sm:text-4xl text-mc-violet-950 mb-2">
-                        Todas as <span className="italic text-mc-gold-600">categorias</span>
+                    <h1 className="font-display text-3xl sm:text-4xl text-[#765075] mb-2">
+                        Todas as{" "}
+                        <span className="italic text-mc-gold-600">
+                            categorias
+                        </span>
                     </h1>
-                    <p className="text-sm text-mc-ink/60 mb-8">
-                        Encontre exatamente o que você está buscando.
+
+                    <p className="text-sm text-mc-ink/60 mb-10">
+                        Encontre cristais e itens selecionados para cada momento.
                     </p>
 
                     {loading ? (
@@ -65,19 +60,20 @@ export function Categories() {
                             Nenhuma categoria disponível no momento.
                         </p>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                        <div className="flex flex-wrap gap-x-10 gap-y-6">
                             {categories.map((cat) => (
                                 <button
                                     key={cat.id}
-                                    onClick={() => navigate(`/categoria/${cat.slug}`)}
-                                    className="group facet-cut-sm bg-mc-blush-100 hover:bg-mc-blush-200 border border-mc-violet-950/10 p-6 sm:p-8 flex flex-col items-center gap-3 transition-colors"
+                                    onClick={() =>
+                                        navigate(`/categoria/${cat.slug}`)
+                                    }
+                                    className="group text-left"
                                 >
-                                    <span className="text-4xl sm:text-5xl">
-                                        {EMOJI_BY_SLUG[cat.slug] ?? "💎"}
-                                    </span>
-                                    <span className="text-sm font-medium text-mc-violet-950 group-hover:text-mc-violet-800 text-center">
+                                    <span className="font-display text-xl sm:text-2xl text-[#765075] transition-colors group-hover:text-[#B08B3E]">
                                         {cat.name}
                                     </span>
+
+                                    <div className="mt-2 h-px w-0 bg-[#B08B3E] transition-all duration-300 group-hover:w-full" />
                                 </button>
                             ))}
                         </div>

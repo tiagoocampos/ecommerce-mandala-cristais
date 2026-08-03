@@ -99,7 +99,7 @@
    Mandala Cristais — Design Tokens
    ============================================================ */
 @theme inline {
-  --font-display: "Fraunces", serif;
+  --font-display: "Inter", serif;
 
   /* Ametista — cor primária da marca */
   --color-mc-violet-950: #2c1044;
