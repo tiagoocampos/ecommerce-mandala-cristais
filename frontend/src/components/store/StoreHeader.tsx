@@ -6,7 +6,6 @@ import {
     User,
     Menu,
     X,
-    Sparkles,
     LogOut,
 } from "lucide-react";
 import mandalaLogo from "../../assets/mandala-logo.png";
@@ -78,9 +77,7 @@ export function StoreHeader() {
                     >
                         
                         <img src={mandalaLogo} alt="Mandala Cristais" className="h-20 w-20 sm:h-20 sm:w-20" />
-                        {/* <span className="font-display italic text-lg sm:text-2xl text-mc-violet-950 tracking-tight whitespace-nowrap">
-                            Mandala Cristais
-                        </span> */}
+                        
                     </button>
 
                     <form

@@ -199,7 +199,7 @@ export function Profile() {
         <main className="flex-1">
           <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
             <div className="flex flex-col lg:flex-row lg:items-start gap-8">
-              <div className="w-full lg:w-[360px] shrink-0">
+              <div className="w-full lg:w-90 shrink-0">
                 <h1 className="font-display text-3xl sm:text-4xl text-mc-violet-950">
                   Minha conta
                 </h1>

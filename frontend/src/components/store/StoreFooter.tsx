@@ -1,8 +1,6 @@
 import { Sparkles, Send } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faInstagram,
-} from "@fortawesome/free-brands-svg-icons";
+import { faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { Button } from "../ui/button";
 
 const SOCIALS = [
@@ -11,7 +9,6 @@ const SOCIALS = [
         icon: faInstagram,
         url: "https://www.instagram.com/mandalacristais",
     },
-    
 ];
 
 const LINK_COLUMNS = [
@@ -70,6 +67,8 @@ export function StoreFooter() {
                             <a
                                 key={social.name}
                                 href={social.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="w-9 h-9 rounded-full border border-mc-sand-50/20 flex items-center justify-center hover:border-mc-gold-400 hover:text-mc-gold-400 transition-colors cursor-pointer"
                             >
                                 <FontAwesomeIcon
