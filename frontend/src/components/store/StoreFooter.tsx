@@ -101,7 +101,7 @@ export function StoreFooter() {
 
                 <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wide text-mc-gold-300 mb-4">
-                        Receba novidades
+                        Receba novidades!
                     </h4>
 
                     <p className="text-sm text-mc-sand-50/60 mb-3">
