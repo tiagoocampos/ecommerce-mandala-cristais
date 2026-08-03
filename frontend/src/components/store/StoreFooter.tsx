@@ -2,8 +2,6 @@ import { Sparkles, Send } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faInstagram,
-    faFacebook,
-    faYoutube,
 } from "@fortawesome/free-brands-svg-icons";
 import { Button } from "../ui/button";
 
