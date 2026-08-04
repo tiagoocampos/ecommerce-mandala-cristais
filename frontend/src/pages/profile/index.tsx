@@ -225,14 +225,7 @@ export function Profile() {
                         {user?.email ?? "—"}
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs uppercase tracking-wide text-mc-ink/50">
-                        Função
-                      </div>
-                      <div className="text-sm font-medium text-mc-violet-950">
-                        {user?.role === "ADMIN" ? "Administrador" : "Customer"}
-                      </div>
-                    </div>
+                    
                   </div>
 
                   <Button
@@ -414,7 +407,7 @@ export function Profile() {
                                   </button>
                                 }
                                 title="Remover endereço"
-                                description="Tem certeza que deseja remover este endereço? Essa ação não pode ser desfeita."
+                                description="Este endereço será removido da sua conta. Caso ele esteja vinculado a um pedido, a exclusão não será permitida para preservar o histórico das suas compras."
                                 confirmText="Remover"
                                 onConfirm={() => handleDeleteAddress(a.id)}
                               />

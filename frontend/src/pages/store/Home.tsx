@@ -87,7 +87,7 @@ export function MandalaHome() {
         ) : (
           <>
             <ProductGrid
-              title="Selenita, a pedra queridinha"
+              title="Escolhas da semana"
               subtitle="Os itens mais procurados da semana"
               products={loadingProducts ? [] : topPicks}
               seeAllHref="/produtos"

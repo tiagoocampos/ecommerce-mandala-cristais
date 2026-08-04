@@ -1,4 +1,4 @@
-import { Sparkles, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInstagram } from "@fortawesome/free-brands-svg-icons";
 import { Button } from "../ui/button";
@@ -7,7 +7,7 @@ const SOCIALS = [
     {
         name: "Instagram",
         icon: faInstagram,
-        url: "https://www.instagram.com/mandalacristais",
+        url: "https://www.instagram.com/mandalacrystais/",
     },
 ];
 
@@ -43,21 +43,18 @@ const LINK_COLUMNS = [
 
 export function StoreFooter() {
     return (
-        <footer className="bg-mc-violet-950 text-mc-sand-50/80 mt-10">
+        <footer className="bg-[#765075] text-mc-sand-50/80 mt-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
                 <div className="lg:col-span-2">
                     <div className="flex items-center gap-2 mb-4">
-                        <Sparkles
-                            className="text-mc-gold-400"
-                            size={20}
-                        />
+                        
 
                         <span className="font-display italic text-xl text-mc-sand-50">
                             Mandala Cristais
                         </span>
                     </div>
 
-                    <p className="text-sm text-mc-sand-50/60 max-w-xs mb-5">
+                    <p className="text-sm text-mc-sand-50/80 max-w-xs mb-5">
                         Cristais e itens de energia selecionados com cuidado para o seu
                         ritual diário.
                     </p>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Star, ShoppingBag, Minus, Plus, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Minus, Plus, ArrowLeft } from "lucide-react";
+// import { Star } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
@@ -161,7 +162,7 @@ export function ProductDetail() {
                                 {product.name}
                             </h1>
 
-                            <div className="flex items-center gap-0.5 mb-4">
+                            {/* <div className="flex items-center gap-0.5 mb-4">
                                 {Array.from({ length: 5 }).map((_, i) => (
                                     <Star
                                         key={i}
@@ -172,7 +173,7 @@ export function ProductDetail() {
                                 <span className="text-xs text-mc-ink/50 ml-1.5">
                                     Avaliado por nossa comunidade
                                 </span>
-                            </div>
+                            </div> */}
 
                             <div className="mb-6">
                                 {hasPromo && (

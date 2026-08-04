@@ -11,24 +11,24 @@ interface DeleteAddressServiceProps {
 
 class DeleteAddressService {
     async execute({ id, user_id }: DeleteAddressServiceProps) {
-        
+
 
         try {
             await findAddressOrFail({ id, user_id });
 
-        await prismaClient.address.delete({ where: { id } });
+            await prismaClient.address.delete({ where: { id } });
 
-        return { message: "Endereço deletado com sucesso" };
+            return { message: "Endereço deletado com sucesso" };
         } catch (error) {
-            if(error instanceof AddressNotFoundError){
+            if (error instanceof AddressNotFoundError) {
                 throw error;
             }
-            if(error instanceof AddressNotOwnedError){
+            if (error instanceof AddressNotOwnedError) {
                 throw error;
             }
 
-            
-            
+
+
             throw new DeleteAddressError();
         }
     }
