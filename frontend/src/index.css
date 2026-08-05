@@ -113,9 +113,16 @@
   --color-mc-gold-500: #c89b3c;
   --color-mc-gold-300: #e3c583;
 
-  /* Quartzo rosa — acento suave */
+/* Quartzo rosa — acento suave */
   --color-mc-blush-200: #efd9e8;
   --color-mc-blush-100: #f7ebf3;
+
+  /* Amora — cor principal da marca (deep plum / #765075) */
+  --color-mc-primary: #765075;
+  --color-mc-primary-dark: #5f3f5e;
+  --color-mc-primary-darker: #4a2f49;
+  --color-mc-primary-light: #8a6388;
+  --color-mc-primary-soft: #f3eaf2;
 
   /* Areia — fundo quente (não branco puro) */
   --color-mc-sand-50: #fbf6ef;
@@ -141,4 +148,31 @@
     rgba(76, 27, 107, 0.12) 45%,
     transparent 75%
   );
+}
+
+/* Campo de busca da marca — borda arredondada, foco amora e sombra suave */
+.input-mc {
+  width: 100%;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-mc-primary) 18%, transparent);
+  background: color-mix(in srgb, var(--color-mc-primary) 4%, white);
+  padding: 0.625rem 2.75rem 0.625rem 2.5rem;
+  font-size: 0.875rem;
+  color: var(--color-mc-ink);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.input-mc::placeholder {
+  color: color-mix(in srgb, var(--color-mc-ink) 40%, transparent);
+}
+
+.input-mc:hover {
+  border-color: color-mix(in srgb, var(--color-mc-primary) 32%, transparent);
+}
+
+.input-mc:focus-visible {
+  border-color: var(--color-mc-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-mc-primary) 20%, transparent);
+  background: #fff;
 }

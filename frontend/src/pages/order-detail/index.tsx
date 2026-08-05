@@ -204,6 +204,10 @@ export function OrderDetail() {
                                         </div>
                                     </div>
                                 </div>
+                               
+                                <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6 flex">
+                                     <button className="text-center mx-auto bg-green-500 hover:bg-green-600 duration-200 rounded cursor-pointer text-white p-2">Ir para o pagamento</button>
+                                </div>
 
                                 {/* botão para listagem */}
                                 <div className="text-center">
@@ -218,7 +222,12 @@ export function OrderDetail() {
                                 </div>
                             </>
                         )}
+
+                        
+
                     </div>
+
+                    
                 </main>
 
                 <StoreFooter />
