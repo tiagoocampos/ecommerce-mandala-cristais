@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { ProductCard } from "./ProductCard";
+import { ProductGridSkeleton } from "./ProductCardSkeleton";
 import type { MandalaProduct } from "../../types/mandala";
 
 interface ProductGridProps {
@@ -9,6 +10,7 @@ interface ProductGridProps {
     products: MandalaProduct[];
     seeAllHref?: string;
     onAddToCart?: (product: MandalaProduct) => void;
+    loading?: boolean;
 }
 
 export function ProductGrid({
@@ -17,6 +19,7 @@ export function ProductGrid({
     products,
     seeAllHref,
     onAddToCart,
+    loading = false,
 }: ProductGridProps) {
     const navigate = useNavigate();
 
@@ -34,13 +37,19 @@ export function ProductGrid({
                 {seeAllHref && (
                     <button
                         onClick={() => navigate(seeAllHref)}
-                        className="hidden sm:flex items-center gap-1 text-sm font-medium text-mc-violet-950 hover:text-mc-gold-600 shrink-0"
+                        className="hidden sm:flex items-center gap-1 text-sm font-medium text-mc-violet-950 hover:text-mc-gold-700 shrink-0"
                     >
                         Ver tudo <ArrowRight size={14} />
                     </button>
                 )}
             </div>
 
+            {loading ? (
+                <ProductGridSkeleton
+                    count={4}
+                    className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8"
+                />
+            ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
                 {products.map((product) => (
                     <ProductCard
@@ -50,6 +59,7 @@ export function ProductGrid({
                     />
                 ))}
             </div>
+            )}
         </section>
     );
 }

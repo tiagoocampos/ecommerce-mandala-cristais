@@ -48,7 +48,8 @@ export const ModelName = {
     Order: 'Order',
     OrderItem: 'OrderItem',
     Payment: 'Payment',
-    Coupon: 'Coupon'
+    Coupon: 'Coupon',
+    StoreSettings: 'StoreSettings'
 };
 /*
  * Enums
@@ -152,7 +153,17 @@ export const CouponScalarFieldEnum = {
     value: 'value',
     active: 'active',
     expires_at: 'expires_at',
+    first_purchase_only: 'first_purchase_only',
+    user_id: 'user_id',
     createdAt: 'createdAt'
+};
+export const StoreSettingsScalarFieldEnum = {
+    id: 'id',
+    announcement_text: 'announcement_text',
+    announcement_coupon_code: 'announcement_coupon_code',
+    free_shipping_threshold: 'free_shipping_threshold',
+    trust_strip_items: 'trust_strip_items',
+    updatedAt: 'updatedAt'
 };
 export const SortOrder = {
     asc: 'asc',
@@ -160,6 +171,9 @@ export const SortOrder = {
 };
 export const NullableJsonNullValueInput = {
     DbNull: DbNull,
+    JsonNull: JsonNull
+};
+export const JsonNullValueInput = {
     JsonNull: JsonNull
 };
 export const QueryMode = {

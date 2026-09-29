@@ -1,22 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
-import { SlidersHorizontal } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { SlidersHorizontal, SearchX } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
 import { ProductCard } from "../../components/store/ProductCard";
-import { Loading } from "../../components/Loading";
+import { ProductGridSkeleton } from "../../components/store/ProductCardSkeleton";
+import { EmptyState } from "../../components/store/EmptyState";
 import { api } from "../../services/api";
-import { getToken } from "../../lib/auth";
 import { showApiError } from "../../lib/utils-api";
-import { useCart } from "../../contexts/CartContext";
+import { useAddToCart } from "../../hooks/useAddToCart";
 import type { MandalaProduct } from "../../types/mandala";
 import type { Category } from "../../types";
 
 export function Products() {
-    const navigate = useNavigate();
-    const { addItem } = useCart();
+    const addToCart = useAddToCart();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [products, setProducts] = useState<MandalaProduct[]>([]);
@@ -64,22 +62,8 @@ export function Products() {
         });
     }, [products, query, categorySlug]);
 
-    async function handleAddToCart(product: MandalaProduct) {
-        if (!getToken()) {
-            toast.info("Entre na sua conta para adicionar ao carrinho", {
-                position: "top-center",
-            });
-            navigate("/login");
-            return;
-        }
-        try {
-            await addItem(product.id, 1);
-            toast.success(`${product.name} adicionado ao carrinho`, {
-                position: "top-center",
-            });
-        } catch (error) {
-            showApiError(error, "Não foi possível adicionar ao carrinho");
-        }
+    function handleAddToCart(product: MandalaProduct) {
+        addToCart(product.id);
     }
 
     function setCategoryFilter(slug: string) {
@@ -151,13 +135,22 @@ export function Products() {
 
                         <div>
                             {loading ? (
-                                <div className="py-16 flex justify-center">
-                                    <Loading />
-                                </div>
+                                <ProductGridSkeleton
+                                    count={6}
+                                    className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-5 gap-y-8"
+                                />
                             ) : filtered.length === 0 ? (
-                                <p className="text-sm text-mc-ink/60 py-10 text-center">
-                                    Nenhum produto encontrado com esses filtros.
-                                </p>
+                                <EmptyState
+                                    icon={SearchX}
+                                    title={query ? "Essa pedra não apareceu por aqui" : "Nenhum produto encontrado"}
+                                    description={
+                                        query
+                                            ? `Não encontramos resultados para "${searchParams.get("q")}". Tente outro termo ou veja toda a coleção.`
+                                            : "Nenhum produto encontrado com esses filtros."
+                                    }
+                                    actionLabel="Ver todos os produtos"
+                                    onAction={() => setSearchParams(new URLSearchParams())}
+                                />
                             ) : (
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-5 gap-y-8">
                                     {filtered.map((product) => (

@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCartDrawer } from "@/contexts/CartDrawerContext";
 
 type CartButtonProps = {
   itemCount: number;
@@ -10,11 +10,11 @@ type CartButtonProps = {
 };
 
 export function CartButton({ itemCount, className, onNavigate }: CartButtonProps) {
-  const navigate = useNavigate();
+  const { openCart } = useCartDrawer();
 
   function handleClick() {
     onNavigate?.();
-    navigate("/carrinho");
+    openCart();
   }
 
   return (

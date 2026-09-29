@@ -186,5 +186,17 @@ export const errorHandler = (error, req, res, next) => {
             error: error.message,
         });
     }
+    // Qualquer outro erro de domínio com statusCode (ex.: CouponErrors) usa a própria mensagem
+    const statusCode = error.statusCode;
+    if (typeof statusCode === "number") {
+        return res.status(statusCode).json({
+            error: error.message,
+        });
+    }
+    // Sem isso, erros inesperados deixavam a requisição sem resposta
+    console.error(error);
+    return res.status(500).json({
+        error: "Erro interno do servidor",
+    });
 };
 //# sourceMappingURL=errorHandler.js.map

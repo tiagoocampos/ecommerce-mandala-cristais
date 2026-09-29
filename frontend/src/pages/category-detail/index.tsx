@@ -1,23 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Gem, SearchX } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
 import { ProductCard } from "../../components/store/ProductCard";
-import { Loading } from "../../components/Loading";
+import { ProductGridSkeleton } from "../../components/store/ProductCardSkeleton";
+import { EmptyState } from "../../components/store/EmptyState";
 import { api } from "../../services/api";
-import { getToken } from "../../lib/auth";
 import { showApiError } from "../../lib/utils-api";
-import { useCart } from "../../contexts/CartContext";
+import { useAddToCart } from "../../hooks/useAddToCart";
 import type { MandalaProduct } from "../../types/mandala";
 import type { Category } from "../../types";
 
 export function CategoryDetail() {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const { addItem } = useCart();
+    const addToCart = useAddToCart();
 
     const [category, setCategory] = useState<Category | null>(null);
     const [products, setProducts] = useState<MandalaProduct[]>([]);
@@ -55,22 +54,8 @@ export function CategoryDetail() {
         };
     }, [slug]);
 
-    async function handleAddToCart(product: MandalaProduct) {
-        if (!getToken()) {
-            toast.info("Entre na sua conta para adicionar ao carrinho", {
-                position: "top-center",
-            });
-            navigate("/login");
-            return;
-        }
-        try {
-            await addItem(product.id, 1);
-            toast.success(`${product.name} adicionado ao carrinho`, {
-                position: "top-center",
-            });
-        } catch (error) {
-            showApiError(error, "Não foi possível adicionar ao carrinho");
-        }
+    function handleAddToCart(product: MandalaProduct) {
+        addToCart(product.id);
     }
 
     return (
@@ -88,13 +73,22 @@ export function CategoryDetail() {
                     </button>
 
                     {loading ? (
-                        <div className="py-16 flex justify-center">
-                            <Loading />
-                        </div>
+                        <>
+                            <div className="h-8 w-48 rounded bg-mc-blush-100 animate-pulse mb-2" />
+                            <div className="h-4 w-24 rounded bg-mc-blush-100 animate-pulse mb-6" />
+                            <ProductGridSkeleton
+                                count={4}
+                                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-5 gap-y-8"
+                            />
+                        </>
                     ) : !category ? (
-                        <p className="text-sm text-mc-ink/60 py-10 text-center">
-                            Categoria não encontrada.
-                        </p>
+                        <EmptyState
+                            icon={SearchX}
+                            title="Categoria não encontrada"
+                            description="Ela pode ter mudado de nome ou não existir mais."
+                            actionLabel="Ver todas as categorias"
+                            onAction={() => navigate("/categorias")}
+                        />
                     ) : (
                         <>
                             <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-1">
@@ -106,9 +100,13 @@ export function CategoryDetail() {
                             </p>
 
                             {products.length === 0 ? (
-                                <p className="text-sm text-mc-ink/60 py-10 text-center">
-                                    Nenhum produto nesta categoria ainda.
-                                </p>
+                                <EmptyState
+                                    icon={Gem}
+                                    title="Nenhum produto nesta categoria ainda"
+                                    description="Novas pedras chegam com frequência — enquanto isso, explore o restante da coleção."
+                                    actionLabel="Ver produtos"
+                                    onAction={() => navigate("/produtos")}
+                                />
                             ) : (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-5 gap-y-8">
                                     {products.map((product) => (

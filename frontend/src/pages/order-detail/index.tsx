@@ -14,23 +14,9 @@ import { Button } from "../../components/ui/button";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { formatPrice, formatDate } from "../../lib/utils-api";
 import { api } from "../../services/api";
-import type { Order, OrderStatus } from "../../types";
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-    PENDING: "Aguardando pagamento",
-    PAID: "Pago",
-    SHIPPED: "Enviado",
-    DELIVERED: "Entregue",
-    CANCELED: "Cancelado",
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-    PENDING: "bg-mc-gold-600/20 text-mc-gold-800 border-mc-gold-600/30",
-    PAID: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    SHIPPED: "bg-sky-100 text-sky-800 border-sky-300",
-    DELIVERED: "bg-mc-violet-950/10 text-mc-violet-950 border-mc-violet-950/20",
-    CANCELED: "bg-red-100 text-red-800 border-red-300",
-};
+import type { Order } from "../../types";
+import { ProductImage } from "../../components/store/ProductImage";
+import { OrderStatusBadge } from "../../components/OrderStatusBadge";
 
 export function OrderDetail() {
     const { order_id } = useParams<{ order_id: string }>();
@@ -65,8 +51,6 @@ export function OrderDetail() {
         };
     }, [order_id]);
 
-    const statusLabel = order ? STATUS_LABELS[order.status] : "";
-    const statusColor = order ? STATUS_COLORS[order.status] : "";
 
     return (
         <ProtectedRoute>
@@ -109,10 +93,10 @@ export function OrderDetail() {
                                 {/* cabeçalho de confirmação */}
                                 <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-full bg-mc-success-100 flex items-center justify-center">
                                             <PackageCheck
                                                 size={20}
-                                                className="text-emerald-700"
+                                                className="text-mc-success-700"
                                             />
                                         </div>
                                         <div>
@@ -125,11 +109,7 @@ export function OrderDetail() {
                                             </p>
                                         </div>
                                     </div>
-                                    <span
-                                        className={`inline-block text-xs font-medium px-3 py-1 rounded-full border ${statusColor}`}
-                                    >
-                                        {statusLabel}
-                                    </span>
+                                    <OrderStatusBadge status={order.status} size="md" />
                                 </div>
 
                                 {/* itens do pedido */}
@@ -146,17 +126,7 @@ export function OrderDetail() {
                                                     className="flex gap-3 items-center"
                                                 >
                                                     <div className="w-14 h-14 rounded-md overflow-hidden bg-mc-blush-100 shrink-0">
-                                                        {item.product.banner ? (
-                                                            <img
-                                                                src={item.product.banner}
-                                                                alt={item.product.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-xl">
-                                                                💎
-                                                            </div>
-                                                        )}
+                                                        <ProductImage src={item.product.banner} alt={item.product.name} iconSize={20} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium text-mc-violet-950 line-clamp-1">
@@ -187,7 +157,7 @@ export function OrderDetail() {
                                             <span>{formatPrice(order.subtotal)}</span>
                                         </div>
                                         {order.discount > 0 && (
-                                            <div className="flex justify-between text-emerald-700">
+                                            <div className="flex justify-between text-mc-success-700">
                                                 <span>Desconto</span>
                                                 <span>-{formatPrice(order.discount)}</span>
                                             </div>
@@ -205,9 +175,19 @@ export function OrderDetail() {
                                     </div>
                                 </div>
                                
-                                <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6 flex">
-                                     <button className="text-center mx-auto bg-green-500 hover:bg-green-600 duration-200 rounded cursor-pointer text-white p-2">Ir para o pagamento</button>
-                                </div>
+                                {order.status === "PENDING" && (
+                                    <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                        <p className="text-sm text-mc-ink/70 text-center sm:text-left">
+                                            Este pedido ainda aguarda pagamento.
+                                        </p>
+                                        <Button
+                                            onClick={() => navigate(`/payment/${order.id}`)}
+                                            className="bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 rounded-full px-6 h-10 font-semibold"
+                                        >
+                                            Ir para o pagamento
+                                        </Button>
+                                    </div>
+                                )}
 
                                 {/* botão para listagem */}
                                 <div className="text-center">

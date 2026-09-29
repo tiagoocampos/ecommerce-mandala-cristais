@@ -227,6 +227,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get coupon(): Prisma.CouponDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    /**
+     * `prisma.storeSettings`: Exposes CRUD operations for the **StoreSettings** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more StoreSettings
+      * const storeSettings = await prisma.storeSettings.findMany()
+      * ```
+      */
+    get storeSettings(): Prisma.StoreSettingsDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;
 //# sourceMappingURL=class.d.ts.map

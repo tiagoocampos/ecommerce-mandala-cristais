@@ -1,9 +1,10 @@
 interface CreateOrderServiceProps {
     user_id: string;
     address_id: string;
+    coupon_code?: string;
 }
 declare class CreateOrderService {
-    execute({ user_id, address_id }: CreateOrderServiceProps): Promise<{
+    execute({ user_id, address_id, coupon_code }: CreateOrderServiceProps): Promise<{
         payment: {
             id: string;
             createdAt: Date;
@@ -20,9 +21,9 @@ declare class CreateOrderService {
         createdAt: Date;
         updatedAt: Date;
         user_id: string;
+        subtotal: number;
         address_id: string;
         status: import("../../generated/prisma/enums.js").OrderStatus;
-        subtotal: number;
         discount: number;
         shipping_cost: number;
         total: number;

@@ -15,6 +15,7 @@ import { OrderDetail } from "./pages/order-detail";
 import { PaymentSuccessPage } from "./pages/payment-success";
 import { PaymentFailurePage } from "./pages/payment-failure";
 import { PaymentPendingPage } from "./pages/payment-pending";
+import { NotFound } from "./pages/not-found";
 
 // admin
 import { AdminLayout } from "./pages/admin/AdminLayout";
@@ -24,6 +25,9 @@ import { AdminCategories } from "./pages/admin/AdminCategories";
 import { AdminOrders } from "./pages/admin/AdminOrders";
 import { AdminOrderDetail } from "./pages/admin/AdminOrderDetail";
 import { AdminUsers } from "./pages/admin/AdminUsers";
+import { AdminUserDetail } from "./pages/admin/AdminUserDetail";
+import { AdminStorefront } from "./pages/admin/AdminStorefront";
+import { WhatsAppWidget } from "./components/store/WhatsAppWidget";
 
 export function RoutesApp() {
     return (
@@ -59,8 +63,14 @@ export function RoutesApp() {
                     <Route path="pedidos" element={<AdminOrders />} />
                     <Route path="pedidos/:order_id" element={<AdminOrderDetail />} />
                     <Route path="usuarios" element={<AdminUsers />} />
+                    <Route path="usuarios/:id" element={<AdminUserDetail />} />
+                    <Route path="vitrine" element={<AdminStorefront />} />
                 </Route>
+
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
+            <WhatsAppWidget />
         </BrowserRouter>
     );
 }

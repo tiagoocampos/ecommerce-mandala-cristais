@@ -5,6 +5,7 @@ import { Loading } from "../../components/Loading";
 import { formatPrice, formatDate } from "../../lib/utils-api";
 import { api } from "../../services/api";
 import type { OrderStatus } from "../../types";
+import { OrderStatusBadge } from "../../components/OrderStatusBadge";
 
 // O admin order vem do backend com user e address incluídos
 interface AdminOrderItemProduct {
@@ -47,14 +48,6 @@ interface AdminOrder {
     address: AdminOrderAddress;
 }
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
-    PENDING: "Aguardando pagamento",
-    PAID: "Pago",
-    SHIPPED: "Enviado",
-    DELIVERED: "Entregue",
-    CANCELED: "Cancelado",
-};
-
 const STATUS_FILTERS: Array<{ label: string; value: OrderStatus | "ALL" }> = [
     { label: "Todos", value: "ALL" },
     { label: "Pendentes", value: "PENDING" },
@@ -63,14 +56,6 @@ const STATUS_FILTERS: Array<{ label: string; value: OrderStatus | "ALL" }> = [
     { label: "Entregues", value: "DELIVERED" },
     { label: "Cancelados", value: "CANCELED" },
 ];
-
-const STATUS_BADGE: Record<OrderStatus, string> = {
-    PENDING: "bg-amber-100 text-amber-800 border-amber-300",
-    PAID: "bg-sky-100 text-sky-800 border-sky-300",
-    SHIPPED: "bg-purple-100 text-purple-800 border-purple-300",
-    DELIVERED: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    CANCELED: "bg-red-100 text-red-800 border-red-300",
-};
 
 export function AdminOrders() {
     const navigate = useNavigate();
@@ -152,7 +137,6 @@ export function AdminOrders() {
                             </tr>
                         ) : (
                             filtered.map((order) => {
-                                const badgeColor = STATUS_BADGE[order.status];
                                 return (
                                     <tr
                                         key={order.id}
@@ -171,11 +155,7 @@ export function AdminOrders() {
                                             {formatDate(order.createdAt)}
                                         </td>
                                         <td className="py-3 px-4">
-                                            <span
-                                                className={`inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${badgeColor}`}
-                                            >
-                                                {STATUS_LABELS[order.status]}
-                                            </span>
+                                            <OrderStatusBadge status={order.status} />
                                         </td>
                                         <td className="py-3 px-4 font-medium text-mc-violet-950 whitespace-nowrap">
                                             {formatPrice(order.total)}

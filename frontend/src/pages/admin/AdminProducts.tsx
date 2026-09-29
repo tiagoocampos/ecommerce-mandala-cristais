@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
     Plus,
@@ -17,6 +18,7 @@ import { ConfirmDelete } from "../../components/ui/confirm-delete";
 import { formatPrice, showApiError } from "../../lib/utils-api";
 import { api } from "../../services/api";
 import type { Product, Category } from "../../types";
+import { ProductImage } from "../../components/store/ProductImage";
 
 type ProductForm = {
     name: string;
@@ -72,6 +74,17 @@ export function AdminProducts() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Link vindo do dashboard ("Repor estoque"): /admin/produtos?editar=<id> abre a edição direto
+    const [searchParams, setSearchParams] = useSearchParams();
+    const editParam = searchParams.get("editar");
+    useEffect(() => {
+        if (!editParam || products.length === 0) return;
+        const product = products.find((p) => p.id === editParam);
+        if (product) openEdit(product);
+        setSearchParams({}, { replace: true });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editParam, products]);
 
     const filteredProducts = products.filter((p) => {
         if (!showArchived && p.disabled) return false;
@@ -133,8 +146,9 @@ export function AdminProducts() {
     async function handleSave() {
         if (!validate()) return;
         setSubmitting(true);
-
+        
         const fd = new FormData();
+        
         fd.append("name", form.name);
         fd.append("description", form.description);
         fd.append("price", form.price);
@@ -260,17 +274,7 @@ export function AdminProducts() {
                                         <td className="py-3 px-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-md overflow-hidden bg-mc-blush-100 shrink-0">
-                                                    {product.banner ? (
-                                                        <img
-                                                            src={product.banner}
-                                                            alt={product.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-lg">
-                                                            💎
-                                                        </div>
-                                                    )}
+                                                    <ProductImage src={product.banner} alt={product.name} iconSize={18} />
                                                 </div>
                                                 <span className="font-medium text-mc-violet-950 line-clamp-1">
                                                     {product.name}
@@ -286,7 +290,7 @@ export function AdminProducts() {
                                                     {formatPrice(product.price)}
                                                 </span>
                                                 {product.promo_price && (
-                                                    <div className="text-xs text-emerald-700">
+                                                    <div className="text-xs text-mc-success-700">
                                                         Promo: {formatPrice(product.promo_price)}
                                                     </div>
                                                 )}
@@ -308,8 +312,8 @@ export function AdminProducts() {
                                             <span
                                                 className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded-full border ${
                                                     archived
-                                                        ? "bg-gray-100 text-gray-600 border-gray-200"
-                                                        : "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                                        ? "bg-mc-sand-100 text-mc-ink/60 border-mc-violet-950/10"
+                                                        : "bg-mc-success-100 text-mc-success-700 border-mc-success-700/25"
                                                 }`}
                                             >
                                                 {archived ? "Arquivado" : "Ativo"}

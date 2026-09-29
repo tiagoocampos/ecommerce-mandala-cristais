@@ -40,9 +40,9 @@ export function Categories() {
 
             <main className="flex-1">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
-                    <h1 className="font-display text-3xl sm:text-4xl text-[#765075] mb-2">
+                    <h1 className="font-display text-3xl sm:text-4xl text-mc-violet-700 mb-2">
                         Todas as{" "}
-                        <span className="italic text-mc-gold-600">
+                        <span className="italic text-mc-gold-700">
                             categorias
                         </span>
                     </h1>
@@ -69,11 +69,11 @@ export function Categories() {
                                     }
                                     className="group text-left"
                                 >
-                                    <span className="font-display text-xl sm:text-2xl text-[#765075] transition-colors group-hover:text-[#B08B3E]">
+                                    <span className="font-display text-xl sm:text-2xl text-mc-violet-700 transition-colors group-hover:text-mc-gold-700">
                                         {cat.name}
                                     </span>
 
-                                    <div className="mt-2 h-px w-0 bg-[#B08B3E] transition-all duration-300 group-hover:w-full" />
+                                    <div className="mt-2 h-px w-0 bg-mc-gold-500 transition-all duration-300 group-hover:w-full" />
                                 </button>
                             ))}
                         </div>

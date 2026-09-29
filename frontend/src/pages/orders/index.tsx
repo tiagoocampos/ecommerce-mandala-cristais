@@ -4,28 +4,12 @@ import { PackageSearch, ArrowLeft, ChevronRight } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
-import { Loading } from "../../components/Loading";
-import { Button } from "../../components/ui/button";
+import { EmptyState } from "../../components/store/EmptyState";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { formatPrice, formatDate } from "../../lib/utils-api";
 import { api } from "../../services/api";
-import type { Order, OrderStatus } from "../../types";
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-    PENDING: "Aguardando pagamento",
-    PAID: "Pago",
-    SHIPPED: "Enviado",
-    DELIVERED: "Entregue",
-    CANCELED: "Cancelado",
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-    PENDING: "bg-mc-gold-600/20 text-mc-gold-800 border-mc-gold-600/30",
-    PAID: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    SHIPPED: "bg-sky-100 text-sky-800 border-sky-300",
-    DELIVERED: "bg-mc-violet-950/10 text-mc-violet-950 border-mc-violet-950/20",
-    CANCELED: "bg-red-100 text-red-800 border-red-300",
-};
+import type { Order } from "../../types";
+import { OrderStatusBadge } from "../../components/OrderStatusBadge";
 
 export function Orders() {
     const navigate = useNavigate();
@@ -64,31 +48,26 @@ export function Orders() {
                         </button>
 
                         <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-8">
-                            Meus <span className="italic text-mc-gold-600">pedidos</span>
+                            Meus <span className="italic text-mc-gold-700">pedidos</span>
                         </h1>
 
                         {loading ? (
-                            <div className="py-16 flex justify-center">
-                                <Loading />
+                            <div className="space-y-3" role="status" aria-label="Carregando pedidos">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="h-24 rounded-lg bg-mc-blush-100 animate-pulse" />
+                                ))}
                             </div>
                         ) : orders.length === 0 ? (
-                            <div className="text-center py-14 flex flex-col items-center gap-4">
-                                <PackageSearch size={44} className="text-mc-violet-950/20" />
-                                <p className="text-sm text-mc-ink/60 max-w-sm">
-                                    Você ainda não tem nenhum pedido.
-                                </p>
-                                <Button
-                                    onClick={() => navigate("/produtos")}
-                                    className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full mt-2"
-                                >
-                                    Explorar produtos
-                                </Button>
-                            </div>
+                            <EmptyState
+                                icon={PackageSearch}
+                                title="Você ainda não tem pedidos"
+                                description="Quando você finalizar uma compra, ela aparece aqui para acompanhar."
+                                actionLabel="Ver produtos"
+                                onAction={() => navigate("/produtos")}
+                            />
                         ) : (
                             <div className="space-y-3">
                                 {orders.map((order) => {
-                                    const statusLabel = STATUS_LABELS[order.status];
-                                    const statusColor = STATUS_COLORS[order.status];
                                     const itemCount = order.items?.length ?? 0;
 
                                     return (
@@ -104,11 +83,7 @@ export function Orders() {
                                                         <span className="text-xs text-mc-ink/50">
                                                             {formatDate(order.createdAt)}
                                                         </span>
-                                                        <span
-                                                            className={`inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${statusColor}`}
-                                                        >
-                                                            {statusLabel}
-                                                        </span>
+                                                        <OrderStatusBadge status={order.status} />
                                                     </div>
                                                     <div className="mt-2 flex items-baseline gap-2">
                                                         <span className="text-lg font-semibold text-mc-violet-950">

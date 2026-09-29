@@ -18,13 +18,13 @@ export function PaymentSuccessPage() {
 
             <main className="flex-1 flex items-center justify-center px-4">
                 <div className="max-w-md w-full text-center py-12">
-                    <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-5">
-                        <CheckCircle2 size={32} className="text-emerald-600" />
+                    <div className="w-16 h-16 rounded-full bg-mc-success-100 flex items-center justify-center mx-auto mb-5">
+                        <CheckCircle2 size={32} className="text-mc-success-700" />
                     </div>
 
                     <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-2">
                         Compra realizada{" "}
-                        <span className="italic text-mc-gold-600">com sucesso!</span>
+                        <span className="italic text-mc-gold-700">com sucesso!</span>
                     </h1>
 
                     <p className="text-sm text-mc-ink/60 mb-6">

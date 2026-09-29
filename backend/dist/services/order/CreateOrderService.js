@@ -2,8 +2,10 @@ import { AddressNotFoundError } from "../../exceptions/AddressErrors.js";
 import { EmptyCartError } from "../../exceptions/CartErrors.js";
 import { InsufficientStockError } from "../../exceptions/OrdersErrors.js";
 import prismaClient from "../../prisma/index.js";
+import { calculateCartSubtotal } from "../cart/calculateCartSubtotal.js";
+import { validateCoupon } from "../coupon/validateCoupon.js";
 class CreateOrderService {
-    async execute({ user_id, address_id }) {
+    async execute({ user_id, address_id, coupon_code }) {
         const cart = await prismaClient.cart.findUnique({
             where: {
                 user_id,
@@ -28,14 +30,19 @@ class CreateOrderService {
         if (!address) {
             throw new AddressNotFoundError();
         }
-        const subtotal = cart.items.reduce((total, item) => {
-            const price = item.product.promo_price ?? item.product.price;
-            return total + price * item.quantity;
-        }, 0);
+        const subtotal = calculateCartSubtotal(cart.items);
         for (const item of cart.items) {
             if (item.product.stock < item.quantity) {
                 throw new InsufficientStockError();
             }
+        }
+        // Desconto sempre recalculado aqui — nunca confiar em valor vindo do frontend
+        let discount = 0;
+        let coupon_id = null;
+        if (coupon_code) {
+            const result = await validateCoupon({ code: coupon_code, user_id, subtotal });
+            discount = result.discount;
+            coupon_id = result.coupon.id;
         }
         //parte de transação
         const transaction = await prismaClient.$transaction(async (tx) => {
@@ -44,9 +51,10 @@ class CreateOrderService {
                     user_id,
                     address_id,
                     subtotal,
-                    discount: 0,
+                    discount,
                     shipping_cost: 0,
-                    total: subtotal,
+                    total: Math.max(0, subtotal - discount),
+                    coupon_id,
                     payment: {
                         create: {
                             status: "PENDING",

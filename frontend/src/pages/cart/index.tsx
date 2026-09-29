@@ -20,6 +20,8 @@ import { formatPrice, showApiError } from "../../lib/utils-api";
 import { useCart } from "../../contexts/CartContext";
 import { api } from "../../services/api";
 import type { Address } from "../../types";
+import { EmptyState } from "../../components/store/EmptyState";
+import { ProductImage } from "../../components/store/ProductImage";
 
 export function CartPage() {
     const navigate = useNavigate();
@@ -119,7 +121,7 @@ export function CartPage() {
                         </button>
 
                         <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-6">
-                            Seu <span className="italic text-mc-gold-600">carrinho</span>
+                            Seu <span className="italic text-mc-gold-700">carrinho</span>
                         </h1>
 
                         {loading ? (
@@ -127,18 +129,13 @@ export function CartPage() {
                                 <Loading />
                             </div>
                         ) : items.length === 0 ? (
-                            <div className="text-center py-16 flex flex-col items-center gap-4">
-                                <ShoppingBag size={40} className="text-mc-violet-950/20" />
-                                <p className="text-sm text-mc-ink/60">
-                                    Seu carrinho está vazio.
-                                </p>
-                                <Button
-                                    onClick={() => navigate("/produtos")}
-                                    className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full"
-                                >
-                                    Explorar produtos
-                                </Button>
-                            </div>
+                            <EmptyState
+                                icon={ShoppingBag}
+                                title="Seu carrinho está vazio"
+                                description="Que tal escolher o cristal certo para a sua intenção?"
+                                actionLabel="Ver produtos"
+                                onAction={() => navigate("/produtos")}
+                            />
                         ) : (
                             <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
                                 {/* lista de itens */}
@@ -163,17 +160,7 @@ export function CartPage() {
                                                     }
                                                     className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-md overflow-hidden bg-mc-blush-100"
                                                 >
-                                                    {item.product.banner ? (
-                                                        <img
-                                                            src={item.product.banner}
-                                                            alt={item.product.name}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-2xl">
-                                                            💎
-                                                        </div>
-                                                    )}
+                                                    <ProductImage src={item.product.banner} alt={item.product.name} iconSize={22} />
                                                 </button>
 
                                                 <div className="flex-1 min-w-0 flex flex-col">
@@ -240,7 +227,7 @@ export function CartPage() {
                                     {/* seleção de endereço */}
                                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                                            <MapPin size={18} className="text-mc-gold-600" />
+                                            <MapPin size={18} className="text-mc-gold-700" />
                                             Endereço de entrega
                                         </h2>
 
@@ -274,7 +261,7 @@ export function CartPage() {
                                                             }
                                                             className={`w-full text-left border rounded-lg p-3 transition-all ${
                                                                 isSelected
-                                                                    ? "border-mc-gold-600 bg-mc-blush-100 ring-1 ring-mc-gold-600/30"
+                                                                    ? "border-mc-gold-500 bg-mc-blush-100 ring-1 ring-mc-gold-500/40"
                                                                     : "border-mc-violet-950/10 bg-mc-sand-50 hover:bg-mc-blush-100"
                                                             }`}
                                                         >
@@ -282,12 +269,12 @@ export function CartPage() {
                                                                 <div
                                                                     className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
                                                                         isSelected
-                                                                            ? "border-mc-gold-600"
+                                                                            ? "border-mc-gold-500"
                                                                             : "border-mc-violet-950/30"
                                                                     }`}
                                                                 >
                                                                     {isSelected && (
-                                                                        <div className="w-2 h-2 rounded-full bg-mc-gold-600" />
+                                                                        <div className="w-2 h-2 rounded-full bg-mc-gold-500" />
                                                                     )}
                                                                 </div>
                                                                 <div className="min-w-0">

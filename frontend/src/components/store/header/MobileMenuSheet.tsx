@@ -4,6 +4,7 @@ import {
   ShoppingBag,
   LogOut,
   LayoutDashboard,
+  ClipboardList,
   Menu,
   type LucideIcon,
 } from "lucide-react";
@@ -12,6 +13,7 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
@@ -79,6 +81,7 @@ export function MobileMenuSheet({
 
   const accountLinks: MobileLink[] = [
     { label: "Minha conta", icon: User, path: "/profile" },
+    { label: "Meus pedidos", icon: ClipboardList, path: "/pedidos" },
     { label: "Carrinho", icon: ShoppingBag, path: "/carrinho" },
   ];
 
@@ -100,6 +103,7 @@ export function MobileMenuSheet({
         side="left"
         className="w-[20rem] max-w-[88vw] border-r border-mc-primary/10 bg-gradient-to-b from-mc-sand-50 to-mc-primary-soft p-0"
       >
+        <SheetTitle className="sr-only">Menu</SheetTitle>
         {/* Topo com logo */}
         <div className="border-b border-mc-primary/10 bg-white/70 px-5 py-4 backdrop-blur-sm">
           <Logo onClick={undefined} />

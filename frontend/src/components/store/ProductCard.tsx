@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Star, ShoppingBag } from "lucide-react";
 import { Button } from "../ui/button";
+import { ProductImage } from "./ProductImage";
 import { formatPrice } from "../../lib/utils-api";
 import { discountPercent, type MandalaProduct } from "../../types/mandala";
 
@@ -21,20 +22,14 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 onClick={() => navigate(`/produto/${product.slug}`)}
                 className="relative facet-cut-sm overflow-hidden bg-mc-blush-100 aspect-square mb-3 block"
             >
-                {product.banner ? (
-                    <img
-                        src={product.banner}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">
-                        💎
-                    </div>
-                )}
+                <ProductImage
+                    src={product.banner}
+                    alt={product.name}
+                    className="group-hover:scale-105 transition-transform duration-500"
+                />
 
                 {hasPromo && (
-                    <span className="absolute top-3 left-3 bg-mc-violet-950 text-mc-sand-50 text-[11px] font-bold px-2 py-1 rounded-full">
+                    <span className="absolute top-3 left-3 bg-mc-gold-500 text-mc-violet-950 text-[11px] font-bold px-2 py-1 rounded-full">
                         -{discountPercent(product.price, product.promo_price!)}%
                     </span>
                 )}

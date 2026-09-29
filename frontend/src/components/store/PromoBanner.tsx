@@ -7,16 +7,16 @@ export function PromoBanner() {
 
     return (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div className="relative facet-cut overflow-hidden bg-linear-to-br from-[#8B668A] via-[#765075] to-[#5E3E5D] px-8 sm:px-14 py-12 sm:py-16 text-center">
-                <div className="absolute inset-0 rounded-full blur-3xl bg-[#A57AA4]/20" />
+            <div className="relative facet-cut overflow-hidden bg-linear-to-br from-mc-violet-500 via-mc-violet-700 to-mc-violet-950 px-8 sm:px-14 py-12 sm:py-16 text-center">
+                <div className="absolute inset-0 rounded-full blur-3xl bg-mc-violet-300/20" />
 
                 <div className="relative">
                     <Moon
-                        className="mx-auto text-[#E4C77D] mb-4"
+                        className="mx-auto text-mc-gold-400 mb-4"
                         size={28}
                     />
 
-                    <span className="text-xs font-semibold tracking-[0.25em] uppercase text-[#E4C77D]">
+                    <span className="text-xs font-semibold tracking-[0.25em] uppercase text-mc-gold-400">
                         Por tempo limitado
                     </span>
 
@@ -31,7 +31,7 @@ export function PromoBanner() {
 
                     <Button
                         onClick={() => navigate("/categoria/kits")}
-                        className="bg-[#E4C77D] hover:bg-[#D6B765] text-[#5E3E5D] rounded-full px-7 py-6 text-sm font-semibold"
+                        className="bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 rounded-full px-7 py-6 text-sm font-semibold"
                     >
                         Ver kits
                         <ArrowRight

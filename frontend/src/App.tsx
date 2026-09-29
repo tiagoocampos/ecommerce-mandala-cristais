@@ -2,6 +2,7 @@
 import { Toaster } from "./components/ui/sonner"
 import { RoutesApp } from "./routes"
 import { CartProvider } from "./contexts/CartContext"
+import { CartDrawerProvider } from "./contexts/CartDrawerContext"
 
 
 function App() {
@@ -10,7 +11,9 @@ function App() {
     <>
       <Toaster richColors theme="light" position="top-center" />
       <CartProvider>
-        <RoutesApp />
+        <CartDrawerProvider>
+          <RoutesApp />
+        </CartDrawerProvider>
       </CartProvider>
     </>
   )

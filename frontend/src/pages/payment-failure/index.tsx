@@ -21,7 +21,7 @@ export function PaymentFailurePage() {
 
                     <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-2">
                         Pagamento{" "}
-                        <span className="italic text-mc-gold-600">recusado</span>
+                        <span className="italic text-mc-gold-700">recusado</span>
                     </h1>
 
                     <p className="text-sm text-mc-ink/60 mb-8 max-w-sm mx-auto">

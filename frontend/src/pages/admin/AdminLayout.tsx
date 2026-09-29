@@ -11,6 +11,7 @@ import {
     Menu,
     X,
     Store,
+    Megaphone,
 } from "lucide-react";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { getStoredUser, clearAuth } from "../../lib/auth";
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
     { label: "Categorias", icon: Tags, href: "/admin/categorias" },
     { label: "Pedidos", icon: ClipboardList, href: "/admin/pedidos" },
     { label: "Usuários", icon: Users, href: "/admin/usuarios" },
+    { label: "Vitrine e cupons", icon: Megaphone, href: "/admin/vitrine" },
 ];
 
 export function AdminRoute({ children }: { children: ReactNode }) {
@@ -84,13 +86,22 @@ export function AdminLayout() {
                             sidebarOpen ? "translate-x-0" : "-translate-x-full"
                         }`}
                     >
-                        <div className="flex items-center justify-between px-5 h-16 border-b border-mc-violet-950/30 border-white/10">
+                        <div className="flex items-center justify-between px-5 h-20 border-b border-white/10">
                             <Link
                                 to="/admin"
-                                className="font-display text-lg tracking-tight"
+                                aria-label="Mandala Crystais Admin — dashboard"
+                                className="flex items-center gap-3"
                             >
-                                Mandala{" "}
-                                <span className="italic text-mc-gold-600">Admin</span>
+                                <img
+                                    src="/brand/logo-branca.png"
+                                    alt="Mandala Crystais"
+                                    width={400}
+                                    height={279}
+                                    className="h-12 w-auto"
+                                />
+                                <span className="font-display italic text-lg text-mc-gold-400 border-l border-white/15 pl-3">
+                                    Admin
+                                </span>
                             </Link>
                             <button
                                 type="button"
@@ -115,7 +126,7 @@ export function AdminLayout() {
                                         onClick={() => setSidebarOpen(false)}
                                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                                             isActive
-                                                ? "bg-mc-gold-600/20 text-mc-gold-600 font-medium"
+                                                ? "bg-mc-gold-400/15 text-mc-gold-400 font-medium"
                                                 : "text-mc-sand-50/70 hover:bg-mc-violet-800 hover:text-mc-sand-50"
                                         }`}
                                     >
@@ -157,9 +168,16 @@ export function AdminLayout() {
                             >
                                 <Menu size={22} />
                             </button>
-                            <span className="font-display text-sm text-mc-violet-950">
-                                Mandala <span className="italic text-mc-gold-600">Admin</span>
-                            </span>
+                            <Link to="/admin" className="flex items-center gap-2">
+                                <img
+                                    src="/brand/logo-circulo.png"
+                                    alt="Mandala Crystais"
+                                    width={160}
+                                    height={160}
+                                    className="h-8 w-8 rounded-full"
+                                />
+                                <span className="font-display italic text-sm text-mc-violet-950">Admin</span>
+                            </Link>
                             {user && (
                                 <span className="ml-auto text-xs text-mc-ink/50">
                                     {user.name}

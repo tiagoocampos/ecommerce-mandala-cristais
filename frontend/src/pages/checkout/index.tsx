@@ -7,6 +7,8 @@ import {
     ArrowLeft,
     CreditCard,
     AlertCircle,
+    Tag,
+    X,
 } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
@@ -18,6 +20,21 @@ import { formatPrice, showApiError, getApiErrorMessage } from "../../lib/utils-a
 import { useCart } from "../../contexts/CartContext";
 import { api } from "../../services/api";
 import type { Address } from "../../types";
+import { ProductImage } from "../../components/store/ProductImage";
+import { Input } from "../../components/ui/input";
+import type { CouponType } from "../../types/admin";
+
+interface AppliedCoupon {
+    code: string;
+    type: CouponType;
+    value: number;
+}
+
+// Mesma conta do backend (validateCoupon), só para exibir; o valor real é recalculado ao criar o pedido.
+function previewDiscount(coupon: AppliedCoupon, subtotal: number): number {
+    const raw = coupon.type === "PERCENTAGE" ? Math.round((subtotal * coupon.value) / 100) : coupon.value;
+    return Math.max(0, Math.min(raw, subtotal));
+}
 
 export function CheckoutPage() {
     const navigate = useNavigate();
@@ -28,6 +45,11 @@ export function CheckoutPage() {
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const [couponInput, setCouponInput] = useState("");
+    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+    const [couponError, setCouponError] = useState<string | null>(null);
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -64,7 +86,34 @@ export function CheckoutPage() {
         return sum + price * item.quantity;
     }, 0);
 
+    const discount = appliedCoupon ? previewDiscount(appliedCoupon, subtotal) : 0;
+    const total = Math.max(0, subtotal - discount);
+
     const isReady = items.length > 0 && !!selectedAddressId && !submitting;
+
+    async function handleApplyCoupon(e: React.FormEvent) {
+        e.preventDefault();
+        const code = couponInput.trim().toUpperCase();
+        if (!code) return;
+
+        setApplyingCoupon(true);
+        setCouponError(null);
+        try {
+            const { data } = await api.post<AppliedCoupon & { valid: boolean }>("/coupons/validate", { code });
+            setAppliedCoupon({ code: data.code, type: data.type, value: data.value });
+            setCouponInput("");
+        } catch (err) {
+            setAppliedCoupon(null);
+            setCouponError(getApiErrorMessage(err, "Não foi possível aplicar este cupom."));
+        } finally {
+            setApplyingCoupon(false);
+        }
+    }
+
+    function handleRemoveCoupon() {
+        setAppliedCoupon(null);
+        setCouponError(null);
+    }
 
     async function handleCheckout() {
         if (!selectedAddressId) return;
@@ -74,8 +123,10 @@ export function CheckoutPage() {
 
         try {
             // 1. Criar o pedido
+            // Envia só o código: o backend valida e recalcula o desconto de novo
             const { data: orderData } = await api.post<{ id: string }>("/order", {
                 address_id: selectedAddressId,
+                ...(appliedCoupon && { coupon_code: appliedCoupon.code }),
             });
 
             const orderId = orderData.id;
@@ -118,7 +169,7 @@ export function CheckoutPage() {
                         </button>
 
                         <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-8">
-                            Finalizar <span className="italic text-mc-gold-600">compra</span>
+                            Finalizar <span className="italic text-mc-gold-700">compra</span>
                         </h1>
 
                         {error && (
@@ -156,7 +207,7 @@ export function CheckoutPage() {
                                     {/* Seção de endereço */}
                                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                                            <MapPin size={18} className="text-mc-gold-600" />
+                                            <MapPin size={18} className="text-mc-gold-700" />
                                             Endereço de entrega
                                         </h2>
 
@@ -191,7 +242,7 @@ export function CheckoutPage() {
                                                             }
                                                             className={`w-full text-left border rounded-lg p-3 transition-all ${
                                                                 isSelected
-                                                                    ? "border-mc-gold-600 bg-mc-blush-100 ring-1 ring-mc-gold-600/30"
+                                                                    ? "border-mc-gold-500 bg-mc-blush-100 ring-1 ring-mc-gold-500/40"
                                                                     : "border-mc-violet-950/10 bg-mc-sand-50 hover:bg-mc-blush-100"
                                                             }`}
                                                         >
@@ -199,12 +250,12 @@ export function CheckoutPage() {
                                                                 <div
                                                                     className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
                                                                         isSelected
-                                                                            ? "border-mc-gold-600"
+                                                                            ? "border-mc-gold-500"
                                                                             : "border-mc-violet-950/30"
                                                                     }`}
                                                                 >
                                                                     {isSelected && (
-                                                                        <div className="w-2 h-2 rounded-full bg-mc-gold-600" />
+                                                                        <div className="w-2 h-2 rounded-full bg-mc-gold-500" />
                                                                     )}
                                                                 </div>
                                                                 <div className="min-w-0">
@@ -232,7 +283,7 @@ export function CheckoutPage() {
                                     {/* Seção de pagamento (informativa) */}
                                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                                            <CreditCard size={18} className="text-mc-gold-600" />
+                                            <CreditCard size={18} className="text-mc-gold-700" />
                                             Pagamento
                                         </h2>
                                         <p className="text-sm text-mc-ink/60">
@@ -277,17 +328,7 @@ export function CheckoutPage() {
                                                         className="flex gap-3 items-center"
                                                     >
                                                         <div className="w-12 h-12 rounded-md overflow-hidden bg-white shrink-0">
-                                                            {item.product.banner ? (
-                                                                <img
-                                                                    src={item.product.banner}
-                                                                    alt={item.product.name}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-lg">
-                                                                    💎
-                                                                </div>
-                                                            )}
+                                                            <ProductImage src={item.product.banner} alt={item.product.name} iconSize={18} />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-sm font-medium text-mc-violet-950 line-clamp-1">
@@ -305,11 +346,71 @@ export function CheckoutPage() {
                                             })}
                                         </div>
 
+                                        {/* Cupom de desconto */}
+                                        <div className="border-t border-mc-violet-950/10 pt-4 mb-4">
+                                            {appliedCoupon ? (
+                                                <div className="flex items-center justify-between gap-2 rounded-lg border border-mc-success-700/25 bg-mc-success-100 px-3 py-2">
+                                                    <span className="flex items-center gap-2 text-sm text-mc-success-700">
+                                                        <Tag size={14} />
+                                                        Cupom <strong className="font-mono">{appliedCoupon.code}</strong> aplicado
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveCoupon}
+                                                        aria-label="Remover cupom"
+                                                        className="rounded-full p-1 text-mc-success-700 hover:bg-white/60"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <form onSubmit={handleApplyCoupon}>
+                                                    <label htmlFor="coupon" className="text-sm text-mc-ink/70">
+                                                        Cupom de desconto
+                                                    </label>
+                                                    <div className="mt-1.5 flex gap-2">
+                                                        <Input
+                                                            id="coupon"
+                                                            value={couponInput}
+                                                            onChange={(e) => {
+                                                                setCouponInput(e.target.value.toUpperCase());
+                                                                setCouponError(null);
+                                                            }}
+                                                            placeholder="Digite o cupom"
+                                                            autoComplete="off"
+                                                            aria-invalid={!!couponError}
+                                                            aria-describedby={couponError ? "coupon-error" : undefined}
+                                                            className="h-9 bg-white font-mono uppercase"
+                                                        />
+                                                        <Button
+                                                            type="submit"
+                                                            variant="outline"
+                                                            disabled={applyingCoupon || !couponInput.trim()}
+                                                            className="h-9 shrink-0 border-mc-violet-950/20 text-mc-violet-950 hover:bg-white"
+                                                        >
+                                                            {applyingCoupon ? <Loader2 size={14} className="animate-spin" /> : "Aplicar"}
+                                                        </Button>
+                                                    </div>
+                                                    {couponError && (
+                                                        <p id="coupon-error" className="mt-1.5 text-xs text-destructive">
+                                                            {couponError}
+                                                        </p>
+                                                    )}
+                                                </form>
+                                            )}
+                                        </div>
+
                                         <div className="border-t border-mc-violet-950/10 pt-4 space-y-2">
                                             <div className="flex justify-between text-sm text-mc-ink/70">
                                                 <span>Subtotal</span>
                                                 <span>{formatPrice(subtotal)}</span>
                                             </div>
+                                            {discount > 0 && (
+                                                <div className="flex justify-between text-sm text-mc-success-700">
+                                                    <span>Desconto ({appliedCoupon?.code})</span>
+                                                    <span>-{formatPrice(discount)}</span>
+                                                </div>
+                                            )}
                                             <div className="flex justify-between text-sm text-mc-ink/70">
                                                 <span>Frete</span>
                                                 <span className="text-xs">Calculado na entrega</span>
@@ -317,7 +418,7 @@ export function CheckoutPage() {
                                             <div className="border-t border-mc-violet-950/10 pt-2 flex justify-between font-semibold text-mc-violet-950">
                                                 <span>Total</span>
                                                 <span className="text-lg">
-                                                    {formatPrice(subtotal)}
+                                                    {formatPrice(total)}
                                                 </span>
                                             </div>
                                         </div>

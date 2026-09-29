@@ -46,6 +46,7 @@ model User {
   addresses Address[]
   cart      Cart?
   orders    Order[]
+  coupons   Coupon[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -203,9 +204,28 @@ model Coupon {
   active     Boolean    @default(true)
   expires_at DateTime?
 
+  // Só vale na primeira compra paga do cliente (ex.: BEMVINDA10)
+  first_purchase_only Boolean @default(false)
+
+  // null = cupom genérico (qualquer cliente); preenchido = cupom exclusivo do usuário
+  user_id String?
+  user    User?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
   orders Order[]
 
   createdAt DateTime @default(now())
 
   @@map("coupons")
+}
+
+// Configurações editáveis da vitrine — tabela com uma única linha (singleton)
+model StoreSettings {
+  id                       String   @id @default(uuid())
+  announcement_text        String   @default("")
+  announcement_coupon_code String?
+  free_shipping_threshold  Int? // em centavos
+  trust_strip_items        Json // [{ icon: "Gem", label: "Pedras 100% naturais" }, ...]
+  updatedAt                DateTime @updatedAt
+
+  @@map("store_settings")
 }

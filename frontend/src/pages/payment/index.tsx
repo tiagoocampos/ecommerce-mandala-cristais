@@ -18,6 +18,7 @@ import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { formatPrice, formatDate } from "../../lib/utils-api";
 import { api } from "../../services/api";
 import type { Order, OrderStatus } from "../../types";
+import { ProductImage } from "../../components/store/ProductImage";
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
     PENDING: "Aguardando pagamento",
@@ -133,8 +134,8 @@ export function PaymentPage() {
                                 {/* Cabeçalho do pedido */}
                                 <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <Clock size={20} className="text-mc-gold-600" />
+                                        <div className="w-10 h-10 rounded-full bg-mc-gold-500/20 flex items-center justify-center">
+                                            <Clock size={20} className="text-mc-gold-700" />
                                         </div>
                                         <div>
                                             <h1 className="font-display text-xl text-mc-violet-950">
@@ -183,17 +184,7 @@ export function PaymentPage() {
                                                     className="flex gap-3 items-center"
                                                 >
                                                     <div className="w-14 h-14 rounded-md overflow-hidden bg-mc-blush-100 shrink-0">
-                                                        {item.product.banner ? (
-                                                            <img
-                                                                src={item.product.banner}
-                                                                alt={item.product.name}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-xl">
-                                                                💎
-                                                            </div>
-                                                        )}
+                                                        <ProductImage src={item.product.banner} alt={item.product.name} iconSize={20} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium text-mc-violet-950 line-clamp-1">
@@ -224,7 +215,7 @@ export function PaymentPage() {
                                             <span>{formatPrice(order.subtotal)}</span>
                                         </div>
                                         {order.discount > 0 && (
-                                            <div className="flex justify-between text-emerald-700">
+                                            <div className="flex justify-between text-mc-success-700">
                                                 <span>Desconto</span>
                                                 <span>-{formatPrice(order.discount)}</span>
                                             </div>
@@ -247,16 +238,16 @@ export function PaymentPage() {
                                 {/* Bloco de pagamento */}
                                 <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6">
                                     <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                                        <CreditCard size={18} className="text-mc-gold-600" />
+                                        <CreditCard size={18} className="text-mc-gold-700" />
                                         Pagamento
                                     </h2>
 
                                     {isPaid ? (
-                                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center">
-                                            <p className="text-sm font-medium text-emerald-800">
+                                        <div className="bg-mc-success-100 border border-mc-success-700/25 rounded-lg p-4 text-center">
+                                            <p className="text-sm font-medium text-mc-success-700">
                                                 ✅ Pagamento confirmado!
                                             </p>
-                                            <p className="text-xs text-emerald-700 mt-1">
+                                            <p className="text-xs text-mc-success-700/80 mt-1">
                                                 Seu pedido já está sendo processado.
                                             </p>
                                         </div>

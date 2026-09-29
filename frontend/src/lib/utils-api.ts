@@ -36,12 +36,7 @@ export function showApiError(error: unknown, fallback = "Ocorreu um erro"): void
 }
 
 export const inputClassName =
-    "bg-gray-200 border border-gray-400 text-gray-500 placeholder:text-gray-500 rounded-md px-3 py-3 text-sm outline-none focus:ring-1 focus:ring-ring w-full";
-
-export const buttonClassName =
-    "bg-amber-950 text-gray-100 hover:bg-amber-950/80 rounded-sm py-3 w-full";
-
-export const labelClassName = "text-sm text-gray-100";
+    "h-auto bg-white border border-input text-mc-ink placeholder:text-mc-ink/40 rounded-md px-3 py-3 text-sm outline-none transition-colors hover:border-mc-violet-300 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 w-full";
 
 export function formatPrice(cents: number): string {
     return (cents / 100).toLocaleString("pt-BR", {

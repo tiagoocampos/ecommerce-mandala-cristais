@@ -52,4 +52,9 @@ export type Payment = Prisma.PaymentModel;
  *
  */
 export type Coupon = Prisma.CouponModel;
+/**
+ * Model StoreSettings
+ *
+ */
+export type StoreSettings = Prisma.StoreSettingsModel;
 //# sourceMappingURL=browser.d.ts.map

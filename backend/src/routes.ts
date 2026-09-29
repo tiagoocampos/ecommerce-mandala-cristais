@@ -22,7 +22,18 @@ import { CreateOrderController } from './controllers/order/CreateOrderController
 import { AddItemSchema, createOrderSchema, DeleteOrderSchema, FinishOrderSchema, getOrderSchema, RemoveItemSchema, SendOrderSchema } from './schemas/orderSchema.js';
 import { ListUsersAdminController } from './controllers/user/admin/ListUsersAdminController.js';
 import { DeleteUserAdminController } from './controllers/user/admin/DeleteUserAdminController.js';
-import { updateUserRoleParamsSchema, updateUserRoleSchema } from './schemas/userAdminSchema.js';
+import { createUserDiscountSchema, userIdParamsSchema } from './schemas/userAdminSchema.js';
+import { GetUserAdminController } from './controllers/user/admin/GetUserAdminController.js';
+import { createCouponSchema, updateCouponStatusSchema, validateCouponSchema } from './schemas/couponSchema.js';
+import { CreateUserDiscountController } from './controllers/coupon/CreateUserDiscountController.js';
+import { CreateCouponAdminController } from './controllers/coupon/CreateCouponAdminController.js';
+import { ListCouponsAdminController } from './controllers/coupon/ListCouponsAdminController.js';
+import { UpdateCouponStatusController } from './controllers/coupon/UpdateCouponStatusController.js';
+import { ValidateCouponController } from './controllers/coupon/ValidateCouponController.js';
+import { GetDashboardAdminController } from './controllers/dashboard/GetDashboardAdminController.js';
+import { updateStoreSettingsSchema } from './schemas/storeSettingsSchema.js';
+import { GetStoreSettingsController } from './controllers/storeSettings/GetStoreSettingsController.js';
+import { UpdateStoreSettingsController } from './controllers/storeSettings/UpdateStoreSettingsController.js';
 import { validateSchema } from './middlewares/validateSchema.js';
 import { createAddressSchema, deleteAddressSchema, updateAddressSchema } from './schemas/adressSchema.js';
 import { CreateAddressController } from './controllers/address/CreateAddressController.js';
@@ -80,7 +91,19 @@ router.get("/admin/orders", isAuthenticated, isAdmin, new ListAllOrdersAdminCont
 router.get("/admin/orders/:order_id", isAuthenticated, isAdmin, new GetOrderAdminController().handle)
 
 router.get("/admin/users", isAuthenticated, isAdmin, new ListUsersAdminController().handle)
-router.delete("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(updateUserRoleParamsSchema), new DeleteUserAdminController().handle)
+router.get("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(userIdParamsSchema), new GetUserAdminController().handle)
+router.delete("/admin/users/:id", isAuthenticated, isAdmin, validateSchema(userIdParamsSchema), new DeleteUserAdminController().handle)
+router.post("/admin/users/:id/discount", isAuthenticated, isAdmin, validateSchema(createUserDiscountSchema), new CreateUserDiscountController().handle)
+
+router.get("/admin/coupons", isAuthenticated, isAdmin, new ListCouponsAdminController().handle)
+router.post("/admin/coupons", isAuthenticated, isAdmin, validateSchema(createCouponSchema), new CreateCouponAdminController().handle)
+router.patch("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(updateCouponStatusSchema), new UpdateCouponStatusController().handle)
+router.post("/coupons/validate", isAuthenticated, validateSchema(validateCouponSchema), new ValidateCouponController().handle)
+
+router.get("/admin/dashboard", isAuthenticated, isAdmin, new GetDashboardAdminController().handle)
+
+router.get("/store-settings", new GetStoreSettingsController().handle)
+router.put("/admin/store-settings", isAuthenticated, isAdmin, validateSchema(updateStoreSettingsSchema), new UpdateStoreSettingsController().handle)
 
 
 router.get("/cart", isAuthenticated, new GetOrCreateCartController().handle)

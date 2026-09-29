@@ -2,6 +2,7 @@ import { z } from "zod";
 export declare const createOrderSchema: z.ZodObject<{
     body: z.ZodObject<{
         address_id: z.ZodString;
+        coupon_code: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const AddItemSchema: z.ZodObject<{

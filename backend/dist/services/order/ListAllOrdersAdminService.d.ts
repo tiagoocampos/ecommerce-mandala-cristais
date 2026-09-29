@@ -27,9 +27,9 @@ declare class ListAllOrdersAdminService {
         createdAt: Date;
         updatedAt: Date;
         user_id: string;
+        subtotal: number;
         address_id: string;
         status: import("../../generated/prisma/enums.js").OrderStatus;
-        subtotal: number;
         discount: number;
         shipping_cost: number;
         total: number;

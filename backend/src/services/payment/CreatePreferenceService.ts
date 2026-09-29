@@ -35,20 +35,29 @@ class CreatePreferenceService {
         }
 
 
-        const items = order.items.map((item) => ({
-            id: item.product.id,
-            title: item.product.name,
-            unit_price: item.unit_price / 100,
-            quantity: item.quantity,
-            currency_id: "BRL",
-        }));
+        // Com cupom, o Mercado Pago precisa cobrar o total já descontado. Como ele não aceita
+        // item com valor negativo, o pedido vai como um item único com o valor final.
+        const items = order.discount > 0
+            ? [{
+                id: order.id,
+                title: `Pedido Mandala Crystais #${order.id.slice(0, 8).toUpperCase()}`,
+                unit_price: order.total / 100,
+                quantity: 1,
+                currency_id: "BRL",
+            }]
+            : order.items.map((item) => ({
+                id: item.product.id,
+                title: item.product.name,
+                unit_price: item.unit_price / 100,
+                quantity: item.quantity,
+                currency_id: "BRL",
+            }));
 
 
         const preferenceData = {
             items,
 
-            // IMPORTANTE:
-            // Esse ID será usado pelo webhook para encontrar o pedido
+            
             external_reference: order.id,
 
             back_urls: {

@@ -18,6 +18,9 @@ import {
 import { formatPrice, formatDate, showApiError } from "../../lib/utils-api";
 import { api } from "../../services/api";
 import type { OrderStatus } from "../../types";
+import { ProductImage } from "../../components/store/ProductImage";
+import { OrderStatusBadge } from "../../components/OrderStatusBadge";
+import { ORDER_STATUS_LABELS } from "../../lib/order-status";
 
 // Interfaces específicas do admin detail
 interface AdminDetailUser {
@@ -67,22 +70,6 @@ interface AdminDetailOrder {
     address: AdminDetailAddress;
 }
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
-    PENDING: "Aguardando pagamento",
-    PAID: "Pago",
-    SHIPPED: "Enviado",
-    DELIVERED: "Entregue",
-    CANCELED: "Cancelado",
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-    PENDING: "bg-amber-100 text-amber-800 border-amber-300",
-    PAID: "bg-sky-100 text-sky-800 border-sky-300",
-    SHIPPED: "bg-purple-100 text-purple-800 border-purple-300",
-    DELIVERED: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    CANCELED: "bg-red-100 text-red-800 border-red-300",
-};
-
 const STATUS_OPTIONS: OrderStatus[] = [
     "PENDING",
     "PAID",
@@ -130,7 +117,7 @@ export function AdminOrderDetail() {
         setUpdatingStatus(true);
         try {
             await api.patch(`/order/${order.id}/status`, { status: selectedStatus });
-            toast.success(`Status atualizado para "${STATUS_LABELS[selectedStatus]}"`);
+            toast.success(`Status atualizado para "${ORDER_STATUS_LABELS[selectedStatus]}"`);
             setOrder((prev) =>
                 prev ? { ...prev, status: selectedStatus } : prev
             );
@@ -171,8 +158,6 @@ export function AdminOrderDetail() {
         );
     }
 
-    const badgeColor = STATUS_COLORS[order.status];
-
     return (
         <div className="p-4 sm:p-6">
             {/* back */}
@@ -197,18 +182,14 @@ export function AdminOrderDetail() {
                                     {formatDate(order.createdAt)}
                                 </p>
                             </div>
-                            <span
-                                className={`inline-block text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${badgeColor}`}
-                            >
-                                {STATUS_LABELS[order.status]}
-                            </span>
+                            <OrderStatusBadge status={order.status} size="md" />
                         </div>
                     </div>
 
                     {/* customer info */}
                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                            <User size={16} className="text-mc-gold-600" />
+                            <User size={16} className="text-mc-gold-700" />
                             Cliente
                         </h2>
                         <div className="space-y-1 text-sm">
@@ -225,7 +206,7 @@ export function AdminOrderDetail() {
                     {/* address */}
                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                            <MapPin size={16} className="text-mc-gold-600" />
+                            <MapPin size={16} className="text-mc-gold-700" />
                             Endereço de entrega
                         </h2>
                         <div className="text-sm space-y-1">
@@ -259,17 +240,7 @@ export function AdminOrderDetail() {
                                     className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
                                 >
                                     <div className="w-12 h-12 rounded-md overflow-hidden bg-mc-blush-100 shrink-0">
-                                        {item.product.banner ? (
-                                            <img
-                                                src={item.product.banner}
-                                                alt={item.product.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-lg">
-                                                💎
-                                            </div>
-                                        )}
+                                        <ProductImage src={item.product.banner} alt={item.product.name} iconSize={18} />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-mc-violet-950 line-clamp-1">
@@ -302,7 +273,7 @@ export function AdminOrderDetail() {
                                 <span>{formatPrice(order.subtotal)}</span>
                             </div>
                             {order.discount > 0 && (
-                                <div className="flex justify-between text-emerald-700">
+                                <div className="flex justify-between text-mc-success-700">
                                     <span>Desconto</span>
                                     <span>-{formatPrice(order.discount)}</span>
                                 </div>
@@ -327,9 +298,7 @@ export function AdminOrderDetail() {
                         </h2>
                         <p className="text-xs text-mc-ink/60 mb-3">
                             Status atual:{" "}
-                            <span className="font-medium text-mc-violet-950">
-                                {STATUS_LABELS[order.status]}
-                            </span>
+                            <OrderStatusBadge status={order.status} className="ml-1 align-middle" />
                         </p>
                         <select
                             value={selectedStatus || order.status}
@@ -340,7 +309,7 @@ export function AdminOrderDetail() {
                         >
                             {STATUS_OPTIONS.map((s) => (
                                 <option key={s} value={s}>
-                                    {STATUS_LABELS[s]}
+                                    {ORDER_STATUS_LABELS[s]}
                                 </option>
                             ))}
                         </select>
@@ -365,9 +334,9 @@ export function AdminOrderDetail() {
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
                                         O status será alterado de{" "}
-                                        <strong>{STATUS_LABELS[order.status]}</strong> para{" "}
+                                        <strong>{ORDER_STATUS_LABELS[order.status]}</strong> para{" "}
                                         <strong>
-                                            {STATUS_LABELS[selectedStatus || order.status]}
+                                            {ORDER_STATUS_LABELS[selectedStatus || order.status]}
                                         </strong>
                                         . O cliente final verá essa mudança.
                                     </AlertDialogDescription>

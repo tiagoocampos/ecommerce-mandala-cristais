@@ -8,7 +8,8 @@ import {
   SearchBar,
   CategoriesBar,
   CartButton,
-  UserSheet,
+  UserMenu,
+  CartSheet,
   MobileMenuSheet,
 } from "./header";
 
@@ -58,10 +59,11 @@ export function StoreHeader() {
           <SearchBar className="hidden md:block flex-1 max-w-md" />
 
           <div className="flex items-center gap-0.5 sm:gap-2">
-            <UserSheet user={user} isLogged={isLogged} />
+            <UserMenu user={user} isLogged={isLogged} />
             <CartButton itemCount={itemCount} />
           </div>
         </div>
+        <CartSheet />
 
         {/* Categorias no desktop */}
         <div className="hidden lg:block">

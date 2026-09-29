@@ -15,13 +15,13 @@ export function PaymentPendingPage() {
 
             <main className="flex-1 flex items-center justify-center px-4">
                 <div className="max-w-md w-full text-center py-12">
-                    <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-5">
-                        <Clock size={32} className="text-mc-gold-600" />
+                    <div className="w-16 h-16 rounded-full bg-mc-gold-500/20 flex items-center justify-center mx-auto mb-5">
+                        <Clock size={32} className="text-mc-gold-700" />
                     </div>
 
                     <h1 className="font-display text-2xl sm:text-3xl text-mc-violet-950 mb-2">
                         Pagamento{" "}
-                        <span className="italic text-mc-gold-600">pendente</span>
+                        <span className="italic text-mc-gold-700">pendente</span>
                     </h1>
 
                     <p className="text-sm text-mc-ink/60 mb-6 max-w-sm mx-auto">
@@ -35,21 +35,21 @@ export function PaymentPendingPage() {
                         </h3>
                         <ul className="space-y-2 text-sm text-mc-ink/70">
                             <li className="flex items-start gap-2">
-                                <span className="text-mc-gold-600 mt-0.5">•</span>
+                                <span className="text-mc-gold-700 mt-0.5">•</span>
                                 <span>
                                     Se você pagou com <strong>Pix</strong>, o pagamento é
                                     confirmado em instantes.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-mc-gold-600 mt-0.5">•</span>
+                                <span className="text-mc-gold-700 mt-0.5">•</span>
                                 <span>
                                     Se pagou com <strong>cartão ou boleto</strong>, a
                                     confirmação pode levar até 3 dias úteis.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-mc-gold-600 mt-0.5">•</span>
+                                <span className="text-mc-gold-700 mt-0.5">•</span>
                                 <span>
                                     Acompanhe o status na página de{" "}
                                     <strong>Meus pedidos</strong>.

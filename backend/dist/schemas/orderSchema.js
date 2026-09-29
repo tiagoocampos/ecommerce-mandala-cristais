@@ -6,6 +6,7 @@ export const createOrderSchema = z.object({
         }).uuid({
             message: "O address_id deve ser um UUID válido"
         }),
+        coupon_code: z.string().trim().min(1).optional(),
     }),
 });
 export const AddItemSchema = z.object({

@@ -36,6 +36,7 @@ export declare const ModelName: {
     readonly OrderItem: "OrderItem";
     readonly Payment: "Payment";
     readonly Coupon: "Coupon";
+    readonly StoreSettings: "StoreSettings";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -147,9 +148,20 @@ export declare const CouponScalarFieldEnum: {
     readonly value: "value";
     readonly active: "active";
     readonly expires_at: "expires_at";
+    readonly first_purchase_only: "first_purchase_only";
+    readonly user_id: "user_id";
     readonly createdAt: "createdAt";
 };
 export type CouponScalarFieldEnum = (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum];
+export declare const StoreSettingsScalarFieldEnum: {
+    readonly id: "id";
+    readonly announcement_text: "announcement_text";
+    readonly announcement_coupon_code: "announcement_coupon_code";
+    readonly free_shipping_threshold: "free_shipping_threshold";
+    readonly trust_strip_items: "trust_strip_items";
+    readonly updatedAt: "updatedAt";
+};
+export type StoreSettingsScalarFieldEnum = (typeof StoreSettingsScalarFieldEnum)[keyof typeof StoreSettingsScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";
@@ -160,6 +172,10 @@ export declare const NullableJsonNullValueInput: {
     readonly JsonNull: import("@prisma/client-runtime-utils").JsonNullClass;
 };
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+export declare const JsonNullValueInput: {
+    readonly JsonNull: import("@prisma/client-runtime-utils").JsonNullClass;
+};
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
 export declare const QueryMode: {
     readonly default: "default";
     readonly insensitive: "insensitive";

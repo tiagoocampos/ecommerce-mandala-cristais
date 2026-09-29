@@ -71,9 +71,9 @@ export function CategoryStrip() {
 
     return (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
-            <h2 className="font-display text-2xl sm:text-3xl text-[#765075] mb-6">
+            <h2 className="font-display text-2xl sm:text-3xl text-mc-violet-700 mb-6">
                 Encontre pela{" "}
-                <span className="italic text-mc-gold-600">
+                <span className="italic text-mc-gold-700">
                     categoria
                 </span>
             </h2>
@@ -85,11 +85,11 @@ export function CategoryStrip() {
                         onClick={() => navigate(`/categoria/${cat.slug}`)}
                         className="group text-left"
                     >
-                        <span className="font-display text-lg sm:text-xl text-[#765075] transition-colors group-hover:text-mc-gold-600">
+                        <span className="font-display text-lg sm:text-xl text-mc-violet-700 transition-colors group-hover:text-mc-gold-700">
                             {cat.name}
                         </span>
 
-                        <div className="mt-2 h-px w-0 bg-mc-gold-600 transition-all duration-300 group-hover:w-full" />
+                        <div className="mt-2 h-px w-0 bg-mc-gold-500 transition-all duration-300 group-hover:w-full" />
                     </button>
                 ))}
             </div>

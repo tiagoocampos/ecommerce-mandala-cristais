@@ -241,6 +241,7 @@ export declare const ModelName: {
     readonly OrderItem: "OrderItem";
     readonly Payment: "Payment";
     readonly Coupon: "Coupon";
+    readonly StoreSettings: "StoreSettings";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export interface TypeMapCb<GlobalOmitOptions = {}> extends runtime.Types.Utils.Fn<{
@@ -253,7 +254,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "user" | "address" | "category" | "product" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "coupon";
+        modelProps: "user" | "address" | "category" | "product" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "coupon" | "storeSettings";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -997,6 +998,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        StoreSettings: {
+            payload: Prisma.$StoreSettingsPayload<ExtArgs>;
+            fields: Prisma.StoreSettingsFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.StoreSettingsFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.StoreSettingsFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>;
+                };
+                findFirst: {
+                    args: Prisma.StoreSettingsFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.StoreSettingsFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>;
+                };
+                findMany: {
+                    args: Prisma.StoreSettingsFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>[];
+                };
+                create: {
+                    args: Prisma.StoreSettingsCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>;
+                };
+                createMany: {
+                    args: Prisma.StoreSettingsCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.StoreSettingsCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>[];
+                };
+                delete: {
+                    args: Prisma.StoreSettingsDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>;
+                };
+                update: {
+                    args: Prisma.StoreSettingsUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.StoreSettingsDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.StoreSettingsUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.StoreSettingsUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>[];
+                };
+                upsert: {
+                    args: Prisma.StoreSettingsUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingsPayload>;
+                };
+                aggregate: {
+                    args: Prisma.StoreSettingsAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateStoreSettings>;
+                };
+                groupBy: {
+                    args: Prisma.StoreSettingsGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.StoreSettingsGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.StoreSettingsCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.StoreSettingsCountAggregateOutputType> | number;
+                };
+            };
+        };
     };
 } & {
     other: {
@@ -1133,9 +1208,20 @@ export declare const CouponScalarFieldEnum: {
     readonly value: "value";
     readonly active: "active";
     readonly expires_at: "expires_at";
+    readonly first_purchase_only: "first_purchase_only";
+    readonly user_id: "user_id";
     readonly createdAt: "createdAt";
 };
 export type CouponScalarFieldEnum = (typeof CouponScalarFieldEnum)[keyof typeof CouponScalarFieldEnum];
+export declare const StoreSettingsScalarFieldEnum: {
+    readonly id: "id";
+    readonly announcement_text: "announcement_text";
+    readonly announcement_coupon_code: "announcement_coupon_code";
+    readonly free_shipping_threshold: "free_shipping_threshold";
+    readonly trust_strip_items: "trust_strip_items";
+    readonly updatedAt: "updatedAt";
+};
+export type StoreSettingsScalarFieldEnum = (typeof StoreSettingsScalarFieldEnum)[keyof typeof StoreSettingsScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";
@@ -1146,6 +1232,10 @@ export declare const NullableJsonNullValueInput: {
     readonly JsonNull: runtime.JsonNullClass;
 };
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+export declare const JsonNullValueInput: {
+    readonly JsonNull: runtime.JsonNullClass;
+};
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
 export declare const QueryMode: {
     readonly default: "default";
     readonly insensitive: "insensitive";
@@ -1360,6 +1450,7 @@ export type GlobalOmitConfig = {
     orderItem?: Prisma.OrderItemOmit;
     payment?: Prisma.PaymentOmit;
     coupon?: Prisma.CouponOmit;
+    storeSettings?: Prisma.StoreSettingsOmit;
 };
 export type LogLevel = 'info' | 'query' | 'warn' | 'error';
 export type LogDefinition = {
