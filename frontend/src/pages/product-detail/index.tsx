@@ -11,6 +11,8 @@ import { api } from "../../services/api";
 import { formatPrice, showApiError } from "../../lib/utils-api";
 import { useAddToCart } from "../../hooks/useAddToCart";
 import { discountPercent } from "../../types/mandala";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import { truncateText } from "../../lib/text";
 import type { MandalaProduct } from "../../types/mandala";
 
 function ProductDetailSkeleton() {
@@ -45,6 +47,13 @@ export function ProductDetail() {
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [adding, setAdding] = useState(false);
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+
+    // <title> e <meta name="description"> da página (meta_description vem do cadastro/IA)
+    usePageMeta({
+        title: product ? `${product.name} | Mandala Crystais` : null,
+        description: product?.meta_description ?? null,
+    });
 
     useEffect(() => {
         let mounted = true;
@@ -57,6 +66,7 @@ export function ProductDetail() {
                 const found = res.data.find((p) => p.slug === slug) ?? null;
                 setProduct(found);
                 setQuantity(1);
+                setDescriptionExpanded(false);
             } catch (error) {
                 if (!mounted) return;
                 showApiError(error, "Erro ao carregar produto");
@@ -105,6 +115,8 @@ export function ProductDetail() {
     const hasPromo = !!product.promo_price && product.promo_price < product.price;
     const finalPrice = hasPromo ? product.promo_price! : product.price;
     const outOfStock = product.stock === 0;
+    // Descrição longa aparece resumida, com "Ver mais"
+    const descriptionExcerpt = truncateText(product.description ?? "", 280);
     const addLabel = outOfStock ? "Indisponível" : adding ? "Adicionando..." : "Adicionar ao carrinho";
 
     return (
@@ -147,7 +159,11 @@ export function ProductDetail() {
                     <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
                         {/* imagem (galeria futura entra aqui) */}
                         <div className="relative facet-cut overflow-hidden bg-mc-blush-100 aspect-square">
-                            <ProductImage src={product.banner} alt={product.name} iconSize={64} />
+                            <ProductImage
+                                src={product.banner}
+                                alt={product.image_alt_text || product.name}
+                                iconSize={64}
+                            />
                             {hasPromo && (
                                 <span className="absolute top-4 left-4 bg-mc-gold-500 text-mc-violet-950 text-xs font-bold px-2.5 py-1 rounded-full">
                                     -{discountPercent(product.price, product.promo_price!)}%
@@ -186,9 +202,23 @@ export function ProductDetail() {
                                 </p>
                             </div>
 
-                            <p className="text-sm text-mc-ink/70 leading-relaxed mb-8 whitespace-pre-line">
-                                {product.description}
-                            </p>
+                            <div className="mb-8">
+                                <p className="text-sm text-mc-ink/70 leading-relaxed whitespace-pre-line">
+                                    {descriptionExpanded || !descriptionExcerpt.truncated
+                                        ? product.description
+                                        : descriptionExcerpt.text}
+                                </p>
+                                {descriptionExcerpt.truncated && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setDescriptionExpanded((v) => !v)}
+                                        aria-expanded={descriptionExpanded}
+                                        className="mt-2 text-sm font-medium text-mc-violet-700 underline underline-offset-4 decoration-mc-gold-500 hover:text-mc-violet-950"
+                                    >
+                                        {descriptionExpanded ? "Ver menos" : "Ver mais"}
+                                    </button>
+                                )}
+                            </div>
 
                             {!outOfStock && (
                                 <div className="flex items-center gap-3 mb-6">

@@ -12,6 +12,7 @@ import {
     X,
     Store,
     Megaphone,
+    Mail,
 } from "lucide-react";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { getStoredUser, clearAuth } from "../../lib/auth";
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
     { label: "Pedidos", icon: ClipboardList, href: "/admin/pedidos" },
     { label: "Usuários", icon: Users, href: "/admin/usuarios" },
     { label: "Vitrine e cupons", icon: Megaphone, href: "/admin/vitrine" },
+    { label: "Ofertas por e-mail", icon: Mail, href: "/admin/marketing" },
 ];
 
 export function AdminRoute({ children }: { children: ReactNode }) {

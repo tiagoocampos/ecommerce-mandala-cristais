@@ -27,11 +27,11 @@ declare class GetOrderAdminService {
             id: string;
             createdAt: Date;
             user_id: string;
+            state: string;
             street: string;
             complement: string | null;
             neighborhood: string;
             city: string;
-            state: string;
             zip_code: string;
         };
     } & {
@@ -41,10 +41,13 @@ declare class GetOrderAdminService {
         user_id: string;
         subtotal: number;
         address_id: string;
+        shipping_service: string | null;
         status: import("../../generated/prisma/enums.js").OrderStatus;
         discount: number;
         shipping_cost: number;
         total: number;
+        shipping_delivery_days: number | null;
+        shipping_cost_estimated: boolean;
         coupon_id: string | null;
     }>;
 }

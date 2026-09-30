@@ -9,6 +9,10 @@ import {
     Search,
     ImageIcon,
     X,
+    Sparkles,
+    Loader2,
+    ArchiveRestore,
+    Star,
 } from "lucide-react";
 import { Loading } from "../../components/Loading";
 import { Button } from "../../components/ui/button";
@@ -28,6 +32,22 @@ type ProductForm = {
     stock: string;
     category_id: string;
     file: File | null;
+    weight_grams: string;
+    height_cm: string;
+    width_cm: string;
+    length_cm: string;
+    meta_description: string;
+    image_alt_text: string;
+    featured: boolean;
+};
+
+const META_DESCRIPTION_MAX = 160;
+
+type AIAssistResponse = {
+    description: string;
+    meta_description: string;
+    image_alt_text: string;
+    suggested_category_id: string | null;
 };
 
 const emptyForm: ProductForm = {
@@ -38,7 +58,25 @@ const emptyForm: ProductForm = {
     stock: "",
     category_id: "",
     file: null,
+    weight_grams: "",
+    height_cm: "",
+    width_cm: "",
+    length_cm: "",
+    meta_description: "",
+    image_alt_text: "",
+    featured: false,
 };
+
+const SHIPPING_FIELDS = [
+    { key: "weight_grams", label: "Peso (g)", placeholder: "Ex: 250" },
+    { key: "height_cm", label: "Altura (cm)", placeholder: "Ex: 5" },
+    { key: "width_cm", label: "Largura (cm)", placeholder: "Ex: 12" },
+    { key: "length_cm", label: "Comprimento (cm)", placeholder: "Ex: 16" },
+] as const;
+
+function hasShippingData(product: Product): boolean {
+    return !!product.weight_grams && !!product.height_cm && !!product.width_cm && !!product.length_cm;
+}
 
 export function AdminProducts() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -46,7 +84,7 @@ export function AdminProducts() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [search, setSearch] = useState("");
-    const [showArchived, setShowArchived] = useState(false);
+    const [view, setView] = useState<"active" | "archived" | "all">("active");
 
     // modal state
     const [modalOpen, setModalOpen] = useState(false);
@@ -55,14 +93,23 @@ export function AdminProducts() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductForm, string>>>({});
 
+    // "Pedir pra IA": só preenche o formulário; quem salva é o lojista
+    const [aiKeywords, setAiKeywords] = useState("");
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiSuggestedCategoryId, setAiSuggestedCategoryId] = useState<string | null>(null);
+    const [seoOpen, setSeoOpen] = useState(false);
+
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const [productsRes, catsRes] = await Promise.all([
-                api.get<Product[]>("/products"),
+            // Ativos + arquivados: sem o parâmetro, o backend devolve só os ativos
+            // (e o filtro "mostrar arquivados" nunca tinha o que mostrar)
+            const [activeRes, archivedRes, catsRes] = await Promise.all([
+                api.get<Product[]>("/products?disabled=false"),
+                api.get<Product[]>("/products?disabled=true"),
                 api.get<Category[]>("/category"),
             ]);
-            setProducts(productsRes.data);
+            setProducts([...activeRes.data, ...archivedRes.data]);
             setCategories(catsRes.data);
         } catch (error) {
             showApiError(error, "Erro ao carregar dados");
@@ -86,8 +133,12 @@ export function AdminProducts() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editParam, products]);
 
+    const activeCount = products.filter((p) => !p.disabled).length;
+    const archivedCount = products.length - activeCount;
+
     const filteredProducts = products.filter((p) => {
-        if (!showArchived && p.disabled) return false;
+        if (view === "active" && p.disabled) return false;
+        if (view === "archived" && !p.disabled) return false;
         if (search) {
             const q = search.toLowerCase();
             return (
@@ -103,6 +154,9 @@ export function AdminProducts() {
         setEditingId(null);
         setPreviewUrl(null);
         setFormErrors({});
+        setAiKeywords("");
+        setAiSuggestedCategoryId(null);
+        setSeoOpen(false);
     }
 
     function openCreate() {
@@ -119,10 +173,20 @@ export function AdminProducts() {
             stock: String(product.stock),
             category_id: product.category_id || "",
             file: null,
+            weight_grams: product.weight_grams ? String(product.weight_grams) : "",
+            height_cm: product.height_cm ? String(product.height_cm) : "",
+            width_cm: product.width_cm ? String(product.width_cm) : "",
+            length_cm: product.length_cm ? String(product.length_cm) : "",
+            meta_description: product.meta_description ?? "",
+            image_alt_text: product.image_alt_text ?? "",
+            featured: !!product.featured,
         });
         setEditingId(product.id);
         setPreviewUrl(product.banner || null);
         setFormErrors({});
+        setAiKeywords("");
+        setAiSuggestedCategoryId(null);
+        setSeoOpen(false);
         setModalOpen(true);
     }
 
@@ -139,6 +203,16 @@ export function AdminProducts() {
         if (!editingId && !form.file) {
             errors.file = "Imagem é obrigatória";
         }
+        for (const field of SHIPPING_FIELDS) {
+            const value = form[field.key].trim();
+            if (value && (!/^\d+$/.test(value) || Number(value) <= 0)) {
+                errors[field.key] = "Use um número inteiro maior que zero";
+            }
+        }
+        if (form.meta_description.trim().length > META_DESCRIPTION_MAX) {
+            errors.meta_description = `Máximo de ${META_DESCRIPTION_MAX} caracteres`;
+            setSeoOpen(true);
+        }
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     }
@@ -154,8 +228,19 @@ export function AdminProducts() {
         fd.append("price", form.price);
         fd.append("stock", form.stock);
         fd.append("category_id", form.category_id);
+        fd.append("featured", form.featured ? "true" : "false");
         if (form.promo_price) fd.append("promo_price", form.promo_price);
         if (form.file) fd.append("file", form.file);
+        for (const field of SHIPPING_FIELDS) {
+            const value = form[field.key].trim();
+            // na edição, enviar vazio limpa o valor salvo
+            if (value || editingId) fd.append(field.key, value);
+        }
+        for (const key of ["meta_description", "image_alt_text"] as const) {
+            const value = form[key].trim();
+            // na edição, enviar vazio limpa o valor salvo
+            if (value || editingId) fd.append(key, value);
+        }
 
         try {
             if (editingId) {
@@ -172,6 +257,55 @@ export function AdminProducts() {
             showApiError(error, `Erro ao ${editingId ? "atualizar" : "criar"} produto`);
         } finally {
             setSubmitting(false);
+        }
+    }
+
+    async function handleAIAssist() {
+        const name = form.name.trim();
+        if (!name) return;
+
+        setAiLoading(true);
+        try {
+            const categoryName = categories.find((c) => c.id === form.category_id)?.name ?? "";
+            const { data } = await api.post<AIAssistResponse>("/admin/products/ai-assist", {
+                name,
+                category_hint: categoryName,
+                ...(aiKeywords.trim() && { keywords: aiKeywords.trim() }),
+            });
+
+            // Só preenche o formulário — nada é salvo até o lojista clicar em salvar
+            setForm((p) => ({
+                ...p,
+                description: data.description,
+                meta_description: data.meta_description,
+                image_alt_text: data.image_alt_text,
+            }));
+            setFormErrors((errors) => ({ ...errors, description: undefined, meta_description: undefined }));
+            setSeoOpen(true);
+            // Sugestão de categoria nunca é aplicada sozinha
+            setAiSuggestedCategoryId(data.suggested_category_id);
+            toast.success("Textos gerados — revise antes de salvar");
+        } catch (error) {
+            showApiError(error, "Não foi possível gerar com IA agora. Você pode preencher manualmente.");
+        } finally {
+            setAiLoading(false);
+        }
+    }
+
+    const aiSuggestedCategory =
+        aiSuggestedCategoryId && aiSuggestedCategoryId !== form.category_id
+            ? categories.find((c) => c.id === aiSuggestedCategoryId) ?? null
+            : null;
+
+    async function handleReactivate(product: Product) {
+        const fd = new FormData();
+        fd.append("disabled", "false");
+        try {
+            await api.put(`/product?product_id=${product.id}`, fd);
+            toast.success(`"${product.name}" reativado e de volta à loja`);
+            await fetchData();
+        } catch (error) {
+            showApiError(error, "Erro ao reativar produto");
         }
     }
 
@@ -211,8 +345,7 @@ export function AdminProducts() {
                         Produtos
                     </h1>
                     <p className="text-sm text-mc-ink/60">
-                        {products.filter((p) => !p.disabled).length} ativos ·{" "}
-                        {products.filter((p) => p.disabled).length} arquivados
+                        {activeCount} ativos · {archivedCount} arquivados
                     </p>
                 </div>
                 <Button
@@ -234,15 +367,28 @@ export function AdminProducts() {
                         className="pl-8 bg-white border-mc-violet-950/15"
                     />
                 </div>
-                <label className="flex items-center gap-2 text-sm text-mc-ink/70 cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={showArchived}
-                        onChange={(e) => setShowArchived(e.target.checked)}
-                        className="accent-mc-violet-950"
-                    />
-                    Mostrar arquivados
-                </label>
+                <div role="tablist" aria-label="Filtrar produtos" className="inline-flex self-start rounded-full border border-mc-violet-950/15 bg-white p-0.5 text-sm">
+                    {([
+                        ["active", `Ativos (${activeCount})`],
+                        ["archived", `Arquivados (${archivedCount})`],
+                        ["all", `Todos (${products.length})`],
+                    ] as const).map(([value, label]) => (
+                        <button
+                            key={value}
+                            type="button"
+                            role="tab"
+                            aria-selected={view === value}
+                            onClick={() => setView(value)}
+                            className={`rounded-full px-3.5 py-1.5 transition-colors ${
+                                view === value
+                                    ? "bg-mc-violet-950 text-mc-sand-50"
+                                    : "text-mc-ink/70 hover:bg-mc-blush-100"
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* table */}
@@ -262,7 +408,20 @@ export function AdminProducts() {
                         {filteredProducts.length === 0 ? (
                             <tr>
                                 <td colSpan={6} className="py-10 text-center text-mc-ink/50">
-                                    Nenhum produto encontrado.
+                                    {view === "active" && archivedCount > 0 && !search ? (
+                                        <>
+                                            Nenhum produto ativo. Há {archivedCount} arquivado(s) —{" "}
+                                            <button
+                                                type="button"
+                                                onClick={() => setView("archived")}
+                                                className="font-medium text-mc-violet-700 underline underline-offset-2 hover:text-mc-violet-950"
+                                            >
+                                                ver arquivados para reativar
+                                            </button>
+                                        </>
+                                    ) : (
+                                        "Nenhum produto encontrado."
+                                    )}
                                 </td>
                             </tr>
                         ) : (
@@ -276,9 +435,26 @@ export function AdminProducts() {
                                                 <div className="w-10 h-10 rounded-md overflow-hidden bg-mc-blush-100 shrink-0">
                                                     <ProductImage src={product.banner} alt={product.name} iconSize={18} />
                                                 </div>
-                                                <span className="font-medium text-mc-violet-950 line-clamp-1">
-                                                    {product.name}
-                                                </span>
+                                                <div className="min-w-0">
+                                                    <span className="font-medium text-mc-violet-950 line-clamp-1">
+                                                        {product.name}
+                                                    </span>
+                                                    {product.featured && (
+                                                        <span className="mt-0.5 mr-1 inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border bg-mc-violet-700 text-white border-mc-violet-700">
+                                                            <Star size={9} className="fill-mc-gold-400 text-mc-gold-400" /> Destaque
+                                                        </span>
+                                                    )}
+                                                    {!hasShippingData(product) && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openEdit(product)}
+                                                            title="Sem peso/dimensões o frete usa um pacote padrão (300 g, 11×11×11 cm). Clique para completar."
+                                                            className="mt-0.5 inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full border bg-mc-gold-500/20 text-mc-gold-800 border-mc-gold-500/50 hover:bg-mc-gold-500/30"
+                                                        >
+                                                            Sem peso cadastrado
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 text-mc-ink/70">
@@ -330,12 +506,14 @@ export function AdminProducts() {
                                                     <Edit3 size={15} />
                                                 </button>
                                                 {archived ? (
-                                                    <span
-                                                        className="p-1.5 rounded-md text-gray-300 cursor-not-allowed inline-block"
-                                                        title="Reativação temporariamente indisponível — o backend não expõe campo disabled no update"
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleReactivate(product)}
+                                                        className="p-1.5 hover:bg-mc-success-100 rounded-md text-mc-success-700"
+                                                        title="Reativar (volta a aparecer na loja)"
                                                     >
-                                                        <Archive size={15} />
-                                                    </span>
+                                                        <ArchiveRestore size={15} />
+                                                    </button>
                                                 ) : (
                                                     <ConfirmDelete
                                                         trigger={
@@ -348,7 +526,7 @@ export function AdminProducts() {
                                                             </button>
                                                         }
                                                         title={`Arquivar "${product.name}"?`}
-                                                        description="O produto será arquivado (soft delete) e não aparecerá mais na loja. É possível reativá-lo quando o backend suportar."
+                                                        description="O produto sai da loja, mas não é apagado. Você pode reativá-lo depois em &quot;Mostrar arquivados&quot;."
                                                         confirmText="Arquivar"
                                                         onConfirm={() => handleArchive(product)}
                                                     />
@@ -443,6 +621,38 @@ export function AdminProducts() {
                                 )}
                             </div>
 
+                            {/* Pedir pra IA — preenche descrição, SEO e sugere categoria; não salva */}
+                            <div className="rounded-lg border border-mc-violet-700/20 bg-mc-blush-100/60 p-3">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <Input
+                                        value={aiKeywords}
+                                        onChange={(e) => setAiKeywords(e.target.value)}
+                                        maxLength={200}
+                                        placeholder="Palavras-chave (opcional): amor próprio, sono..."
+                                        aria-label="Palavras-chave para a IA"
+                                        className="bg-white border-mc-violet-950/15 flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={handleAIAssist}
+                                        disabled={!form.name.trim() || aiLoading}
+                                        className="bg-mc-violet-700 hover:bg-mc-violet-800 text-white shrink-0"
+                                    >
+                                        {aiLoading ? (
+                                            <Loader2 size={14} className="animate-spin" />
+                                        ) : (
+                                            <Sparkles size={14} />
+                                        )}
+                                        {aiLoading ? "Pensando..." : "Pedir pra IA"}
+                                    </Button>
+                                </div>
+                                <p className="mt-1.5 text-[11px] text-mc-ink/60">
+                                    {form.name.trim()
+                                        ? "Gera descrição, meta descrição e texto da imagem, e sugere a categoria. Nada é salvo até você clicar em salvar."
+                                        : "Preencha o nome do produto para usar a IA."}
+                                </p>
+                            </div>
+
                             <div>
                                 <Label className="text-sm text-mc-ink/70">Descrição</Label>
                                 <textarea
@@ -459,6 +669,62 @@ export function AdminProducts() {
                                     </p>
                                 )}
                             </div>
+
+                            {/* SEO e acessibilidade */}
+                            <details
+                                open={seoOpen}
+                                onToggle={(e) => setSeoOpen((e.target as HTMLDetailsElement).open)}
+                                className="rounded-lg border border-mc-violet-950/10 px-3 py-2"
+                            >
+                                <summary className="cursor-pointer text-sm font-medium text-mc-violet-950">
+                                    SEO e acessibilidade (opcional)
+                                </summary>
+                                <div className="mt-3 space-y-3 pb-1">
+                                    <div>
+                                        <div className="flex items-center justify-between">
+                                            <Label className="text-sm text-mc-ink/70">
+                                                Meta descrição (resultado do Google)
+                                            </Label>
+                                            <span
+                                                className={`text-[11px] tabular-nums ${
+                                                    form.meta_description.trim().length > META_DESCRIPTION_MAX
+                                                        ? "text-red-600 font-medium"
+                                                        : "text-mc-ink/50"
+                                                }`}
+                                            >
+                                                {form.meta_description.trim().length}/{META_DESCRIPTION_MAX}
+                                            </span>
+                                        </div>
+                                        <textarea
+                                            value={form.meta_description}
+                                            onChange={(e) =>
+                                                setForm((p) => ({ ...p, meta_description: e.target.value }))
+                                            }
+                                            rows={2}
+                                            className="w-full rounded-lg border border-mc-violet-950/15 bg-white px-3 py-2 text-sm outline-none focus:border-mc-violet-950/30 resize-none"
+                                        />
+                                        {formErrors.meta_description && (
+                                            <p className="text-xs text-red-600 mt-1">
+                                                {formErrors.meta_description}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm text-mc-ink/70">
+                                            Texto alternativo da imagem (descreva o que a foto mostra)
+                                        </Label>
+                                        <Input
+                                            value={form.image_alt_text}
+                                            onChange={(e) =>
+                                                setForm((p) => ({ ...p, image_alt_text: e.target.value }))
+                                            }
+                                            maxLength={250}
+                                            placeholder="Ex: Pedra de ametista bruta roxa sobre fundo claro"
+                                            className="bg-white border-mc-violet-950/15"
+                                        />
+                                    </div>
+                                </div>
+                            </details>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -536,6 +802,21 @@ export function AdminProducts() {
                                             </option>
                                         ))}
                                     </select>
+                                    {aiSuggestedCategory && (
+                                        <p className="mt-1 text-[11px] text-mc-ink/70">
+                                            <Sparkles size={11} className="inline -mt-0.5 text-mc-violet-700" /> IA
+                                            sugere: <strong>{aiSuggestedCategory.name}</strong> —{" "}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setForm((p) => ({ ...p, category_id: aiSuggestedCategory.id }))
+                                                }
+                                                className="font-medium text-mc-violet-700 underline hover:text-mc-violet-950"
+                                            >
+                                                usar essa?
+                                            </button>
+                                        </p>
+                                    )}
                                     {formErrors.category_id && (
                                         <p className="text-xs text-red-600 mt-1">
                                             {formErrors.category_id}
@@ -543,6 +824,59 @@ export function AdminProducts() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* destaque na home */}
+                            <label className="flex items-start gap-2.5 rounded-lg border border-mc-violet-950/10 p-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={form.featured}
+                                    onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
+                                    className="mt-0.5 h-4 w-4 accent-mc-violet-700"
+                                />
+                                <span>
+                                    <span className="flex items-center gap-1 text-sm font-medium text-mc-violet-950">
+                                        <Star size={13} className="fill-mc-gold-400 text-mc-gold-400" />
+                                        Destacar na home
+                                    </span>
+                                    <span className="block text-xs text-mc-ink/60">
+                                        Aparece no carrossel logo no topo da loja. O ideal são poucos produtos
+                                        por vez (até 6–8) — hoje há{" "}
+                                        {products.filter((p) => p.featured && !p.disabled).length} em destaque.
+                                    </span>
+                                </span>
+                            </label>
+
+                            {/* frete */}
+                            <fieldset className="rounded-lg border border-mc-violet-950/10 p-3">
+                                <legend className="px-1 text-sm font-medium text-mc-violet-950">
+                                    Frete — produto já embalado
+                                </legend>
+                                <p className="text-xs text-mc-ink/60 mb-3">
+                                    Usado para calcular o frete. Sem esses dados, a cotação usa um
+                                    pacote padrão (300 g, 11×11×11 cm), que pode cobrar errado.
+                                </p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {SHIPPING_FIELDS.map((field) => (
+                                        <div key={field.key}>
+                                            <Label className="text-sm text-mc-ink/70">{field.label}</Label>
+                                            <Input
+                                                value={form[field.key]}
+                                                onChange={(e) =>
+                                                    setForm((p) => ({ ...p, [field.key]: e.target.value }))
+                                                }
+                                                inputMode="numeric"
+                                                className="bg-white border-mc-violet-950/15"
+                                                placeholder={field.placeholder}
+                                            />
+                                            {formErrors[field.key] && (
+                                                <p className="text-xs text-red-600 mt-1">
+                                                    {formErrors[field.key]}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </fieldset>
                         </div>
 
                         <div className="mt-6 flex justify-end gap-3">

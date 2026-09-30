@@ -25,10 +25,13 @@ declare class ListOrdersService {
         user_id: string;
         subtotal: number;
         address_id: string;
+        shipping_service: string | null;
         status: import("../../generated/prisma/enums.js").OrderStatus;
         discount: number;
         shipping_cost: number;
         total: number;
+        shipping_delivery_days: number | null;
+        shipping_cost_estimated: boolean;
         coupon_id: string | null;
     })[]>;
 }

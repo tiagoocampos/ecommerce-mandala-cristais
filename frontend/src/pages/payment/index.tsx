@@ -266,9 +266,6 @@ export function PaymentPage() {
                                                 <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
                                                     Cartão de crédito
                                                 </span>
-                                                <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
-                                                    Boleto
-                                                </span>
                                             </div>
 
                                             <button

@@ -449,9 +449,6 @@ export type CouponUpdateOneWithoutOrdersNestedInput = {
 export type EnumCouponTypeFieldUpdateOperationsInput = {
     set?: $Enums.CouponType;
 };
-export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null;
-};
 export type CouponCreateWithoutUserInput = {
     id?: string;
     code: string;

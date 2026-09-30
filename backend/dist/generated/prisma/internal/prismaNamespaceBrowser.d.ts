@@ -37,6 +37,7 @@ export declare const ModelName: {
     readonly Payment: "Payment";
     readonly Coupon: "Coupon";
     readonly StoreSettings: "StoreSettings";
+    readonly IntegrationToken: "IntegrationToken";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -53,6 +54,9 @@ export declare const UserScalarFieldEnum: {
     readonly password: "password";
     readonly phone: "phone";
     readonly role: "role";
+    readonly reset_password_token: "reset_password_token";
+    readonly reset_password_expires_at: "reset_password_expires_at";
+    readonly marketing_opt_out: "marketing_opt_out";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
 };
@@ -88,6 +92,13 @@ export declare const ProductScalarFieldEnum: {
     readonly banner: "banner";
     readonly stock: "stock";
     readonly disabled: "disabled";
+    readonly featured: "featured";
+    readonly weight_grams: "weight_grams";
+    readonly height_cm: "height_cm";
+    readonly width_cm: "width_cm";
+    readonly length_cm: "length_cm";
+    readonly meta_description: "meta_description";
+    readonly image_alt_text: "image_alt_text";
     readonly category_id: "category_id";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
@@ -114,6 +125,9 @@ export declare const OrderScalarFieldEnum: {
     readonly discount: "discount";
     readonly shipping_cost: "shipping_cost";
     readonly total: "total";
+    readonly shipping_service: "shipping_service";
+    readonly shipping_delivery_days: "shipping_delivery_days";
+    readonly shipping_cost_estimated: "shipping_cost_estimated";
     readonly user_id: "user_id";
     readonly address_id: "address_id";
     readonly coupon_id: "coupon_id";
@@ -162,6 +176,16 @@ export declare const StoreSettingsScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type StoreSettingsScalarFieldEnum = (typeof StoreSettingsScalarFieldEnum)[keyof typeof StoreSettingsScalarFieldEnum];
+export declare const IntegrationTokenScalarFieldEnum: {
+    readonly provider: "provider";
+    readonly access_token: "access_token";
+    readonly refresh_token: "refresh_token";
+    readonly expires_at: "expires_at";
+    readonly refresh_expires_at: "refresh_expires_at";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type IntegrationTokenScalarFieldEnum = (typeof IntegrationTokenScalarFieldEnum)[keyof typeof IntegrationTokenScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";

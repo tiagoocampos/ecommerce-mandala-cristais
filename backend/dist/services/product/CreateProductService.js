@@ -4,7 +4,7 @@ import prismaClient from "../../prisma/index.js";
 import cloudinary from "../../config/cloudinary.js";
 import { generateSlug } from "../../utils/generateSlug.js";
 class CreateProductService {
-    async execute({ name, price, stock, promo_price, description, category_id, imageBuffer, imageName }) {
+    async execute({ name, price, stock, promo_price, description, category_id, imageBuffer, imageName, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, featured, }) {
         const slug = generateSlug(name);
         const categoryExiste = await prismaClient.category.findFirst({
             where: {
@@ -47,7 +47,14 @@ class CreateProductService {
                 promo_price: promo_price ?? null,
                 description: description,
                 banner: bannerUrl,
-                category_id: category_id
+                category_id: category_id,
+                weight_grams: weight_grams ?? null,
+                height_cm: height_cm ?? null,
+                width_cm: width_cm ?? null,
+                length_cm: length_cm ?? null,
+                meta_description: meta_description ?? null,
+                image_alt_text: image_alt_text ?? null,
+                featured: featured ?? false,
             },
             select: {
                 id: true,
@@ -59,7 +66,14 @@ class CreateProductService {
                 createdAt: true,
                 stock: true,
                 slug: true,
-                promo_price: true
+                promo_price: true,
+                weight_grams: true,
+                height_cm: true,
+                width_cm: true,
+                length_cm: true,
+                meta_description: true,
+                image_alt_text: true,
+                featured: true,
             }
         });
         return product;

@@ -5,8 +5,13 @@ import { CategoryNotFoundError } from "../../exceptions/CategoryErrors.js";
 import cloudinary from "../../config/cloudinary.js";
 import { generateSlug } from "../../utils/generateSlug.js";
 import { findProductOrFail } from "./findProductOrFail.js";
+import { definedShippingFields, type ShippingFields } from "../../utils/parseShippingFields.js";
 
-interface UpdateProductServiceProps {
+interface UpdateProductServiceProps extends ShippingFields {
+    meta_description?: string | null | undefined;
+    image_alt_text?: string | null | undefined;
+    disabled?: boolean | undefined;
+    featured?: boolean | undefined;
     product_id: string;
     name?: string | undefined;
     price?: number | undefined;
@@ -29,6 +34,14 @@ class UpdateProductService {
         category_id,
         imageBuffer,
         imageName,
+        weight_grams,
+        height_cm,
+        width_cm,
+        length_cm,
+        meta_description,
+        image_alt_text,
+        disabled,
+        featured,
     }: UpdateProductServiceProps) {
         try {
             const product = await findProductOrFail(product_id);
@@ -110,6 +123,11 @@ class UpdateProductService {
                     ...(stock !== undefined && { stock }),
                     ...(description !== undefined && { description }),
                     ...(category_id !== undefined && { category_id }),
+                    ...definedShippingFields({ weight_grams, height_cm, width_cm, length_cm }),
+                    ...(meta_description !== undefined && { meta_description }),
+                    ...(image_alt_text !== undefined && { image_alt_text }),
+                    ...(disabled !== undefined && { disabled }),
+                    ...(featured !== undefined && { featured }),
                     banner: bannerUrl,
                 },
                 select: {
@@ -124,6 +142,13 @@ class UpdateProductService {
                     disabled: true,
                     category_id: true,
                     createdAt: true,
+                    weight_grams: true,
+                    height_cm: true,
+                    width_cm: true,
+                    length_cm: true,
+                    meta_description: true,
+                    image_alt_text: true,
+                    featured: true,
                 },
             });
 

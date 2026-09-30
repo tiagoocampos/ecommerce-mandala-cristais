@@ -7,11 +7,11 @@ declare class ListAddressService {
         id: string;
         createdAt: Date;
         user_id: string;
+        state: string;
         street: string;
         complement: string | null;
         neighborhood: string;
         city: string;
-        state: string;
         zip_code: string;
     }[]>;
 }

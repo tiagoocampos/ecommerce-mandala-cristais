@@ -23,7 +23,15 @@ export interface AdminUserListItem {
     phone: string | null;
     role: "CUSTOMER" | "ADMIN";
     createdAt: string;
+    marketing_opt_out?: boolean;
     _count: { orders: number };
+}
+
+export interface MarketingSendResult {
+    requested: number;
+    skipped_opted_out_or_missing: number;
+    sent: number;
+    failed: number;
 }
 
 export interface AdminUserOrder {

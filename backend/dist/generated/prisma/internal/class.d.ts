@@ -238,6 +238,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get storeSettings(): Prisma.StoreSettingsDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    /**
+     * `prisma.integrationToken`: Exposes CRUD operations for the **IntegrationToken** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more IntegrationTokens
+      * const integrationTokens = await prisma.integrationToken.findMany()
+      * ```
+      */
+    get integrationToken(): Prisma.IntegrationTokenDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;
 //# sourceMappingURL=class.d.ts.map

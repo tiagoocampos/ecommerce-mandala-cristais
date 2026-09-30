@@ -126,6 +126,12 @@ export function Login() {
                 {errors.password && (
                   <p className="text-xs text-red-800 mt-1">{errors.password}</p>
                 )}
+                <Link
+                  to="/esqueci-senha"
+                  className="self-end text-xs text-mc-violet-700 underline underline-offset-4 hover:text-mc-violet-950"
+                >
+                  Esqueci minha senha
+                </Link>
               </div>
 
               <div className="sm:col-span-2">

@@ -5,8 +5,9 @@ import { CategoryNotFoundError } from "../../exceptions/CategoryErrors.js";
 import cloudinary from "../../config/cloudinary.js";
 import { generateSlug } from "../../utils/generateSlug.js";
 import { findProductOrFail } from "./findProductOrFail.js";
+import { definedShippingFields } from "../../utils/parseShippingFields.js";
 class UpdateProductService {
-    async execute({ product_id, name, price, promo_price, stock, description, category_id, imageBuffer, imageName, }) {
+    async execute({ product_id, name, price, promo_price, stock, description, category_id, imageBuffer, imageName, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, disabled, featured, }) {
         try {
             const product = await findProductOrFail(product_id);
             if (category_id) {
@@ -73,6 +74,11 @@ class UpdateProductService {
                     ...(stock !== undefined && { stock }),
                     ...(description !== undefined && { description }),
                     ...(category_id !== undefined && { category_id }),
+                    ...definedShippingFields({ weight_grams, height_cm, width_cm, length_cm }),
+                    ...(meta_description !== undefined && { meta_description }),
+                    ...(image_alt_text !== undefined && { image_alt_text }),
+                    ...(disabled !== undefined && { disabled }),
+                    ...(featured !== undefined && { featured }),
                     banner: bannerUrl,
                 },
                 select: {
@@ -87,6 +93,13 @@ class UpdateProductService {
                     disabled: true,
                     category_id: true,
                     createdAt: true,
+                    weight_grams: true,
+                    height_cm: true,
+                    width_cm: true,
+                    length_cm: true,
+                    meta_description: true,
+                    image_alt_text: true,
+                    featured: true,
                 },
             });
             return updated;

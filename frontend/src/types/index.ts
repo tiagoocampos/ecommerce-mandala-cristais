@@ -26,6 +26,15 @@ export interface Product {
     disabled?: boolean;
     category_id?: string;
     createdAt?: string;
+    // pacote para frete (null = não cadastrado; cotação usa pacote padrão)
+    weight_grams?: number | null;
+    height_cm?: number | null;
+    width_cm?: number | null;
+    length_cm?: number | null;
+    // SEO/acessibilidade (opcionais; podem ser gerados pelo "Pedir pra IA")
+    meta_description?: string | null;
+    image_alt_text?: string | null;
+    featured?: boolean; // aparece no carrossel de destaques da home
     category?: {
         id?: string;
         name: string;

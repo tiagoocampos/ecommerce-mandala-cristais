@@ -24,7 +24,14 @@ class ListProductsService {
           promo_price: true,
           createdAt: true,
           stock: true,
-          category: true
+          category: true,
+          weight_grams: true,
+          height_cm: true,
+          width_cm: true,
+          length_cm: true,
+          meta_description: true,
+          image_alt_text: true,
+          featured: true,
         },
         orderBy: {
           createdAt: "desc",

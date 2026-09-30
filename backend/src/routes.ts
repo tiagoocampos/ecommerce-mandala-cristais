@@ -34,6 +34,15 @@ import { GetDashboardAdminController } from './controllers/dashboard/GetDashboar
 import { updateStoreSettingsSchema } from './schemas/storeSettingsSchema.js';
 import { GetStoreSettingsController } from './controllers/storeSettings/GetStoreSettingsController.js';
 import { UpdateStoreSettingsController } from './controllers/storeSettings/UpdateStoreSettingsController.js';
+import { shippingQuoteSchema } from './schemas/shippingSchema.js';
+import { ShippingQuoteController } from './controllers/shipping/ShippingQuoteController.js';
+import { MelhorEnvioIntegrationController } from './controllers/integration/MelhorEnvioIntegrationController.js';
+import { productAIAssistSchema } from './schemas/productSchema.js';
+import { ProductAIAssistController } from './controllers/product/ProductAIAssistController.js';
+import { forgotPasswordSchema, resetPasswordSchema } from './schemas/passwordSchema.js';
+import { PasswordController } from './controllers/password/PasswordController.js';
+import { sendMarketingSchema, unsubscribeSchema } from './schemas/marketingSchema.js';
+import { MarketingController } from './controllers/marketing/MarketingController.js';
 import { validateSchema } from './middlewares/validateSchema.js';
 import { createAddressSchema, deleteAddressSchema, updateAddressSchema } from './schemas/adressSchema.js';
 import { CreateAddressController } from './controllers/address/CreateAddressController.js';
@@ -66,6 +75,14 @@ router.post("/users", validateSchema(createUserSchema), new CreateUserController
 router.post("/session", validateSchema(authUserSchema), new AuthUserController().handle)
 router.get("/me", isAuthenticated, new DetailUserController().handle)
 
+// "Esqueci minha senha" (públicas)
+router.post("/password/forgot", validateSchema(forgotPasswordSchema), new PasswordController().forgot)
+router.post("/password/reset", validateSchema(resetPasswordSchema), new PasswordController().reset)
+
+// E-mail de ofertas: envio pelo admin + descadastro público (LGPD)
+router.post("/admin/marketing/send", isAuthenticated, isAdmin, validateSchema(sendMarketingSchema), new MarketingController().send)
+router.post("/marketing/unsubscribe", validateSchema(unsubscribeSchema), new MarketingController().unsubscribe)
+
 router.get("/category", new ListCategoriesController().handle);
 router.post("/category", isAuthenticated, isAdmin, validateSchema(createCategorySchema), new CreateCategoryController().handle);
 router.put("/category/:id", isAuthenticated, isAdmin, validateSchema(updateCategorySchema), new UpdateCategoryController().handle);
@@ -81,8 +98,16 @@ router.get("/products", validateSchema(listProductsSchema), new ListProductsCont
 router.put("/product", isAuthenticated, isAdmin, upload.single("file"), validateSchema(updateProductSchema), new UpdateProductController().handle)
 router.get("/category/product", validateSchema(listProductsByCategorySchema), new ListProductsByCategoryController().handle);
 router.delete("/product", isAuthenticated, isAdmin, new DeleteProductController().handle)
+// "Pedir pra IA": só gera sugestões de texto; não salva nada
+router.post("/admin/products/ai-assist", isAuthenticated, isAdmin, validateSchema(productAIAssistSchema), new ProductAIAssistController().handle)
 
+router.post("/shipping/quote", isAuthenticated, validateSchema(shippingQuoteSchema), new ShippingQuoteController().handle)
 router.post("/order", isAuthenticated, validateSchema(createOrderSchema), new CreateOrderController().handle)
+
+// Melhor Envio (OAuth2): status/link de autorização no admin + callback público do OAuth
+router.get("/admin/integrations/melhorenvio", isAuthenticated, isAdmin, new MelhorEnvioIntegrationController().status)
+router.get("/admin/integrations/melhorenvio/authorize-url", isAuthenticated, isAdmin, new MelhorEnvioIntegrationController().authorizeUrl)
+router.get("/integrations/melhorenvio/callback", new MelhorEnvioIntegrationController().callback)
 router.get("/order/:order_id", isAuthenticated, validateSchema(getOrderSchema), new GetOrderController().handle)
 router.get("/orders", isAuthenticated, new ListOrdersController().handle)
 router.patch("/order/:order_id/status", isAuthenticated, isAdmin, new UpdateOrderStatusController().handle)

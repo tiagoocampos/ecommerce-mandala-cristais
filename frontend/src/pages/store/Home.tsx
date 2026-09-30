@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { Hero } from "../../components/store/Hero";
+import { FeaturedCarousel } from "../../components/store/FeaturedCarousel";
 import { TrustStrip } from "../../components/store/TrustStrip";
 import { CategoryStrip } from "../../components/store/CategoryStrip";
 import { ProductGrid } from "../../components/store/ProductGrid";
@@ -46,6 +47,10 @@ export function MandalaHome() {
     };
   }, []);
 
+  // Carrossel do topo: os produtos marcados como destaque no admin; se nenhum estiver
+  // marcado, mostra os produtos da loja (até 12) — o carrossel sempre aparece ao entrar.
+  const featured = useMemo(() => products.filter((p) => p.featured), [products]);
+  const carouselProducts = featured.length > 0 ? featured : products.slice(0, 12);
   const topPicks = useMemo(() => products.slice(0, 4), [products]);
   const forBeginners = useMemo(() => products.slice(4, 8), [products]);
 
@@ -55,6 +60,12 @@ export function MandalaHome() {
       <StoreHeader />
 
       <main className="flex-1">
+        {/* Primeira coisa abaixo do header, antes do banner */}
+        <FeaturedCarousel
+          products={carouselProducts}
+          loading={loadingProducts}
+          title={featured.length > 0 ? "Destaques" : "Nossos produtos"}
+        />
         <Hero />
         <TrustStrip />
         <CategoryStrip />

@@ -18,6 +18,9 @@ export interface MandalaProduct {
         slug: string;
     };
     rating?: number; // 0-5, opcional (média de avaliações)
+    meta_description?: string | null; // <meta name="description"> da página do produto
+    image_alt_text?: string | null; // alt da imagem principal
+    featured?: boolean; // aparece no carrossel de destaques da home
     createdAt?: string;
 }
 

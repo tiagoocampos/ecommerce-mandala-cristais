@@ -18,6 +18,9 @@ export type UserMinAggregateOutputType = {
     password: string | null;
     phone: string | null;
     role: $Enums.Role | null;
+    reset_password_token: string | null;
+    reset_password_expires_at: Date | null;
+    marketing_opt_out: boolean | null;
     createdAt: Date | null;
     updatedAt: Date | null;
 };
@@ -28,6 +31,9 @@ export type UserMaxAggregateOutputType = {
     password: string | null;
     phone: string | null;
     role: $Enums.Role | null;
+    reset_password_token: string | null;
+    reset_password_expires_at: Date | null;
+    marketing_opt_out: boolean | null;
     createdAt: Date | null;
     updatedAt: Date | null;
 };
@@ -38,6 +44,9 @@ export type UserCountAggregateOutputType = {
     password: number;
     phone: number;
     role: number;
+    reset_password_token: number;
+    reset_password_expires_at: number;
+    marketing_opt_out: number;
     createdAt: number;
     updatedAt: number;
     _all: number;
@@ -49,6 +58,9 @@ export type UserMinAggregateInputType = {
     password?: true;
     phone?: true;
     role?: true;
+    reset_password_token?: true;
+    reset_password_expires_at?: true;
+    marketing_opt_out?: true;
     createdAt?: true;
     updatedAt?: true;
 };
@@ -59,6 +71,9 @@ export type UserMaxAggregateInputType = {
     password?: true;
     phone?: true;
     role?: true;
+    reset_password_token?: true;
+    reset_password_expires_at?: true;
+    marketing_opt_out?: true;
     createdAt?: true;
     updatedAt?: true;
 };
@@ -69,6 +84,9 @@ export type UserCountAggregateInputType = {
     password?: true;
     phone?: true;
     role?: true;
+    reset_password_token?: true;
+    reset_password_expires_at?: true;
+    marketing_opt_out?: true;
     createdAt?: true;
     updatedAt?: true;
     _all?: true;
@@ -142,6 +160,9 @@ export type UserGroupByOutputType = {
     password: string;
     phone: string | null;
     role: $Enums.Role;
+    reset_password_token: string | null;
+    reset_password_expires_at: Date | null;
+    marketing_opt_out: boolean;
     createdAt: Date;
     updatedAt: Date;
     _count: UserCountAggregateOutputType | null;
@@ -161,6 +182,9 @@ export type UserWhereInput = {
     password?: Prisma.StringFilter<"User"> | string;
     phone?: Prisma.StringNullableFilter<"User"> | string | null;
     role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role;
+    reset_password_token?: Prisma.StringNullableFilter<"User"> | string | null;
+    reset_password_expires_at?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFilter<"User"> | boolean;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     addresses?: Prisma.AddressListRelationFilter;
@@ -175,6 +199,9 @@ export type UserOrderByWithRelationInput = {
     password?: Prisma.SortOrder;
     phone?: Prisma.SortOrderInput | Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    reset_password_token?: Prisma.SortOrderInput | Prisma.SortOrder;
+    reset_password_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder;
+    marketing_opt_out?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     addresses?: Prisma.AddressOrderByRelationAggregateInput;
@@ -185,6 +212,7 @@ export type UserOrderByWithRelationInput = {
 export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
     email?: string;
+    reset_password_token?: string;
     AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     OR?: Prisma.UserWhereInput[];
     NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
@@ -192,13 +220,15 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
     password?: Prisma.StringFilter<"User"> | string;
     phone?: Prisma.StringNullableFilter<"User"> | string | null;
     role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role;
+    reset_password_expires_at?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFilter<"User"> | boolean;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     addresses?: Prisma.AddressListRelationFilter;
     cart?: Prisma.XOR<Prisma.CartNullableScalarRelationFilter, Prisma.CartWhereInput> | null;
     orders?: Prisma.OrderListRelationFilter;
     coupons?: Prisma.CouponListRelationFilter;
-}, "id" | "email">;
+}, "id" | "email" | "reset_password_token">;
 export type UserOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
@@ -206,6 +236,9 @@ export type UserOrderByWithAggregationInput = {
     password?: Prisma.SortOrder;
     phone?: Prisma.SortOrderInput | Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    reset_password_token?: Prisma.SortOrderInput | Prisma.SortOrder;
+    reset_password_expires_at?: Prisma.SortOrderInput | Prisma.SortOrder;
+    marketing_opt_out?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     _count?: Prisma.UserCountOrderByAggregateInput;
@@ -222,6 +255,9 @@ export type UserScalarWhereWithAggregatesInput = {
     password?: Prisma.StringWithAggregatesFilter<"User"> | string;
     phone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
     role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role;
+    reset_password_token?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
+    reset_password_expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null;
+    marketing_opt_out?: Prisma.BoolWithAggregatesFilter<"User"> | boolean;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
 };
@@ -232,6 +268,9 @@ export type UserCreateInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressCreateNestedManyWithoutUserInput;
@@ -246,6 +285,9 @@ export type UserUncheckedCreateInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput;
@@ -260,6 +302,9 @@ export type UserUpdateInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput;
@@ -274,6 +319,9 @@ export type UserUncheckedUpdateInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput;
@@ -288,6 +336,9 @@ export type UserCreateManyInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
 };
@@ -298,6 +349,9 @@ export type UserUpdateManyMutationInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -308,6 +362,9 @@ export type UserUncheckedUpdateManyInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -318,6 +375,9 @@ export type UserCountOrderByAggregateInput = {
     password?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    reset_password_token?: Prisma.SortOrder;
+    reset_password_expires_at?: Prisma.SortOrder;
+    marketing_opt_out?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
@@ -328,6 +388,9 @@ export type UserMaxOrderByAggregateInput = {
     password?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    reset_password_token?: Prisma.SortOrder;
+    reset_password_expires_at?: Prisma.SortOrder;
+    marketing_opt_out?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
@@ -338,6 +401,9 @@ export type UserMinOrderByAggregateInput = {
     password?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    reset_password_token?: Prisma.SortOrder;
+    reset_password_expires_at?: Prisma.SortOrder;
+    marketing_opt_out?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
@@ -357,6 +423,12 @@ export type NullableStringFieldUpdateOperationsInput = {
 };
 export type EnumRoleFieldUpdateOperationsInput = {
     set?: $Enums.Role;
+};
+export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null;
+};
+export type BoolFieldUpdateOperationsInput = {
+    set?: boolean;
 };
 export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string;
@@ -418,6 +490,9 @@ export type UserCreateWithoutAddressesInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     cart?: Prisma.CartCreateNestedOneWithoutUserInput;
@@ -431,6 +506,9 @@ export type UserUncheckedCreateWithoutAddressesInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput;
@@ -457,6 +535,9 @@ export type UserUpdateWithoutAddressesInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     cart?: Prisma.CartUpdateOneWithoutUserNestedInput;
@@ -470,6 +551,9 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput;
@@ -483,6 +567,9 @@ export type UserCreateWithoutCartInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressCreateNestedManyWithoutUserInput;
@@ -496,6 +583,9 @@ export type UserUncheckedCreateWithoutCartInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput;
@@ -522,6 +612,9 @@ export type UserUpdateWithoutCartInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput;
@@ -535,6 +628,9 @@ export type UserUncheckedUpdateWithoutCartInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput;
@@ -548,6 +644,9 @@ export type UserCreateWithoutOrdersInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressCreateNestedManyWithoutUserInput;
@@ -561,6 +660,9 @@ export type UserUncheckedCreateWithoutOrdersInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput;
@@ -587,6 +689,9 @@ export type UserUpdateWithoutOrdersInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput;
@@ -600,6 +705,9 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput;
@@ -613,6 +721,9 @@ export type UserCreateWithoutCouponsInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressCreateNestedManyWithoutUserInput;
@@ -626,6 +737,9 @@ export type UserUncheckedCreateWithoutCouponsInput = {
     password: string;
     phone?: string | null;
     role?: $Enums.Role;
+    reset_password_token?: string | null;
+    reset_password_expires_at?: Date | string | null;
+    marketing_opt_out?: boolean;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput;
@@ -652,6 +766,9 @@ export type UserUpdateWithoutCouponsInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput;
@@ -665,6 +782,9 @@ export type UserUncheckedUpdateWithoutCouponsInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role;
+    reset_password_token?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    reset_password_expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    marketing_opt_out?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput;
@@ -718,6 +838,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     password?: boolean;
     phone?: boolean;
     role?: boolean;
+    reset_password_token?: boolean;
+    reset_password_expires_at?: boolean;
+    marketing_opt_out?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>;
@@ -733,6 +856,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     password?: boolean;
     phone?: boolean;
     role?: boolean;
+    reset_password_token?: boolean;
+    reset_password_expires_at?: boolean;
+    marketing_opt_out?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 }, ExtArgs["result"]["user"]>;
@@ -743,6 +869,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     password?: boolean;
     phone?: boolean;
     role?: boolean;
+    reset_password_token?: boolean;
+    reset_password_expires_at?: boolean;
+    marketing_opt_out?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 }, ExtArgs["result"]["user"]>;
@@ -753,10 +882,13 @@ export type UserSelectScalar = {
     password?: boolean;
     phone?: boolean;
     role?: boolean;
+    reset_password_token?: boolean;
+    reset_password_expires_at?: boolean;
+    marketing_opt_out?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>;
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "role" | "reset_password_token" | "reset_password_expires_at" | "marketing_opt_out" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>;
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     addresses?: boolean | Prisma.User$addressesArgs<ExtArgs>;
     cart?: boolean | Prisma.User$cartArgs<ExtArgs>;
@@ -781,6 +913,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
         password: string;
         phone: string | null;
         role: $Enums.Role;
+        reset_password_token: string | null;
+        reset_password_expires_at: Date | null;
+        marketing_opt_out: boolean;
         createdAt: Date;
         updatedAt: Date;
     }, ExtArgs["result"]["user"]>;
@@ -1147,6 +1282,9 @@ export interface UserFieldRefs {
     readonly password: Prisma.FieldRef<"User", 'String'>;
     readonly phone: Prisma.FieldRef<"User", 'String'>;
     readonly role: Prisma.FieldRef<"User", 'Role'>;
+    readonly reset_password_token: Prisma.FieldRef<"User", 'String'>;
+    readonly reset_password_expires_at: Prisma.FieldRef<"User", 'DateTime'>;
+    readonly marketing_opt_out: Prisma.FieldRef<"User", 'Boolean'>;
     readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>;
     readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>;
 }

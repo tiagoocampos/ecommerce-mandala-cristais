@@ -1,5 +1,7 @@
 import { CreateProductService } from '../../services/product/CreateProductService.js';
 import { ImageRequiredError } from '../../exceptions/ProductErrors.js';
+import { definedShippingFields, parseShippingFields } from '../../utils/parseShippingFields.js';
+import { parseSeoFields } from '../../utils/parseSeoFields.js';
 class CreateProductController {
     async handle(req, res) {
         const { name, price, stock, promo_price, description, category_id } = req.body;
@@ -15,7 +17,10 @@ class CreateProductController {
             description: description,
             category_id: category_id,
             imageBuffer: req.file.buffer,
-            imageName: req.file.originalname
+            imageName: req.file.originalname,
+            ...definedShippingFields(parseShippingFields(req.body)),
+            ...parseSeoFields(req.body),
+            featured: req.body.featured === "true",
         });
         return res.json(product);
     }

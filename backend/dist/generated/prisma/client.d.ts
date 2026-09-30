@@ -76,4 +76,9 @@ export type Coupon = Prisma.CouponModel;
  *
  */
 export type StoreSettings = Prisma.StoreSettingsModel;
+/**
+ * Model IntegrationToken
+ *
+ */
+export type IntegrationToken = Prisma.IntegrationTokenModel;
 //# sourceMappingURL=client.d.ts.map

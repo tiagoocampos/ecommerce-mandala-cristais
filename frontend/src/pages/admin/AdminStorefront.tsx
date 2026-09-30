@@ -7,6 +7,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { CouponForm, type CouponFormPayload } from "../../components/admin/CouponForm";
 import { CouponsTable } from "../../components/admin/CouponsTable";
+import { MelhorEnvioConnection } from "../../components/admin/MelhorEnvioConnection";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { TrustStrip } from "../../components/store/TrustStrip";
 import { setStoreSettingsCache } from "../../hooks/useStoreSettings";
@@ -165,6 +166,8 @@ export function AdminStorefront() {
             <p className="text-sm text-mc-ink/60 mb-6">
                 Textos do topo da loja, faixa de confiança e cupons de desconto.
             </p>
+
+            <MelhorEnvioConnection />
 
             {/* 1. Faixa de anúncio */}
             <Block

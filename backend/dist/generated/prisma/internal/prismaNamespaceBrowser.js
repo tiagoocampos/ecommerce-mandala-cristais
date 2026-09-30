@@ -49,7 +49,8 @@ export const ModelName = {
     OrderItem: 'OrderItem',
     Payment: 'Payment',
     Coupon: 'Coupon',
-    StoreSettings: 'StoreSettings'
+    StoreSettings: 'StoreSettings',
+    IntegrationToken: 'IntegrationToken'
 };
 /*
  * Enums
@@ -67,6 +68,9 @@ export const UserScalarFieldEnum = {
     password: 'password',
     phone: 'phone',
     role: 'role',
+    reset_password_token: 'reset_password_token',
+    reset_password_expires_at: 'reset_password_expires_at',
+    marketing_opt_out: 'marketing_opt_out',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
@@ -99,6 +103,13 @@ export const ProductScalarFieldEnum = {
     banner: 'banner',
     stock: 'stock',
     disabled: 'disabled',
+    featured: 'featured',
+    weight_grams: 'weight_grams',
+    height_cm: 'height_cm',
+    width_cm: 'width_cm',
+    length_cm: 'length_cm',
+    meta_description: 'meta_description',
+    image_alt_text: 'image_alt_text',
     category_id: 'category_id',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -122,6 +133,9 @@ export const OrderScalarFieldEnum = {
     discount: 'discount',
     shipping_cost: 'shipping_cost',
     total: 'total',
+    shipping_service: 'shipping_service',
+    shipping_delivery_days: 'shipping_delivery_days',
+    shipping_cost_estimated: 'shipping_cost_estimated',
     user_id: 'user_id',
     address_id: 'address_id',
     coupon_id: 'coupon_id',
@@ -163,6 +177,15 @@ export const StoreSettingsScalarFieldEnum = {
     announcement_coupon_code: 'announcement_coupon_code',
     free_shipping_threshold: 'free_shipping_threshold',
     trust_strip_items: 'trust_strip_items',
+    updatedAt: 'updatedAt'
+};
+export const IntegrationTokenScalarFieldEnum = {
+    provider: 'provider',
+    access_token: 'access_token',
+    refresh_token: 'refresh_token',
+    expires_at: 'expires_at',
+    refresh_expires_at: 'refresh_expires_at',
+    createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
 export const SortOrder = {

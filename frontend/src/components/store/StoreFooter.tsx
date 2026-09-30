@@ -19,7 +19,7 @@ const SOCIALS = [
 const FOOTER_TRUST = [
     { icon: ShieldCheck, label: "Pagamento 100% seguro" },
     { icon: RefreshCw, label: "Trocas em até 7 dias" },
-    { icon: CreditCard, label: "Pix, cartão e boleto" },
+    { icon: CreditCard, label: "Pix e cartão" },
 ];
 
 const LINK_COLUMNS = [
@@ -161,7 +161,7 @@ export function StoreFooter() {
                         </span>
 
                         <span>
-                            Pix · Cartão de crédito · Boleto
+                            Pix · Cartão de crédito
                         </span>
                     </div>
                 </div>

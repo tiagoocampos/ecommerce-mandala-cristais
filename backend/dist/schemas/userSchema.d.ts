@@ -1,4 +1,5 @@
 import { z } from "zod";
+export declare const passwordField: z.ZodString;
 export declare const createUserSchema: z.ZodObject<{
     body: z.ZodObject<{
         name: z.ZodString;

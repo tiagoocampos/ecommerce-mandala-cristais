@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
     MapPin,
     ShoppingBag,
@@ -23,6 +24,7 @@ import type { Address } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
 import { Input } from "../../components/ui/input";
 import type { CouponType } from "../../types/admin";
+import { ShippingOptions, type ShippingOption } from "../../components/store/ShippingOptions";
 
 interface AppliedCoupon {
     code: string;
@@ -50,6 +52,13 @@ export function CheckoutPage() {
     const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
     const [couponError, setCouponError] = useState<string | null>(null);
     const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+    const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+    const [shippingService, setShippingService] = useState<string | null>(null);
+    const [shippingLoading, setShippingLoading] = useState(false);
+    const [shippingError, setShippingError] = useState<string | null>(null);
+    const [shippingRefresh, setShippingRefresh] = useState(0);
+    const quoteRequestId = useRef(0);
 
     useEffect(() => {
         let mounted = true;
@@ -86,10 +95,41 @@ export function CheckoutPage() {
         return sum + price * item.quantity;
     }, 0);
 
-    const discount = appliedCoupon ? previewDiscount(appliedCoupon, subtotal) : 0;
-    const total = Math.max(0, subtotal - discount);
+    // Recota sempre que o endereço (CEP) ou o conteúdo do carrinho mudar
+    const cartSignature = items.map((item) => `${item.product.id}:${item.quantity}`).join("|");
+    useEffect(() => {
+        setShippingOptions([]);
+        setShippingService(null);
+        setShippingError(null);
+        if (!selectedAddressId || !cartSignature) return;
 
-    const isReady = items.length > 0 && !!selectedAddressId && !submitting;
+        const requestId = ++quoteRequestId.current;
+        setShippingLoading(true);
+        api.post<ShippingOption[]>("/shipping/quote", { address_id: selectedAddressId })
+            .then(({ data }) => {
+                if (requestId !== quoteRequestId.current) return; // resposta de um endereço antigo
+                setShippingOptions(data);
+                setShippingService(data[0]?.service ?? null); // mais barato já vem primeiro
+            })
+            .catch((err) => {
+                if (requestId !== quoteRequestId.current) return;
+                setShippingError(
+                    getApiErrorMessage(err, "Não conseguimos calcular o frete agora, tente novamente em instantes.")
+                );
+            })
+            .finally(() => {
+                if (requestId === quoteRequestId.current) setShippingLoading(false);
+            });
+    }, [selectedAddressId, cartSignature, shippingRefresh]);
+
+    const selectedShipping = shippingOptions.find((option) => option.service === shippingService) ?? null;
+    const shippingCost = selectedShipping?.price_cents ?? 0;
+
+    const discount = appliedCoupon ? previewDiscount(appliedCoupon, subtotal) : 0;
+    const total = Math.max(0, subtotal - discount) + shippingCost;
+
+    // Frete é obrigatório: sem opção escolhida não finaliza
+    const isReady = items.length > 0 && !!selectedAddressId && !!selectedShipping && !submitting;
 
     async function handleApplyCoupon(e: React.FormEvent) {
         e.preventDefault();
@@ -116,16 +156,19 @@ export function CheckoutPage() {
     }
 
     async function handleCheckout() {
-        if (!selectedAddressId) return;
+        if (!selectedAddressId || !selectedShipping) return;
 
         setSubmitting(true);
         setError(null);
 
         try {
             // 1. Criar o pedido
-            // Envia só o código: o backend valida e recalcula o desconto de novo
+            // Envia só códigos: o backend recota o frete e recalcula o desconto.
+            // shipping_quote_cents só é usado se o Melhor Envio cair na hora de finalizar.
             const { data: orderData } = await api.post<{ id: string }>("/order", {
                 address_id: selectedAddressId,
+                shipping_service: selectedShipping.service,
+                shipping_quote_cents: selectedShipping.price_cents,
                 ...(appliedCoupon && { coupon_code: appliedCoupon.code }),
             });
 
@@ -146,6 +189,10 @@ export function CheckoutPage() {
                     msg ||
                         "Erro ao processar seu pedido. Tente novamente."
                 );
+            }
+            // Frete mudou/saiu do ar desde a cotação: recota para o cliente escolher de novo
+            if (axios.isAxiosError(err) && err.response?.status === 409) {
+                setShippingRefresh((n) => n + 1);
             }
             showApiError(err, "Erro ao finalizar compra");
         } finally {
@@ -280,6 +327,16 @@ export function CheckoutPage() {
                                         )}
                                     </div>
 
+                                    <ShippingOptions
+                                        hasAddress={!!selectedAddressId}
+                                        loading={shippingLoading}
+                                        error={shippingError}
+                                        options={shippingOptions}
+                                        selected={shippingService}
+                                        onSelect={setShippingService}
+                                        onRetry={() => setShippingRefresh((n) => n + 1)}
+                                    />
+
                                     {/* Seção de pagamento (informativa) */}
                                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
@@ -297,9 +354,6 @@ export function CheckoutPage() {
                                             </span>
                                             <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
                                                 Cartão
-                                            </span>
-                                            <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
-                                                Boleto
                                             </span>
                                         </div>
                                     </div>
@@ -412,8 +466,16 @@ export function CheckoutPage() {
                                                 </div>
                                             )}
                                             <div className="flex justify-between text-sm text-mc-ink/70">
-                                                <span>Frete</span>
-                                                <span className="text-xs">Calculado na entrega</span>
+                                                <span>
+                                                    Frete{selectedShipping ? ` (${selectedShipping.service})` : ""}
+                                                </span>
+                                                {selectedShipping ? (
+                                                    <span>{formatPrice(selectedShipping.price_cents)}</span>
+                                                ) : (
+                                                    <span className="text-xs">
+                                                        {shippingLoading ? "Calculando..." : "Escolha o frete"}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="border-t border-mc-violet-950/10 pt-2 flex justify-between font-semibold text-mc-violet-950">
                                                 <span>Total</span>
@@ -436,6 +498,8 @@ export function CheckoutPage() {
                                             </span>
                                         ) : !selectedAddressId ? (
                                             "Selecione um endereço"
+                                        ) : !selectedShipping ? (
+                                            shippingLoading ? "Calculando frete..." : "Escolha uma opção de frete"
                                         ) : (
                                             "Finalizar compra"
                                         )}

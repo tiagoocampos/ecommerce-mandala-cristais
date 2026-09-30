@@ -3,6 +3,8 @@ export declare const createOrderSchema: z.ZodObject<{
     body: z.ZodObject<{
         address_id: z.ZodString;
         coupon_code: z.ZodOptional<z.ZodString>;
+        shipping_service: z.ZodString;
+        shipping_quote_cents: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const AddItemSchema: z.ZodObject<{

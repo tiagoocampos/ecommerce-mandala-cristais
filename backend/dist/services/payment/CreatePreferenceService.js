@@ -24,7 +24,8 @@ class CreatePreferenceService {
             throw new OrderNotFoundError();
         }
         // Com cupom, o Mercado Pago precisa cobrar o total já descontado. Como ele não aceita
-        // item com valor negativo, o pedido vai como um item único com o valor final.
+        // item com valor negativo, o pedido vai como um item único com o valor final (frete incluso).
+        // Sem cupom, vão os produtos + uma linha de frete, somando exatamente order.total.
         const items = order.discount > 0
             ? [{
                     id: order.id,
@@ -33,13 +34,24 @@ class CreatePreferenceService {
                     quantity: 1,
                     currency_id: "BRL",
                 }]
-            : order.items.map((item) => ({
-                id: item.product.id,
-                title: item.product.name,
-                unit_price: item.unit_price / 100,
-                quantity: item.quantity,
-                currency_id: "BRL",
-            }));
+            : [
+                ...order.items.map((item) => ({
+                    id: item.product.id,
+                    title: item.product.name,
+                    unit_price: item.unit_price / 100,
+                    quantity: item.quantity,
+                    currency_id: "BRL",
+                })),
+                ...(order.shipping_cost > 0
+                    ? [{
+                            id: "frete",
+                            title: `Frete${order.shipping_service ? ` (${order.shipping_service})` : ""}`,
+                            unit_price: order.shipping_cost / 100,
+                            quantity: 1,
+                            currency_id: "BRL",
+                        }]
+                    : []),
+            ];
         const preferenceData = {
             items,
             external_reference: order.id,

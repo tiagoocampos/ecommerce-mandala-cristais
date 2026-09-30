@@ -242,6 +242,7 @@ export declare const ModelName: {
     readonly Payment: "Payment";
     readonly Coupon: "Coupon";
     readonly StoreSettings: "StoreSettings";
+    readonly IntegrationToken: "IntegrationToken";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export interface TypeMapCb<GlobalOmitOptions = {}> extends runtime.Types.Utils.Fn<{
@@ -254,7 +255,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "user" | "address" | "category" | "product" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "coupon" | "storeSettings";
+        modelProps: "user" | "address" | "category" | "product" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "coupon" | "storeSettings" | "integrationToken";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1072,6 +1073,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        IntegrationToken: {
+            payload: Prisma.$IntegrationTokenPayload<ExtArgs>;
+            fields: Prisma.IntegrationTokenFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.IntegrationTokenFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.IntegrationTokenFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>;
+                };
+                findFirst: {
+                    args: Prisma.IntegrationTokenFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.IntegrationTokenFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>;
+                };
+                findMany: {
+                    args: Prisma.IntegrationTokenFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>[];
+                };
+                create: {
+                    args: Prisma.IntegrationTokenCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>;
+                };
+                createMany: {
+                    args: Prisma.IntegrationTokenCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.IntegrationTokenCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>[];
+                };
+                delete: {
+                    args: Prisma.IntegrationTokenDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>;
+                };
+                update: {
+                    args: Prisma.IntegrationTokenUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.IntegrationTokenDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.IntegrationTokenUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.IntegrationTokenUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>[];
+                };
+                upsert: {
+                    args: Prisma.IntegrationTokenUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$IntegrationTokenPayload>;
+                };
+                aggregate: {
+                    args: Prisma.IntegrationTokenAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateIntegrationToken>;
+                };
+                groupBy: {
+                    args: Prisma.IntegrationTokenGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.IntegrationTokenGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.IntegrationTokenCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.IntegrationTokenCountAggregateOutputType> | number;
+                };
+            };
+        };
     };
 } & {
     other: {
@@ -1113,6 +1188,9 @@ export declare const UserScalarFieldEnum: {
     readonly password: "password";
     readonly phone: "phone";
     readonly role: "role";
+    readonly reset_password_token: "reset_password_token";
+    readonly reset_password_expires_at: "reset_password_expires_at";
+    readonly marketing_opt_out: "marketing_opt_out";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
 };
@@ -1148,6 +1226,13 @@ export declare const ProductScalarFieldEnum: {
     readonly banner: "banner";
     readonly stock: "stock";
     readonly disabled: "disabled";
+    readonly featured: "featured";
+    readonly weight_grams: "weight_grams";
+    readonly height_cm: "height_cm";
+    readonly width_cm: "width_cm";
+    readonly length_cm: "length_cm";
+    readonly meta_description: "meta_description";
+    readonly image_alt_text: "image_alt_text";
     readonly category_id: "category_id";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
@@ -1174,6 +1259,9 @@ export declare const OrderScalarFieldEnum: {
     readonly discount: "discount";
     readonly shipping_cost: "shipping_cost";
     readonly total: "total";
+    readonly shipping_service: "shipping_service";
+    readonly shipping_delivery_days: "shipping_delivery_days";
+    readonly shipping_cost_estimated: "shipping_cost_estimated";
     readonly user_id: "user_id";
     readonly address_id: "address_id";
     readonly coupon_id: "coupon_id";
@@ -1222,6 +1310,16 @@ export declare const StoreSettingsScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type StoreSettingsScalarFieldEnum = (typeof StoreSettingsScalarFieldEnum)[keyof typeof StoreSettingsScalarFieldEnum];
+export declare const IntegrationTokenScalarFieldEnum: {
+    readonly provider: "provider";
+    readonly access_token: "access_token";
+    readonly refresh_token: "refresh_token";
+    readonly expires_at: "expires_at";
+    readonly refresh_expires_at: "refresh_expires_at";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type IntegrationTokenScalarFieldEnum = (typeof IntegrationTokenScalarFieldEnum)[keyof typeof IntegrationTokenScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";
@@ -1280,6 +1378,10 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>;
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>;
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
@@ -1287,10 +1389,6 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>;
 /**
  * Reference to a field of type 'OrderStatus'
  */
@@ -1451,6 +1549,7 @@ export type GlobalOmitConfig = {
     payment?: Prisma.PaymentOmit;
     coupon?: Prisma.CouponOmit;
     storeSettings?: Prisma.StoreSettingsOmit;
+    integrationToken?: Prisma.IntegrationTokenOmit;
 };
 export type LogLevel = 'info' | 'query' | 'warn' | 'error';
 export type LogDefinition = {

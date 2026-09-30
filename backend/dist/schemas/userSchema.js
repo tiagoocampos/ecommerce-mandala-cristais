@@ -1,4 +1,8 @@
 import { z } from "zod";
+// Regra única de senha: cadastro e redefinição de senha usam a mesma
+export const passwordField = z
+    .string({ message: "A senha deve ser do tipo texto" })
+    .min(6, { message: "A senha deve conter no mínimo 6 caracteres" });
 export const createUserSchema = z.object({
     body: z.object({
         name: z
@@ -7,9 +11,7 @@ export const createUserSchema = z.object({
             .max(45, { message: "O nome deve ter no máximo 45 caracteres" }),
         email: z
             .email({ message: "O email deve ser válido" }),
-        password: z
-            .string({ message: "A senha deve ser do tipo texto" })
-            .min(6, { message: "A senha deve conter no mínimo 6 caracteres" }),
+        password: passwordField,
         phone: z
             .string({ message: "O telefone deve ser do tipo texto" })
             .min(10, { message: "Informe um telefone válido com DDD" })

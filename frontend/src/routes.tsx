@@ -16,6 +16,10 @@ import { PaymentSuccessPage } from "./pages/payment-success";
 import { PaymentFailurePage } from "./pages/payment-failure";
 import { PaymentPendingPage } from "./pages/payment-pending";
 import { NotFound } from "./pages/not-found";
+import { ForgotPassword } from "./pages/forgot-password";
+import { ResetPassword } from "./pages/reset-password";
+import { Unsubscribe } from "./pages/unsubscribe";
+import { AdminMarketing } from "./pages/admin/AdminMarketing";
 
 // admin
 import { AdminLayout } from "./pages/admin/AdminLayout";
@@ -37,6 +41,9 @@ export function RoutesApp() {
                 <Route path="/" element={<MandalaHome />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/esqueci-senha" element={<ForgotPassword />} />
+                <Route path="/redefinir-senha" element={<ResetPassword />} />
+                <Route path="/descadastrar" element={<Unsubscribe />} />
                 <Route path="/categorias" element={<Categories />} />
                 <Route path="/categoria/:slug" element={<CategoryDetail />} />
                 <Route path="/produtos" element={<Products />} />
@@ -65,6 +72,7 @@ export function RoutesApp() {
                     <Route path="usuarios" element={<AdminUsers />} />
                     <Route path="usuarios/:id" element={<AdminUserDetail />} />
                     <Route path="vitrine" element={<AdminStorefront />} />
+                    <Route path="marketing" element={<AdminMarketing />} />
                 </Route>
 
                 {/* 404 */}

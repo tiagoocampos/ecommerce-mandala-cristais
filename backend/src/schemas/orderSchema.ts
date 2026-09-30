@@ -8,6 +8,12 @@ export const createOrderSchema = z.object({
       message: "O address_id deve ser um UUID válido"
     }),
     coupon_code: z.string().trim().min(1).optional(),
+    shipping_service: z
+      .string({ message: "Escolha uma opção de frete" })
+      .trim()
+      .min(1, { message: "Escolha uma opção de frete" }),
+    // fallback: só é usado se o Melhor Envio estiver fora do ar ao finalizar
+    shipping_quote_cents: z.number().int().positive().optional(),
   }),
 });
 

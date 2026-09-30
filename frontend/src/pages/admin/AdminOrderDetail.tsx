@@ -60,6 +60,9 @@ interface AdminDetailOrder {
     subtotal: number;
     discount: number;
     shipping_cost: number;
+    shipping_service?: string | null;
+    shipping_delivery_days?: number | null;
+    shipping_cost_estimated?: boolean;
     total: number;
     user_id: string;
     address_id: string;
@@ -278,11 +281,28 @@ export function AdminOrderDetail() {
                                     <span>-{formatPrice(order.discount)}</span>
                                 </div>
                             )}
-                            {order.shipping_cost > 0 && (
+                            {(order.shipping_cost > 0 || order.shipping_service) && (
                                 <div className="flex justify-between text-mc-ink/70">
-                                    <span>Frete</span>
+                                    <span>
+                                        Frete
+                                        {order.shipping_service &&
+                                            ` (${[
+                                                order.shipping_service,
+                                                order.shipping_delivery_days &&
+                                                    `até ${order.shipping_delivery_days} dias úteis`,
+                                            ]
+                                                .filter(Boolean)
+                                                .join(" · ")})`}
+                                    </span>
                                     <span>{formatPrice(order.shipping_cost)}</span>
                                 </div>
+                            )}
+                            {order.shipping_cost_estimated && (
+                                <p className="rounded-md border border-mc-gold-500/50 bg-mc-gold-500/15 px-2.5 py-1.5 text-xs text-mc-gold-800">
+                                    ⚠ Frete estimado: o Melhor Envio estava fora do ar quando o pedido
+                                    foi feito, e foi usado o valor que o cliente viu na tela. Confira o
+                                    frete real antes de enviar.
+                                </p>
                             )}
                             <div className="border-t border-mc-violet-950/10 pt-2 flex justify-between font-semibold text-mc-violet-950">
                                 <span>Total</span>

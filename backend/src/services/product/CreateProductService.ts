@@ -3,8 +3,12 @@ import { CategoryNotFoundError } from "../../exceptions/CategoryErrors.js";
 import prismaClient from "../../prisma/index.js";
 import cloudinary from "../../config/cloudinary.js"
 import { generateSlug } from "../../utils/generateSlug.js";
+import type { ShippingFields } from "../../utils/parseShippingFields.js";
 
-interface CreateProductServiceProps{
+interface CreateProductServiceProps extends ShippingFields {
+    meta_description?: string | null | undefined,
+    image_alt_text?: string | null | undefined,
+    featured?: boolean | undefined,
     name: string,
     price: number,
     promo_price?: number | null | undefined,
@@ -23,8 +27,15 @@ class CreateProductService{
         promo_price,
         description, 
         category_id, 
-        imageBuffer, 
-        imageName
+        imageBuffer,
+        imageName,
+        weight_grams,
+        height_cm,
+        width_cm,
+        length_cm,
+        meta_description,
+        image_alt_text,
+        featured,
     }: CreateProductServiceProps){
 
         const slug = generateSlug(name);        
@@ -76,7 +87,14 @@ class CreateProductService{
                 promo_price: promo_price ?? null,
                 description: description,
                 banner: bannerUrl,
-                category_id: category_id
+                category_id: category_id,
+                weight_grams: weight_grams ?? null,
+                height_cm: height_cm ?? null,
+                width_cm: width_cm ?? null,
+                length_cm: length_cm ?? null,
+                meta_description: meta_description ?? null,
+                image_alt_text: image_alt_text ?? null,
+                featured: featured ?? false,
             },
             select: {
                 id: true,
@@ -88,7 +106,14 @@ class CreateProductService{
                 createdAt: true,
                 stock: true,
                 slug: true,
-                promo_price: true
+                promo_price: true,
+                weight_grams: true,
+                height_cm: true,
+                width_cm: true,
+                length_cm: true,
+                meta_description: true,
+                image_alt_text: true,
+                featured: true,
             }
         });
 

@@ -44,8 +44,8 @@ export function PaymentPendingPage() {
                             <li className="flex items-start gap-2">
                                 <span className="text-mc-gold-700 mt-0.5">•</span>
                                 <span>
-                                    Se pagou com <strong>cartão ou boleto</strong>, a
-                                    confirmação pode levar até 3 dias úteis.
+                                    Se pagou com <strong>cartão</strong>, a confirmação pode
+                                    levar um pouco mais quando o pagamento passa por análise.
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">

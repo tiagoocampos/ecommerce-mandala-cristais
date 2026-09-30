@@ -10,6 +10,7 @@ class ListUsersAdminService {
         phone: true,
         role: true,
         createdAt: true,
+        marketing_opt_out: true,
         _count: {
           select: { orders: true },
         },

@@ -4,8 +4,10 @@ import { InsufficientStockError } from "../../exceptions/OrdersErrors.js";
 import prismaClient from "../../prisma/index.js";
 import { calculateCartSubtotal } from "../cart/calculateCartSubtotal.js";
 import { validateCoupon } from "../coupon/validateCoupon.js";
+import { quoteShipping } from "../shipping/quoteShipping.js";
+import { ShippingServiceNotAvailableError, ShippingUnavailableError } from "../../exceptions/ShippingErrors.js";
 class CreateOrderService {
-    async execute({ user_id, address_id, coupon_code }) {
+    async execute({ user_id, address_id, coupon_code, shipping_service, shipping_quote_cents }) {
         const cart = await prismaClient.cart.findUnique({
             where: {
                 user_id,
@@ -44,6 +46,40 @@ class CreateOrderService {
             discount = result.discount;
             coupon_id = result.coupon.id;
         }
+        // Frete sempre recotado aqui — nunca confiar no preço vindo do frontend
+        let shipping_cost;
+        let shipping_delivery_days = null;
+        let shipping_cost_estimated = false;
+        try {
+            const { options } = await quoteShipping({
+                destinationZipCode: address.zip_code,
+                items: cart.items,
+            });
+            const chosen = options.find((option) => option.service === shipping_service);
+            if (!chosen) {
+                // preço mudou / serviço saiu do ar desde a cotação na tela
+                throw new ShippingServiceNotAvailableError();
+            }
+            shipping_cost = chosen.price_cents;
+            shipping_delivery_days = chosen.delivery_days;
+        }
+        catch (error) {
+            // DECISÃO DE NEGÓCIO: se o Melhor Envio estiver fora do ar bem na hora de finalizar
+            // (o cliente já viu uma cotação na tela), preferimos não perder a venda. Gravamos
+            // o último valor cotado enviado pelo frontend e marcamos o pedido com
+            // shipping_cost_estimated = true para o admin conferir o frete antes de enviar.
+            // Vale SÓ para indisponibilidade da API — serviço inexistente, CEP inválido
+            // ou falta de opções continuam bloqueando o pedido.
+            const canUseQuotedFallback = error instanceof ShippingUnavailableError &&
+                typeof shipping_quote_cents === "number" &&
+                shipping_quote_cents > 0;
+            if (!canUseQuotedFallback) {
+                throw error;
+            }
+            console.warn(`[frete] Melhor Envio indisponível ao criar pedido do usuário ${user_id}; usando frete cotado na tela (${shipping_quote_cents} centavos, ${shipping_service}).`);
+            shipping_cost = shipping_quote_cents;
+            shipping_cost_estimated = true;
+        }
         //parte de transação
         const transaction = await prismaClient.$transaction(async (tx) => {
             const order = await tx.order.create({
@@ -52,8 +88,12 @@ class CreateOrderService {
                     address_id,
                     subtotal,
                     discount,
-                    shipping_cost: 0,
-                    total: Math.max(0, subtotal - discount),
+                    shipping_cost,
+                    shipping_service,
+                    shipping_delivery_days,
+                    shipping_cost_estimated,
+                    // desconto (cupom) vale sobre os produtos; o frete é somado depois
+                    total: Math.max(0, subtotal - discount) + shipping_cost,
                     coupon_id,
                     payment: {
                         create: {

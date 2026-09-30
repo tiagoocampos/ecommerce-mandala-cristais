@@ -12,8 +12,8 @@ declare class ListProductsByCategoryService {
             id: string;
         };
         price: number;
-        stock: number;
         promo_price: number | null;
+        stock: number;
         description: string;
         category_id: string;
         banner: string;

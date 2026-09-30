@@ -43,6 +43,13 @@ model User {
   phone    String?
   role     Role   @default(CUSTOMER)
 
+  // "Esqueci minha senha": guarda só o HASH (sha256) do token enviado por e-mail
+  reset_password_token      String?   @unique
+  reset_password_expires_at DateTime?
+
+  // LGPD: true = não recebe mais e-mails de oferta (descadastro pelo link do e-mail)
+  marketing_opt_out Boolean @default(false)
+
   addresses Address[]
   cart      Cart?
   orders    Order[]
@@ -97,6 +104,19 @@ model Product {
   banner      String
   stock       Int     @default(0)
   disabled    Boolean @default(false)
+  // Aparece no carrossel de destaques no topo da home
+  featured    Boolean @default(false)
+
+  // Pacote para cotação de frete. Opcionais: produtos antigos usam um pacote
+  // padrão (ver services/shipping/buildShippingProducts.ts) até o lojista preencher.
+  weight_grams Int?
+  height_cm    Int?
+  width_cm     Int?
+  length_cm    Int?
+
+  // SEO/acessibilidade (podem ser gerados pelo "Pedir pra IA" no admin e editados)
+  meta_description String? // <meta name="description"> da página do produto (até 160 caracteres)
+  image_alt_text   String? // alt da imagem principal
 
   category_id String
   category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
@@ -146,6 +166,13 @@ model Order {
   discount      Int         @default(0)
   shipping_cost Int         @default(0)
   total         Int
+
+  // Serviço de frete escolhido no checkout (ex.: "PAC", "SEDEX") e prazo cotado
+  shipping_service       String?
+  shipping_delivery_days Int?
+  // true = o Melhor Envio estava fora do ar ao finalizar e o frete gravado é o último
+  // valor cotado na tela do cliente (conferir manualmente no admin)
+  shipping_cost_estimated Boolean @default(false)
 
   user_id String
   user    User @relation(fields: [user_id], references: [id])
@@ -228,4 +255,18 @@ model StoreSettings {
   updatedAt                DateTime @updatedAt
 
   @@map("store_settings")
+}
+
+// Tokens OAuth2 de integrações externas (ex.: Melhor Envio). Ficam no banco, e não
+// no .env, porque expiram e são renovados automaticamente pelo backend.
+model IntegrationToken {
+  provider           String   @id // ex.: "melhorenvio"
+  access_token       String
+  refresh_token      String
+  expires_at         DateTime // validade do access_token (30 dias no Melhor Envio)
+  refresh_expires_at DateTime? // validade estimada do refresh_token (45 dias)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("integration_tokens")
 }
