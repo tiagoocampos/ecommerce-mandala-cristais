@@ -209,7 +209,17 @@ const melhorenvio = {
     getStatus,
     originZipCode: () => process.env.STORE_ZIP_CODE ?? "",
     // Opcional: limitar serviços cotados (ex.: "1,2,17"). Vazio = todos disponíveis na conta.
-    services: () => process.env.MELHORENVIO_SERVICES ?? "",
+    // Valor fora do formato (ex.: um CEP colado por engano) faria o Melhor Envio responder
+    // `null`; nesse caso ignoramos e cotamos todos os serviços.
+    services: () => {
+        const raw = (process.env.MELHORENVIO_SERVICES ?? "").replace(/\s/g, "");
+        if (!raw) return "";
+        if (!/^\d{1,3}(,\d{1,3})*$/.test(raw)) {
+            console.warn(`[melhorenvio] MELHORENVIO_SERVICES inválido ("${raw}"); use códigos como 1,2,17. Cotando todos os serviços.`);
+            return "";
+        }
+        return raw;
+    },
 };
 
 export { melhorenvio };
