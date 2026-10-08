@@ -35,6 +35,8 @@ export interface Product {
     meta_description?: string | null;
     image_alt_text?: string | null;
     featured?: boolean; // aparece no carrossel de destaques da home
+    // fotos adicionais (galeria); a principal continua em `banner`
+    images?: { id: string; url: string; position: number }[];
     category?: {
         id?: string;
         name: string;
@@ -94,5 +96,7 @@ export interface Order {
     address_id: string;
     createdAt: string;
     updatedAt: string;
+    /** prazo da reserva de estoque de um pedido PENDING */
+    expires_at?: string | null;
     items: OrderItem[];
 }

@@ -28,6 +28,11 @@ declare class ListProductsService {
         category_id: string;
         banner: string;
         disabled: boolean;
+        images: {
+            url: string;
+            id: string;
+            position: number;
+        }[];
     }[]>;
 }
 export { ListProductsService };

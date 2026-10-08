@@ -57,3 +57,20 @@ export class ProductAlreadyExistsError extends Error{
         Object.setPrototypeOf(this, ProductAlreadyExistsError.prototype);       
     }
 }
+export class ProductImageNotFoundError extends Error {
+    public statusCode: number = 404
+    constructor() {
+        super("Imagem do produto não encontrada");
+        this.name = "ProductImageNotFoundError";
+        Object.setPrototypeOf(this, ProductImageNotFoundError.prototype);
+    }
+}
+
+export class TooManyProductImagesError extends Error {
+    public statusCode: number = 400
+    constructor(max: number) {
+        super(`Cada produto pode ter no máximo ${max} fotos adicionais (além da principal).`);
+        this.name = "TooManyProductImagesError";
+        Object.setPrototypeOf(this, TooManyProductImagesError.prototype);
+    }
+}

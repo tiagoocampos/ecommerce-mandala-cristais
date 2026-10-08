@@ -34,6 +34,11 @@ declare class UpdateProductService {
         category_id: string;
         banner: string;
         disabled: boolean;
+        images: {
+            url: string;
+            id: string;
+            position: number;
+        }[];
     }>;
 }
 export { UpdateProductService };

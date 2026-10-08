@@ -249,6 +249,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get integrationToken(): Prisma.IntegrationTokenDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    /**
+     * `prisma.productImage`: Exposes CRUD operations for the **ProductImage** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more ProductImages
+      * const productImages = await prisma.productImage.findMany()
+      * ```
+      */
+    get productImage(): Prisma.ProductImageDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;
 //# sourceMappingURL=class.d.ts.map

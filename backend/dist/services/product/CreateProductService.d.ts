@@ -11,9 +11,14 @@ interface CreateProductServiceProps extends ShippingFields {
     category_id: string;
     imageBuffer: Buffer;
     imageName: string;
+    /** fotos adicionais (opcionais), na ordem de exibição */
+    extraImages?: {
+        buffer: Buffer;
+        name: string;
+    }[];
 }
 declare class CreateProductService {
-    execute({ name, price, stock, promo_price, description, category_id, imageBuffer, imageName, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, featured, }: CreateProductServiceProps): Promise<{
+    execute({ name, price, stock, promo_price, description, category_id, imageBuffer, imageName, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, featured, extraImages, }: CreateProductServiceProps): Promise<{
         name: string;
         id: string;
         createdAt: Date;
@@ -31,7 +36,13 @@ declare class CreateProductService {
         description: string;
         category_id: string;
         banner: string;
+        images: {
+            url: string;
+            id: string;
+            position: number;
+        }[];
     }>;
+    private create;
 }
 export { CreateProductService };
 //# sourceMappingURL=CreateProductService.d.ts.map

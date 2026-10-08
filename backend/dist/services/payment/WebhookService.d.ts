@@ -3,6 +3,7 @@ declare class WebhookService {
     private fetchFromPaymentTopic;
     private fetchFromMerchantOrderTopic;
     private applyPaymentInfo;
+    private handleApproved;
 }
 export { WebhookService };
 //# sourceMappingURL=WebhookService.d.ts.map

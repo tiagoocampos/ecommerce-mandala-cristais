@@ -4,6 +4,7 @@ import { InsufficientStockError } from "../../exceptions/OrdersErrors.js";
 import prismaClient from "../../prisma/index.js";
 import { calculateCartSubtotal } from "../cart/calculateCartSubtotal.js";
 import { validateCoupon } from "../coupon/validateCoupon.js";
+import { orderExpiresAt } from "../../utils/orderExpiration.js";
 import { quoteShipping } from "../shipping/quoteShipping.js";
 import { ShippingServiceNotAvailableError, ShippingUnavailableError } from "../../exceptions/ShippingErrors.js";
 
@@ -53,6 +54,8 @@ class CreateOrderService {
 
     const subtotal = calculateCartSubtotal(cart.items);
 
+    // Checagem rápida só para responder cedo; a garantia real é o updateMany
+    // condicional dentro da transação (abaixo), que resolve compras simultâneas.
     for (const item of cart.items) {
       if (item.product.stock < item.quantity) {
         throw new InsufficientStockError();
@@ -106,8 +109,26 @@ class CreateOrderService {
     }
 
 
-    //parte de transação
+    // RISCO ACEITO: subtotal, unit_price, cupom e frete usam os preços lidos do carrinho
+    // logo acima. Se o admin mudar o preço de um produto no intervalo de milissegundos
+    // entre essa leitura e a transação, o pedido sai com o preço anterior. Revalidar
+    // aqui exigiria recalcular cupom e frete dentro da transação; não compensa.
+
+    // Transação: reserva o estoque (atômica) + cria o pedido + esvazia o carrinho.
     const transaction = await prismaClient.$transaction(async (tx) => {
+      // Reserva atômica: só baixa se ainda houver estoque suficiente (e o produto ativo).
+      // Duas compras simultâneas da última peça: uma passa, a outra recebe count 0,
+      // e a transação inteira é desfeita — o estoque nunca fica negativo.
+      for (const item of cart.items) {
+        const reserved = await tx.product.updateMany({
+          where: { id: item.product_id, stock: { gte: item.quantity }, disabled: false },
+          data: { stock: { decrement: item.quantity } },
+        });
+        if (reserved.count === 0) {
+          throw new InsufficientStockError();
+        }
+      }
+
       const order = await tx.order.create({
         data: {
           user_id,
@@ -122,6 +143,8 @@ class CreateOrderService {
           // desconto (cupom) vale sobre os produtos; o frete é somado depois
           total: Math.max(0, subtotal - discount) + shipping_cost,
           coupon_id,
+          // reserva vale até aqui; depois o job de expiração cancela e devolve o estoque
+          expires_at: orderExpiresAt(),
 
           payment: {
             create: {
@@ -144,17 +167,6 @@ class CreateOrderService {
             product_id: item.product_id,
             quantity: item.quantity,
             unit_price: item.product.promo_price ?? item.product.price,
-          },
-        });
-
-        await tx.product.update({
-          where: {
-            id: item.product_id,
-          },
-          data: {
-            stock: {
-              decrement: item.quantity,
-            }
           },
         });
       }

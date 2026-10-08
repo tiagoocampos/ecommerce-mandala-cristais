@@ -5,7 +5,7 @@ import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
 import { EmptyState } from "../../components/store/EmptyState";
-import { ProductImage } from "../../components/store/ProductImage";
+import { ProductGallery } from "../../components/store/ProductGallery";
 import { Button } from "../../components/ui/button";
 import { api } from "../../services/api";
 import { formatPrice, showApiError } from "../../lib/utils-api";
@@ -158,23 +158,27 @@ export function ProductDetail() {
 
                     <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
                         {/* imagem (galeria futura entra aqui) */}
-                        <div className="relative facet-cut overflow-hidden bg-mc-blush-100 aspect-square">
-                            <ProductImage
-                                src={product.banner}
-                                alt={product.image_alt_text || product.name}
-                                iconSize={64}
-                            />
-                            {hasPromo && (
-                                <span className="absolute top-4 left-4 bg-mc-gold-500 text-mc-violet-950 text-xs font-bold px-2.5 py-1 rounded-full">
-                                    -{discountPercent(product.price, product.promo_price!)}%
-                                </span>
-                            )}
-                            {outOfStock && (
-                                <span className="absolute inset-0 bg-mc-ink/50 flex items-center justify-center text-mc-sand-50 text-sm font-semibold tracking-wide uppercase">
-                                    Esgotado
-                                </span>
-                            )}
-                        </div>
+                        <ProductGallery
+                            banner={product.banner}
+                            images={product.images}
+                            name={product.name}
+                            altText={product.image_alt_text}
+                            overlay={
+                                <>
+                                    {/* pointer-events-none: os selos não bloqueiam o arraste da galeria */}
+                                    {hasPromo && (
+                                        <span className="pointer-events-none absolute top-4 left-4 bg-mc-gold-500 text-mc-violet-950 text-xs font-bold px-2.5 py-1 rounded-full">
+                                            -{discountPercent(product.price, product.promo_price!)}%
+                                        </span>
+                                    )}
+                                    {outOfStock && (
+                                        <span className="pointer-events-none absolute inset-0 bg-mc-ink/50 flex items-center justify-center text-mc-sand-50 text-sm font-semibold tracking-wide uppercase">
+                                            Esgotado
+                                        </span>
+                                    )}
+                                </>
+                            }
+                        />
 
                         {/* info */}
                         <div>

@@ -17,6 +17,8 @@ import { api } from "../../services/api";
 import type { Order } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
 import { OrderStatusBadge } from "../../components/OrderStatusBadge";
+import { OrderPaymentStrip } from "../../components/store/OrderPaymentStrip";
+import { orderPaymentState } from "../../lib/orderPayment";
 
 export function OrderDetail() {
     const { order_id } = useParams<{ order_id: string }>();
@@ -175,19 +177,10 @@ export function OrderDetail() {
                                     </div>
                                 </div>
                                
-                                {order.status === "PENDING" && (
-                                    <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-                                        <p className="text-sm text-mc-ink/70 text-center sm:text-left">
-                                            Este pedido ainda aguarda pagamento.
-                                        </p>
-                                        <Button
-                                            onClick={() => navigate(`/payment/${order.id}`)}
-                                            className="bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 rounded-full px-6 h-10 font-semibold"
-                                        >
-                                            Ir para o pagamento
-                                        </Button>
-                                    </div>
-                                )}
+                                {/* "Pagar agora" (pendente no prazo) ou aviso de expirado/cancelado */}
+                                <div className="mb-6">
+                                    <OrderPaymentStrip order={order} state={orderPaymentState(order)} />
+                                </div>
 
                                 {/* botão para listagem */}
                                 <div className="text-center">

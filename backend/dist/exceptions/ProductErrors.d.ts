@@ -22,4 +22,12 @@ export declare class ProductAlreadyExistsError extends Error {
     statusCode: number;
     constructor();
 }
+export declare class ProductImageNotFoundError extends Error {
+    statusCode: number;
+    constructor();
+}
+export declare class TooManyProductImagesError extends Error {
+    statusCode: number;
+    constructor(max: number);
+}
 //# sourceMappingURL=ProductErrors.d.ts.map

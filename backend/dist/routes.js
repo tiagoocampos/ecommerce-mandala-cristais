@@ -18,7 +18,7 @@ import { DeleteProductController } from './controllers/product/DeleteProductCont
 import { ListProductsByCategoryController } from './controllers/product/ListProductsByCategoryController.js';
 import { listProductsByCategorySchema } from './schemas/productSchema.js';
 import { CreateOrderController } from './controllers/order/CreateOrderController.js';
-import { createOrderSchema, getOrderSchema } from './schemas/orderSchema.js';
+import { createOrderSchema, getOrderSchema, updateOrderStatusSchema } from './schemas/orderSchema.js';
 import { ListUsersAdminController } from './controllers/user/admin/ListUsersAdminController.js';
 import { DeleteUserAdminController } from './controllers/user/admin/DeleteUserAdminController.js';
 import { createUserDiscountSchema, userIdParamsSchema } from './schemas/userAdminSchema.js';
@@ -42,6 +42,8 @@ import { forgotPasswordSchema, resetPasswordSchema } from './schemas/passwordSch
 import { PasswordController } from './controllers/password/PasswordController.js';
 import { sendMarketingSchema, unsubscribeSchema } from './schemas/marketingSchema.js';
 import { MarketingController } from './controllers/marketing/MarketingController.js';
+import { ProductImagesController } from './controllers/product/ProductImagesController.js';
+import { MAX_EXTRA_IMAGES } from './utils/uploadImage.js';
 import { validateSchema } from './middlewares/validateSchema.js';
 import { createAddressSchema, deleteAddressSchema, updateAddressSchema } from './schemas/adressSchema.js';
 import { CreateAddressController } from './controllers/address/CreateAddressController.js';
@@ -82,11 +84,18 @@ router.post("/address", isAuthenticated, validateSchema(createAddressSchema), ne
 router.get("/address", isAuthenticated, new ListAddressController().handle);
 router.delete("/address", isAuthenticated, validateSchema(deleteAddressSchema), new DeleteAddressController().handle);
 router.put("/address", isAuthenticated, validateSchema(updateAddressSchema), new UpdateAddressController().handle);
-router.post("/product", isAuthenticated, isAdmin, upload.single("file"), validateSchema(createProductSchema), new CreateProductController().handle);
+router.post("/product", isAuthenticated, isAdmin, upload.fields([
+    { name: "file", maxCount: 1 }, // principal (obrigatória)
+    { name: "images", maxCount: MAX_EXTRA_IMAGES }, // extras (opcionais)
+]), validateSchema(createProductSchema), new CreateProductController().handle);
 router.get("/products", validateSchema(listProductsSchema), new ListProductsController().handle);
 router.put("/product", isAuthenticated, isAdmin, upload.single("file"), validateSchema(updateProductSchema), new UpdateProductController().handle);
 router.get("/category/product", validateSchema(listProductsByCategorySchema), new ListProductsByCategoryController().handle);
 router.delete("/product", isAuthenticated, isAdmin, new DeleteProductController().handle);
+// Galeria: fotos adicionais (a principal fica em Product.banner e não pode ser apagada)
+router.post("/product/:product_id/images", isAuthenticated, isAdmin, upload.array("images", MAX_EXTRA_IMAGES), new ProductImagesController().add);
+router.delete("/product/images/:image_id", isAuthenticated, isAdmin, new ProductImagesController().remove);
+router.patch("/product/images/:image_id/main", isAuthenticated, isAdmin, new ProductImagesController().setMain);
 // "Pedir pra IA": só gera sugestões de texto; não salva nada
 router.post("/admin/products/ai-assist", isAuthenticated, isAdmin, validateSchema(productAIAssistSchema), new ProductAIAssistController().handle);
 router.post("/shipping/quote", isAuthenticated, validateSchema(shippingQuoteSchema), new ShippingQuoteController().handle);
@@ -97,7 +106,7 @@ router.get("/admin/integrations/melhorenvio/authorize-url", isAuthenticated, isA
 router.get("/integrations/melhorenvio/callback", new MelhorEnvioIntegrationController().callback);
 router.get("/order/:order_id", isAuthenticated, validateSchema(getOrderSchema), new GetOrderController().handle);
 router.get("/orders", isAuthenticated, new ListOrdersController().handle);
-router.patch("/order/:order_id/status", isAuthenticated, isAdmin, new UpdateOrderStatusController().handle);
+router.patch("/order/:order_id/status", isAuthenticated, isAdmin, validateSchema(updateOrderStatusSchema), new UpdateOrderStatusController().handle);
 router.get("/admin/orders", isAuthenticated, isAdmin, new ListAllOrdersAdminController().handle);
 router.get("/admin/orders/:order_id", isAuthenticated, isAdmin, new GetOrderAdminController().handle);
 router.get("/admin/users", isAuthenticated, isAdmin, new ListUsersAdminController().handle);

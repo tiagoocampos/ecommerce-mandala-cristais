@@ -26,6 +26,7 @@ declare class ListAllOrdersAdminService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        expires_at: Date | null;
         user_id: string;
         subtotal: number;
         address_id: string;

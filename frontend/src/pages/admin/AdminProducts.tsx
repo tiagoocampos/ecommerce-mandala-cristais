@@ -19,10 +19,13 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { ConfirmDelete } from "../../components/ui/confirm-delete";
-import { formatPrice, showApiError } from "../../lib/utils-api";
+import { formatPrice, getApiErrorMessage, showApiError } from "../../lib/utils-api";
+import { MAX_EXTRA_IMAGES, validateImageFile } from "../../lib/productImages";
 import { api } from "../../services/api";
 import type { Product, Category } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
+
+type ProductImageItem = { id: string; url: string; position: number };
 
 type ProductForm = {
     name: string;
@@ -91,6 +94,10 @@ export function AdminProducts() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState<ProductForm>(emptyForm);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    // galeria: arquivos novos (ainda não enviados) e fotos já salvas (na edição)
+    const [extraFiles, setExtraFiles] = useState<{ file: File; url: string }[]>([]);
+    const [savedImages, setSavedImages] = useState<ProductImageItem[]>([]);
+    const [imagesBusy, setImagesBusy] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductForm, string>>>({});
 
     // "Pedir pra IA": só preenche o formulário; quem salva é o lojista
@@ -149,10 +156,77 @@ export function AdminProducts() {
         return true;
     });
 
+    // ---- Fotos adicionais (galeria) ----
+    function clearExtraFiles() {
+        setExtraFiles((files) => {
+            files.forEach((f) => URL.revokeObjectURL(f.url));
+            return [];
+        });
+    }
+
+    function handleExtraFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const picked = Array.from(e.target.files ?? []);
+        e.target.value = ""; // permite escolher o mesmo arquivo de novo
+        if (picked.length === 0) return;
+
+        const errors = picked.map(validateImageFile).filter((m): m is string => !!m);
+        if (errors.length) {
+            toast.error(errors.join(" "));
+            return;
+        }
+        const total = savedImages.length + extraFiles.length + picked.length;
+        if (total > MAX_EXTRA_IMAGES) {
+            toast.error(`Máximo de ${MAX_EXTRA_IMAGES} fotos adicionais por produto.`);
+            return;
+        }
+        setExtraFiles((files) => [...files, ...picked.map((file) => ({ file, url: URL.createObjectURL(file) }))]);
+    }
+
+    function removeExtraFile(index: number) {
+        setExtraFiles((files) => {
+            URL.revokeObjectURL(files[index]!.url);
+            return files.filter((_, i) => i !== index);
+        });
+    }
+
+    async function handleDeleteSavedImage(imageId: string) {
+        setImagesBusy(imageId);
+        try {
+            const { data } = await api.delete<ProductImageItem[]>(`/product/images/${imageId}`);
+            setSavedImages(data);
+            toast.success("Foto removida");
+            await fetchData();
+        } catch (error) {
+            showApiError(error, "Erro ao remover a foto");
+        } finally {
+            setImagesBusy(null);
+        }
+    }
+
+    async function handleSetMainImage(imageId: string) {
+        setImagesBusy(imageId);
+        try {
+            const { data } = await api.patch<{ banner: string; images: ProductImageItem[] }>(
+                `/product/images/${imageId}/main`
+            );
+            setSavedImages(data.images);
+            setPreviewUrl(data.banner);
+            setForm((p) => ({ ...p, file: null }));
+            toast.success("Imagem principal trocada");
+            await fetchData();
+        } catch (error) {
+            showApiError(error, "Erro ao trocar a imagem principal");
+        } finally {
+            setImagesBusy(null);
+        }
+    }
+
     function resetModal() {
         setForm(emptyForm);
         setEditingId(null);
         setPreviewUrl(null);
+        clearExtraFiles();
+        setSavedImages([]);
         setFormErrors({});
         setAiKeywords("");
         setAiSuggestedCategoryId(null);
@@ -183,6 +257,8 @@ export function AdminProducts() {
         });
         setEditingId(product.id);
         setPreviewUrl(product.banner || null);
+        clearExtraFiles();
+        setSavedImages(product.images ?? []);
         setFormErrors({});
         setAiKeywords("");
         setAiSuggestedCategoryId(null);
@@ -201,7 +277,7 @@ export function AdminProducts() {
             errors.promo_price = "Promoção deve ser menor que o preço normal";
         }
         if (!editingId && !form.file) {
-            errors.file = "Imagem é obrigatória";
+            errors.file = "A imagem principal é obrigatória";
         }
         for (const field of SHIPPING_FIELDS) {
             const value = form[field.key].trim();
@@ -246,7 +322,22 @@ export function AdminProducts() {
             if (editingId) {
                 await api.put(`/product?product_id=${editingId}`, fd);
                 toast.success("Produto atualizado!");
+                // Fotos novas escolhidas na edição: enviadas depois do PUT dar certo.
+                // Se falhar, o produto continua salvo — só avisa.
+                if (extraFiles.length > 0) {
+                    const imagesFd = new FormData();
+                    extraFiles.forEach(({ file }) => imagesFd.append("images", file));
+                    try {
+                        await api.post(`/product/${editingId}/images`, imagesFd);
+                    } catch (error) {
+                        toast.warning(
+                            `Produto salvo, mas as fotos adicionais não foram enviadas: ${getApiErrorMessage(error, "tente de novo")}`
+                        );
+                    }
+                }
             } else {
+                // criação: extras no mesmo FormData, repetindo o campo `images`
+                extraFiles.forEach(({ file }) => fd.append("images", file));
                 await api.post("/product", fd);
                 toast.success("Produto criado!");
             }
@@ -577,9 +668,9 @@ export function AdminProducts() {
                         </div>
 
                         <div className="space-y-4">
-                            {/* imagem */}
+                            {/* imagem principal */}
                             <div>
-                                <Label className="text-sm text-mc-ink/70">Imagem</Label>
+                                <Label className="text-sm text-mc-ink/70">Imagem principal</Label>
                                 <div className="mt-1 flex items-center gap-3">
                                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-mc-blush-100 border border-mc-violet-950/10 shrink-0">
                                         {previewUrl ? (
@@ -598,7 +689,7 @@ export function AdminProducts() {
                                         {previewUrl ? "Trocar imagem" : "Selecionar imagem"}
                                         <input
                                             type="file"
-                                            accept="image/*"
+                                            accept="image/jpeg,image/png"
                                             onChange={handleFileChange}
                                             className="hidden"
                                         />
@@ -606,6 +697,88 @@ export function AdminProducts() {
                                 </div>
                                 {formErrors.file && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.file}</p>
+                                )}
+                            </div>
+
+                            {/* fotos adicionais (galeria) */}
+                            <div>
+                                <Label className="text-sm text-mc-ink/70">
+                                    Fotos adicionais (opcional, até {MAX_EXTRA_IMAGES})
+                                </Label>
+                                <p className="text-xs text-mc-ink/50 mb-2">
+                                    Aparecem na página do produto: o cliente arrasta para o lado para ver. JPEG ou PNG, até 5 MB cada.
+                                </p>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {savedImages.map((image) => (
+                                        <div key={image.id} className="group relative aspect-square overflow-hidden rounded-lg border border-mc-violet-950/10 bg-mc-blush-100">
+                                            <img src={image.url} alt="" className="h-full w-full object-cover" />
+                                            <div className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-mc-violet-950/75 p-1">
+                                                <button
+                                                    type="button"
+                                                    disabled={imagesBusy !== null}
+                                                    onClick={() => handleSetMainImage(image.id)}
+                                                    className="rounded px-1 py-0.5 text-[10px] font-medium text-white hover:bg-white/15 disabled:opacity-50"
+                                                >
+                                                    Tornar principal
+                                                </button>
+                                                <ConfirmDelete
+                                                    trigger={
+                                                        <button
+                                                            type="button"
+                                                            disabled={imagesBusy !== null}
+                                                            className="rounded px-1 py-0.5 text-[10px] font-medium text-red-200 hover:bg-white/15 disabled:opacity-50"
+                                                        >
+                                                            Remover
+                                                        </button>
+                                                    }
+                                                    title="Remover esta foto?"
+                                                    description="A foto sai da galeria do produto e é apagada. A imagem principal não é afetada."
+                                                    confirmText="Remover"
+                                                    onConfirm={() => handleDeleteSavedImage(image.id)}
+                                                    disabled={imagesBusy !== null}
+                                                />
+                                            </div>
+                                            {imagesBusy === image.id && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                                                    <Loader2 size={18} className="animate-spin text-mc-violet-700" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {extraFiles.map((item, index) => (
+                                        <div key={item.url} className="relative aspect-square overflow-hidden rounded-lg border border-dashed border-mc-gold-500/70 bg-mc-blush-100">
+                                            <img src={item.url} alt="" className="h-full w-full object-cover" />
+                                            <span className="absolute left-1 top-1 rounded bg-mc-gold-500 px-1 text-[9px] font-semibold text-mc-violet-950">
+                                                nova
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeExtraFile(index)}
+                                                aria-label="Remover foto nova"
+                                                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/90 text-red-600 hover:bg-white"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {savedImages.length + extraFiles.length < MAX_EXTRA_IMAGES && (
+                                        <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-mc-violet-950/25 text-mc-ink/50 hover:bg-mc-blush-100 hover:text-mc-violet-950">
+                                            <Plus size={18} />
+                                            <span className="text-[10px]">Adicionar</span>
+                                            <input
+                                                type="file"
+                                                accept="image/jpeg,image/png"
+                                                multiple
+                                                onChange={handleExtraFilesChange}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    )}
+                                </div>
+                                {editingId && extraFiles.length > 0 && (
+                                    <p className="text-[11px] text-mc-ink/50 mt-1">
+                                        As fotos marcadas como “nova” são enviadas ao clicar em Atualizar.
+                                    </p>
                                 )}
                             </div>
 

@@ -81,4 +81,9 @@ export type StoreSettings = Prisma.StoreSettingsModel;
  *
  */
 export type IntegrationToken = Prisma.IntegrationTokenModel;
+/**
+ * Model ProductImage
+ *
+ */
+export type ProductImage = Prisma.ProductImageModel;
 //# sourceMappingURL=client.d.ts.map

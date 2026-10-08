@@ -15,7 +15,8 @@ import { StoreFooter } from "../../components/store/StoreFooter";
 import { Loading } from "../../components/Loading";
 import { Button } from "../../components/ui/button";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
-import { formatPrice, formatDate } from "../../lib/utils-api";
+import { formatPrice, formatDate, getApiErrorMessage } from "../../lib/utils-api";
+import { orderPaymentState } from "../../lib/orderPayment";
 import { api } from "../../services/api";
 import type { Order, OrderStatus } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
@@ -66,7 +67,6 @@ export function PaymentPage() {
     }, [order_id]);
 
     async function handlePayWithMercadoPago() {
-         console.log("Cliquei");
         if (!order_id) return;
 
         setProcessing(true);
@@ -82,15 +82,21 @@ export function PaymentPage() {
 
             window.location.href = data.checkout_url;
         } catch (err) {
+            // ex.: "O prazo para pagar este pedido expirou" (409) vem do backend
             setError(
-                "Erro ao gerar link de pagamento. Tente novamente ou entre em contato conosco."
+                getApiErrorMessage(
+                    err,
+                    "Erro ao gerar link de pagamento. Tente novamente ou entre em contato conosco."
+                )
             );
         } finally {
             setProcessing(false);
         }
     }
 
-    const isPending = order?.status === "PENDING";
+    const paymentState = order ? orderPaymentState(order) : null;
+    // botão de pagar só para pedido PENDING dentro do prazo da reserva
+    const isPending = !!paymentState?.payable;
     const isPaid = order?.status === "PAID";
 
     return (
@@ -258,6 +264,12 @@ export function PaymentPage() {
                                                 escolha a forma de pagamento para concluir
                                                 a compra.
                                             </p>
+                                            {paymentState?.reservedUntil && (
+                                                <p className="text-xs text-mc-gold-800">
+                                                    {paymentState.reservedUntil}. Depois disso o pedido é
+                                                    cancelado e os itens voltam para a loja.
+                                                </p>
+                                            )}
 
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
@@ -293,6 +305,34 @@ export function PaymentPage() {
                                                 seguro do Mercado Pago para realizar o
                                                 pagamento.
                                             </p>
+                                        </div>
+                                    ) : paymentState?.expired || order.status === "CANCELED" ? (
+                                        <div className="bg-mc-sand-100 border border-mc-violet-950/10 rounded-lg p-4 text-center space-y-2">
+                                            <p className="text-sm font-medium text-mc-violet-950">
+                                                {paymentState?.expired
+                                                    ? "O prazo para pagar este pedido expirou."
+                                                    : "Este pedido foi cancelado ou expirou."}
+                                            </p>
+                                            <p className="text-xs text-mc-ink/60">
+                                                Os itens voltaram para a loja. Se ainda quiser, é só fazer um
+                                                novo pedido.
+                                            </p>
+                                            <div className="flex justify-center gap-4 text-sm">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate("/produtos")}
+                                                    className="text-mc-violet-700 underline underline-offset-4 hover:text-mc-violet-950"
+                                                >
+                                                    Ver produtos
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate("/pedidos")}
+                                                    className="text-mc-violet-700 underline underline-offset-4 hover:text-mc-violet-950"
+                                                >
+                                                    Meus pedidos
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="bg-mc-sand-100 border border-mc-violet-950/10 rounded-lg p-4">

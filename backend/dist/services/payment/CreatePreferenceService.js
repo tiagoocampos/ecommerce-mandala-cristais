@@ -1,7 +1,8 @@
 import { Preference } from "mercadopago";
 import { client } from "../../config/mercadopago.js";
 import prismaClient from "../../prisma/index.js";
-import { OrderNotFoundError } from "../../exceptions/OrdersErrors.js";
+import { OrderNotFoundError, OrderNotPayableError } from "../../exceptions/OrdersErrors.js";
+import { toMercadoPagoDate } from "../../utils/orderExpiration.js";
 import { PaymentCreationError } from "../../exceptions/PaymentErrors.js";
 class CreatePreferenceService {
     async execute({ order_id, user_id }) {
@@ -22,6 +23,14 @@ class CreatePreferenceService {
         });
         if (!order) {
             throw new OrderNotFoundError();
+        }
+        // Só dá para pagar pedido PENDING dentro do prazo da reserva (pode gerar nova
+        // preference para o mesmo pedido: é o "Pagar agora" de "Meus pedidos").
+        if (order.status !== "PENDING") {
+            throw new OrderNotPayableError();
+        }
+        if (order.expires_at && order.expires_at.getTime() <= Date.now()) {
+            throw new OrderNotPayableError("O prazo para pagar este pedido expirou. Faça um novo pedido.");
         }
         // Com cupom, o Mercado Pago precisa cobrar o total já descontado. Como ele não aceita
         // item com valor negativo, o pedido vai como um item único com o valor final (frete incluso).
@@ -55,6 +64,16 @@ class CreatePreferenceService {
         const preferenceData = {
             items,
             external_reference: order.id,
+            // Link de pagamento para de valer junto com a reserva do estoque.
+            // Formato ISO 8601 com fuso, conforme a doc do Mercado Pago
+            // (Checkout Pro → prazo da preference: expires / expiration_date_from / expiration_date_to).
+            // Não usamos date_of_expiration (prazo de Pix/boleto): a doc recomenda dias para
+            // meios offline; um boleto pago depois do prazo vira "aprovação tardia" no webhook.
+            ...(order.expires_at && {
+                expires: true,
+                expiration_date_from: toMercadoPagoDate(new Date(Date.now() - 60_000)),
+                expiration_date_to: toMercadoPagoDate(order.expires_at),
+            }),
             back_urls: {
                 success: `${frontendUrl}/payment/success`,
                 failure: `${frontendUrl}/payment/failure`,

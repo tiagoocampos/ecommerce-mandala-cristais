@@ -73,13 +73,15 @@ interface AdminDetailOrder {
     address: AdminDetailAddress;
 }
 
-const STATUS_OPTIONS: OrderStatus[] = [
-    "PENDING",
-    "PAID",
-    "SHIPPED",
-    "DELIVERED",
-    "CANCELED",
-];
+// Mesmas regras do backend (UpdateOrderStatusService.ALLOWED_TRANSITIONS).
+// CANCELED e DELIVERED são finais.
+const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+    PENDING: ["PAID", "CANCELED"],
+    PAID: ["SHIPPED", "CANCELED"],
+    SHIPPED: ["DELIVERED"],
+    DELIVERED: [],
+    CANCELED: [],
+};
 
 export function AdminOrderDetail() {
     const { order_id } = useParams<{ order_id: string }>();
@@ -119,11 +121,16 @@ export function AdminOrderDetail() {
         if (!order || !selectedStatus || selectedStatus === order.status) return;
         setUpdatingStatus(true);
         try {
-            await api.patch(`/order/${order.id}/status`, { status: selectedStatus });
+            const { data } = await api.patch<{ notice?: string }>(`/order/${order.id}/status`, {
+                status: selectedStatus,
+            });
             toast.success(`Status atualizado para "${ORDER_STATUS_LABELS[selectedStatus]}"`);
+            // cancelamento de pedido pago: lembrete do reembolso manual
+            if (data?.notice) toast.warning(data.notice, { duration: 10000 });
             setOrder((prev) =>
                 prev ? { ...prev, status: selectedStatus } : prev
             );
+            setSelectedStatus(null);
         } catch (error) {
             showApiError(error, "Erro ao atualizar status");
         } finally {
@@ -320,6 +327,14 @@ export function AdminOrderDetail() {
                             Status atual:{" "}
                             <OrderStatusBadge status={order.status} className="ml-1 align-middle" />
                         </p>
+                        {ALLOWED_TRANSITIONS[order.status].length === 0 ? (
+                            <p className="text-sm text-mc-ink/60">
+                                {order.status === "CANCELED"
+                                    ? "Pedido cancelado: o estoque dos itens já voltou para a loja. Este status é final."
+                                    : "Pedido entregue: este status é final."}
+                            </p>
+                        ) : (
+                        <>
                         <select
                             value={selectedStatus || order.status}
                             onChange={(e) =>
@@ -327,11 +342,20 @@ export function AdminOrderDetail() {
                             }
                             className="w-full rounded-lg border border-mc-violet-950/15 bg-white px-3 py-2 text-sm outline-none focus:border-mc-violet-950/30 mb-3"
                         >
-                            {STATUS_OPTIONS.map((s) => (
-                                <option key={s} value={s}>
-                                    {ORDER_STATUS_LABELS[s]}
-                                </option>
-                            ))}
+                            <option value={order.status}>
+                                {ORDER_STATUS_LABELS[order.status]} (atual)
+                            </option>
+                            {(["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELED"] as OrderStatus[])
+                                .filter((s) => s !== order.status)
+                                .map((s) => {
+                                    const allowed = ALLOWED_TRANSITIONS[order.status].includes(s);
+                                    return (
+                                        <option key={s} value={s} disabled={!allowed}>
+                                            {ORDER_STATUS_LABELS[s]}
+                                            {allowed ? "" : " (não permitido)"}
+                                        </option>
+                                    );
+                                })}
                         </select>
 
                         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -359,6 +383,12 @@ export function AdminOrderDetail() {
                                             {ORDER_STATUS_LABELS[selectedStatus || order.status]}
                                         </strong>
                                         . O cliente final verá essa mudança.
+                                        {selectedStatus === "CANCELED" && (
+                                            <span className="mt-3 block rounded-md border border-mc-gold-500/50 bg-mc-gold-500/15 p-2.5 text-mc-gold-800">
+                                                O estoque dos itens volta automaticamente. Se o pedido já foi
+                                                pago, o reembolso precisa ser feito manualmente no Mercado Pago.
+                                            </span>
+                                        )}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -377,6 +407,8 @@ export function AdminOrderDetail() {
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
+                        </>
+                        )}
                     </div>
                 </div>
             </div>

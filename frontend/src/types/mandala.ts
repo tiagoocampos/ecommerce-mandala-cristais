@@ -21,6 +21,7 @@ export interface MandalaProduct {
     meta_description?: string | null; // <meta name="description"> da página do produto
     image_alt_text?: string | null; // alt da imagem principal
     featured?: boolean; // aparece no carrossel de destaques da home
+    images?: { id: string; url: string; position: number }[]; // galeria (a principal é `banner`)
     createdAt?: string;
 }
 

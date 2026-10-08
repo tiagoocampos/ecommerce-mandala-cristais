@@ -38,6 +38,7 @@ export declare const ModelName: {
     readonly Coupon: "Coupon";
     readonly StoreSettings: "StoreSettings";
     readonly IntegrationToken: "IntegrationToken";
+    readonly ProductImage: "ProductImage";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -128,6 +129,7 @@ export declare const OrderScalarFieldEnum: {
     readonly shipping_service: "shipping_service";
     readonly shipping_delivery_days: "shipping_delivery_days";
     readonly shipping_cost_estimated: "shipping_cost_estimated";
+    readonly expires_at: "expires_at";
     readonly user_id: "user_id";
     readonly address_id: "address_id";
     readonly coupon_id: "coupon_id";
@@ -186,6 +188,14 @@ export declare const IntegrationTokenScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type IntegrationTokenScalarFieldEnum = (typeof IntegrationTokenScalarFieldEnum)[keyof typeof IntegrationTokenScalarFieldEnum];
+export declare const ProductImageScalarFieldEnum: {
+    readonly id: "id";
+    readonly url: "url";
+    readonly position: "position";
+    readonly product_id: "product_id";
+    readonly createdAt: "createdAt";
+};
+export type ProductImageScalarFieldEnum = (typeof ProductImageScalarFieldEnum)[keyof typeof ProductImageScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";

@@ -1,8 +1,7 @@
-import { Readable } from "stream";
 import { CategoryNotFoundError } from "../../exceptions/CategoryErrors.js";
 import prismaClient from "../../prisma/index.js";
-import cloudinary from "../../config/cloudinary.js"
 import { generateSlug } from "../../utils/generateSlug.js";
+import { deleteImageByUrl, uploadImage } from "../../utils/uploadImage.js";
 import type { ShippingFields } from "../../utils/parseShippingFields.js";
 
 interface CreateProductServiceProps extends ShippingFields {
@@ -17,6 +16,8 @@ interface CreateProductServiceProps extends ShippingFields {
     category_id: string,
     imageBuffer: Buffer,
     imageName: string,
+    /** fotos adicionais (opcionais), na ordem de exibição */
+    extraImages?: { buffer: Buffer; name: string }[],
 }
 
 class CreateProductService{
@@ -36,6 +37,7 @@ class CreateProductService{
         meta_description,
         image_alt_text,
         featured,
+        extraImages = [],
     }: CreateProductServiceProps){
 
         const slug = generateSlug(name);        
@@ -49,35 +51,43 @@ class CreateProductService{
             throw new CategoryNotFoundError();
         }
 
-        let bannerUrl = "";
+        // Sobe principal + extras (extras em paralelo). Se algo falhar — upload ou criação
+        // do produto — apaga do Cloudinary o que já subiu (best-effort) e propaga o erro.
+        const uploaded: string[] = [];
+        const track = async (buffer: Buffer, name: string) => {
+            const url = await uploadImage(buffer, name);
+            uploaded.push(url);
+            return url;
+        };
+
         try {
-            
-            const result = await new Promise<any>((resolve, reject)=>{
-                const uploadStream = cloudinary.uploader.upload_stream({
-                    folder: "products",
-                    resource_type: "image",
-                    public_id: `${Date.now()}-${imageName.split(".")[0]}`
-                }, (error, result) => {
-                    if(error){
-                        reject(error);
-                    } else{
-                        resolve(result)
-                    }
-                })
+            const [bannerUrl, ...extraUrls] = await Promise.all([
+                track(imageBuffer, imageName),
+                ...extraImages.map((image) => track(image.buffer, image.name)),
+            ]);
 
-                const bufferStream = Readable.from(imageBuffer);
-                bufferStream.pipe(uploadStream);
-            })
-
-            bannerUrl = result.secure_url
-
-            
-
+            return await this.create({
+                bannerUrl: bannerUrl!,
+                extraUrls,
+                data: { name, price, stock, slug, promo_price, description, category_id, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, featured },
+            });
         } catch (error) {
             console.log(error);
+            await Promise.all(uploaded.map((url) => deleteImageByUrl(url)));
+            if (error instanceof Error && error.name.startsWith("PrismaClient")) throw error;
             throw new Error("Erro ao fazer upload da imagem");
         }
+    }
 
+    private async create({
+        bannerUrl,
+        extraUrls,
+        data: { name, price, stock, slug, promo_price, description, category_id, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, featured },
+    }: {
+        bannerUrl: string;
+        extraUrls: string[];
+        data: Omit<CreateProductServiceProps, "imageBuffer" | "imageName" | "extraImages"> & { slug: string };
+    }) {
         const product = await prismaClient.product.create({
             data: {
                 name: name,
@@ -95,6 +105,10 @@ class CreateProductService{
                 meta_description: meta_description ?? null,
                 image_alt_text: image_alt_text ?? null,
                 featured: featured ?? false,
+                // fotos adicionais, na ordem em que foram enviadas
+                images: {
+                    create: extraUrls.map((url, position) => ({ url, position })),
+                },
             },
             select: {
                 id: true,
@@ -114,6 +128,10 @@ class CreateProductService{
                 meta_description: true,
                 image_alt_text: true,
                 featured: true,
+                images: {
+                    orderBy: { position: "asc" },
+                    select: { id: true, url: true, position: true },
+                },
             }
         });
 

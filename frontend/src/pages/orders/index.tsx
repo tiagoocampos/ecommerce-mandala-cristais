@@ -9,6 +9,8 @@ import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { formatPrice, formatDate } from "../../lib/utils-api";
 import { api } from "../../services/api";
 import type { Order } from "../../types";
+import { OrderPaymentStrip } from "../../components/store/OrderPaymentStrip";
+import { orderPaymentState } from "../../lib/orderPayment";
 import { OrderStatusBadge } from "../../components/OrderStatusBadge";
 
 export function Orders() {
@@ -69,13 +71,17 @@ export function Orders() {
                             <div className="space-y-3">
                                 {orders.map((order) => {
                                     const itemCount = order.items?.length ?? 0;
+                                    const payment = orderPaymentState(order);
 
                                     return (
-                                        <button
+                                        <div
                                             key={order.id}
+                                            className="bg-white border border-mc-violet-950/10 rounded-lg overflow-hidden hover:border-mc-gold-600/40 hover:shadow-sm transition-all"
+                                        >
+                                        <button
                                             type="button"
                                             onClick={() => navigate(`/pedido/${order.id}`)}
-                                            className="w-full text-left bg-white border border-mc-violet-950/10 rounded-lg p-4 sm:p-5 hover:border-mc-gold-600/40 hover:shadow-sm transition-all"
+                                            className="w-full text-left p-4 sm:p-5"
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="min-w-0 flex-1">
@@ -101,6 +107,8 @@ export function Orders() {
                                                 />
                                             </div>
                                         </button>
+                                        <OrderPaymentStrip order={order} state={payment} compact />
+                                        </div>
                                     );
                                 })}
                             </div>

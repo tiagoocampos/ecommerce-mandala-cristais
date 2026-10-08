@@ -40,7 +40,7 @@ function previewDiscount(coupon: AppliedCoupon, subtotal: number): number {
 
 export function CheckoutPage() {
     const navigate = useNavigate();
-    const { cart, loading: cartLoading } = useCart();
+    const { cart, loading: cartLoading, refreshCart } = useCart();
 
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [addressesLoading, setAddressesLoading] = useState(true);
@@ -174,10 +174,19 @@ export function CheckoutPage() {
 
             const orderId = orderData.id;
 
-            // 2. Redirecionar para a tela de pagamento
+            // 2. O backend já esvaziou o carrinho ao criar o pedido: sincroniza antes de sair,
+            //    para o carrinho e o "Finalizar compra" sumirem imediatamente
+            await refreshCart();
+
+            // 3. Redirecionar para a tela de pagamento
             navigate(`/payment/${orderId}`);
         } catch (err) {
             const msg = getApiErrorMessage(err, "");
+            const lower = msg.toLowerCase();
+            // carrinho/estoque divergente do servidor: ressincroniza
+            if (lower.includes("carrinho") || lower.includes("estoque")) {
+                await refreshCart();
+            }
             if (msg === "Carrinho vazio") {
                 setError("Seu carrinho está vazio.");
             } else if (msg === "Estoque insuficiente" || msg.includes("estoque")) {

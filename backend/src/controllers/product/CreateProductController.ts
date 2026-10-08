@@ -8,9 +8,13 @@ class CreateProductController {
     async handle(req: Request, res: Response) {
         const { name, price, stock, promo_price, description, category_id} = req.body
   
-        if(!req.file){
-            throw new ImageRequiredError();
+        // upload.fields: `file` = principal (obrigatória), `images` = extras (opcionais)
+        const files = (req.files ?? {}) as { [field: string]: Express.Multer.File[] };
+        const mainFile = files.file?.[0];
+        if (!mainFile) {
+            throw new ImageRequiredError(); // garante "no mínimo uma imagem"
         }
+        const extraImages = (files.images ?? []).map((f) => ({ buffer: f.buffer, name: f.originalname }));
 
         const createProductService = new CreateProductService();
         const product = await createProductService.execute({
@@ -20,8 +24,9 @@ class CreateProductController {
             stock: parseInt(stock),
             description: description,
             category_id: category_id,
-            imageBuffer: req.file.buffer,
-            imageName: req.file.originalname,
+            imageBuffer: mainFile.buffer,
+            imageName: mainFile.originalname,
+            extraImages,
             ...definedShippingFields(parseShippingFields(req.body)),
             ...parseSeoFields(req.body),
             featured: req.body.featured === "true",

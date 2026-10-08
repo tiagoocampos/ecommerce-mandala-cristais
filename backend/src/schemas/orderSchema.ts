@@ -54,6 +54,17 @@ export const DeleteOrderSchema = z.object({
   }),
 });
 
+export const updateOrderStatusSchema = z.object({
+  params: z.object({
+    order_id: z.string().min(1),
+  }),
+  body: z.object({
+    status: z.enum(["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELED"], {
+      message: "Status inválido",
+    }),
+  }),
+});
+
 export const getOrderSchema = z.object({
   params: z.object({
     order_id: z.string({ message: "O order_id deve ser um texto" }),

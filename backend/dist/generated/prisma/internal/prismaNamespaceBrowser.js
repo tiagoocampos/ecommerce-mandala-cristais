@@ -50,7 +50,8 @@ export const ModelName = {
     Payment: 'Payment',
     Coupon: 'Coupon',
     StoreSettings: 'StoreSettings',
-    IntegrationToken: 'IntegrationToken'
+    IntegrationToken: 'IntegrationToken',
+    ProductImage: 'ProductImage'
 };
 /*
  * Enums
@@ -136,6 +137,7 @@ export const OrderScalarFieldEnum = {
     shipping_service: 'shipping_service',
     shipping_delivery_days: 'shipping_delivery_days',
     shipping_cost_estimated: 'shipping_cost_estimated',
+    expires_at: 'expires_at',
     user_id: 'user_id',
     address_id: 'address_id',
     coupon_id: 'coupon_id',
@@ -187,6 +189,13 @@ export const IntegrationTokenScalarFieldEnum = {
     refresh_expires_at: 'refresh_expires_at',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
+};
+export const ProductImageScalarFieldEnum = {
+    id: 'id',
+    url: 'url',
+    position: 'position',
+    product_id: 'product_id',
+    createdAt: 'createdAt'
 };
 export const SortOrder = {
     asc: 'asc',

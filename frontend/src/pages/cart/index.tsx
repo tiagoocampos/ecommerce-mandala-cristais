@@ -33,6 +33,11 @@ export function CartPage() {
     const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
     const [checkingOut, setCheckingOut] = useState(false);
 
+    // Abrir /carrinho sempre mostra o carrinho atual do servidor, não o cache em memória
+    useEffect(() => {
+        refreshCart();
+    }, [refreshCart]);
+
     useEffect(() => {
         let mounted = true;
         async function fetchAddresses() {

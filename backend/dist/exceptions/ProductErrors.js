@@ -46,4 +46,20 @@ export class ProductAlreadyExistsError extends Error {
         Object.setPrototypeOf(this, ProductAlreadyExistsError.prototype);
     }
 }
+export class ProductImageNotFoundError extends Error {
+    statusCode = 404;
+    constructor() {
+        super("Imagem do produto não encontrada");
+        this.name = "ProductImageNotFoundError";
+        Object.setPrototypeOf(this, ProductImageNotFoundError.prototype);
+    }
+}
+export class TooManyProductImagesError extends Error {
+    statusCode = 400;
+    constructor(max) {
+        super(`Cada produto pode ter no máximo ${max} fotos adicionais (além da principal).`);
+        this.name = "TooManyProductImagesError";
+        Object.setPrototypeOf(this, TooManyProductImagesError.prototype);
+    }
+}
 //# sourceMappingURL=ProductErrors.js.map

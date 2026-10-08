@@ -269,6 +269,17 @@ export const errorHandler = (
     });
   }
 
+  // Upload (multer): arquivo grande, tipo inválido, fotos demais
+  if (error.name === "MulterError" || error.message?.startsWith("Invalid file type")) {
+    const code = (error as { code?: string }).code;
+    const message =
+      code === "LIMIT_FILE_SIZE" ? "Cada imagem pode ter no máximo 5 MB."
+      : code === "LIMIT_UNEXPECTED_FILE" || code === "LIMIT_FILE_COUNT" ? "Imagens demais ou em campo inesperado (máximo de 8 fotos adicionais)."
+      : error.message?.startsWith("Invalid file type") ? "Formato de imagem inválido: use JPEG ou PNG."
+      : "Falha no envio da imagem.";
+    return res.status(400).json({ error: message });
+  }
+
   // Sem isso, erros inesperados deixavam a requisição sem resposta
   console.error(error);
   return res.status(500).json({

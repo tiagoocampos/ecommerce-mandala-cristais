@@ -35,6 +35,20 @@ export declare const DeleteOrderSchema: z.ZodObject<{
         order_id: z.ZodString;
     }, z.core.$strip>;
 }, z.core.$strip>;
+export declare const updateOrderStatusSchema: z.ZodObject<{
+    params: z.ZodObject<{
+        order_id: z.ZodString;
+    }, z.core.$strip>;
+    body: z.ZodObject<{
+        status: z.ZodEnum<{
+            PENDING: "PENDING";
+            PAID: "PAID";
+            SHIPPED: "SHIPPED";
+            DELIVERED: "DELIVERED";
+            CANCELED: "CANCELED";
+        }>;
+    }, z.core.$strip>;
+}, z.core.$strip>;
 export declare const getOrderSchema: z.ZodObject<{
     params: z.ZodObject<{
         order_id: z.ZodString;

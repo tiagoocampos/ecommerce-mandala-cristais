@@ -38,6 +38,22 @@ export class OrderNotFoundError extends Error {
         Object.setPrototypeOf(this, OrderNotFoundError.prototype);
     }
 }
+export class InvalidStatusTransitionError extends Error {
+    statusCode = 400;
+    constructor(from, to) {
+        super(`Não é possível mudar o pedido de ${from} para ${to}.`);
+        this.name = "InvalidStatusTransitionError";
+        Object.setPrototypeOf(this, InvalidStatusTransitionError.prototype);
+    }
+}
+export class OrderNotPayableError extends Error {
+    statusCode = 409;
+    constructor(message = "Este pedido não pode mais ser pago: ele foi cancelado, expirou ou já está pago.") {
+        super(message);
+        this.name = "OrderNotPayableError";
+        Object.setPrototypeOf(this, OrderNotPayableError.prototype);
+    }
+}
 export class InsufficientStockError extends Error {
     statusCode = 400;
     constructor() {

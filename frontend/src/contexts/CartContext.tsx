@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import axios from "axios";
 import { api } from "../services/api";
 import { getToken } from "../lib/auth";
 import type { Cart } from "../types";
@@ -48,9 +49,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
         [refreshCart]
     );
 
+    // Se a chamada falhar (ex.: o carrinho do servidor já foi esvaziado ao criar o pedido),
+    // ressincroniza ANTES de relançar o erro, para a tela mostrar o estado real.
     const updateItem = useCallback(
         async (item_id: string, quantity: number) => {
-            await api.patch(`/cart/items/${item_id}`, { quantity });
+            try {
+                await api.patch(`/cart/items/${item_id}`, { quantity });
+            } catch (error) {
+                await refreshCart();
+                throw error;
+            }
             await refreshCart();
         },
         [refreshCart]
@@ -58,7 +66,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const removeItem = useCallback(
         async (item_id: string) => {
-            await api.delete(`/cart/items/${item_id}`);
+            try {
+                await api.delete(`/cart/items/${item_id}`);
+            } catch (error) {
+                await refreshCart();
+                // "Item não encontrado": o objetivo (item fora do carrinho) já está cumprido
+                if (axios.isAxiosError(error) && error.response?.status === 404) return;
+                throw error;
+            }
             await refreshCart();
         },
         [refreshCart]

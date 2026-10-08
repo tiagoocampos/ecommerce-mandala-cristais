@@ -1,8 +1,7 @@
-import { Readable } from "stream";
 import prismaClient from "../../prisma/index.js";
 import { UpdateProductError, ProductNotFoundError, ProductAlreadyExistsError } from "../../exceptions/ProductErrors.js";
 import { CategoryNotFoundError } from "../../exceptions/CategoryErrors.js";
-import cloudinary from "../../config/cloudinary.js";
+import { uploadImage } from "../../utils/uploadImage.js";
 import { generateSlug } from "../../utils/generateSlug.js";
 import { findProductOrFail } from "./findProductOrFail.js";
 import { definedShippingFields } from "../../utils/parseShippingFields.js";
@@ -28,23 +27,7 @@ class UpdateProductService {
             let bannerUrl = product.banner;
             if (imageBuffer && imageName) {
                 try {
-                    const result = await new Promise((resolve, reject) => {
-                        const uploadStream = cloudinary.uploader.upload_stream({
-                            folder: "products",
-                            resource_type: "image",
-                            public_id: `${Date.now()}-${imageName.split(".")[0]}`,
-                        }, (error, result) => {
-                            if (error) {
-                                reject(error);
-                            }
-                            else {
-                                resolve(result);
-                            }
-                        });
-                        const bufferStream = Readable.from(imageBuffer);
-                        bufferStream.pipe(uploadStream);
-                    });
-                    bannerUrl = result.secure_url;
+                    bannerUrl = await uploadImage(imageBuffer, imageName);
                 }
                 catch (error) {
                     throw new UpdateProductError();
@@ -100,6 +83,10 @@ class UpdateProductService {
                     meta_description: true,
                     image_alt_text: true,
                     featured: true,
+                    images: {
+                        orderBy: { position: "asc" },
+                        select: { id: true, url: true, position: true },
+                    },
                 },
             });
             return updated;

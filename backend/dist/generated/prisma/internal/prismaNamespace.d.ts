@@ -243,6 +243,7 @@ export declare const ModelName: {
     readonly Coupon: "Coupon";
     readonly StoreSettings: "StoreSettings";
     readonly IntegrationToken: "IntegrationToken";
+    readonly ProductImage: "ProductImage";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export interface TypeMapCb<GlobalOmitOptions = {}> extends runtime.Types.Utils.Fn<{
@@ -255,7 +256,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "user" | "address" | "category" | "product" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "coupon" | "storeSettings" | "integrationToken";
+        modelProps: "user" | "address" | "category" | "product" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "coupon" | "storeSettings" | "integrationToken" | "productImage";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1147,6 +1148,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        ProductImage: {
+            payload: Prisma.$ProductImagePayload<ExtArgs>;
+            fields: Prisma.ProductImageFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.ProductImageFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.ProductImageFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                findFirst: {
+                    args: Prisma.ProductImageFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.ProductImageFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                findMany: {
+                    args: Prisma.ProductImageFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>[];
+                };
+                create: {
+                    args: Prisma.ProductImageCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                createMany: {
+                    args: Prisma.ProductImageCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.ProductImageCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>[];
+                };
+                delete: {
+                    args: Prisma.ProductImageDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                update: {
+                    args: Prisma.ProductImageUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                deleteMany: {
+                    args: Prisma.ProductImageDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.ProductImageUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.ProductImageUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>[];
+                };
+                upsert: {
+                    args: Prisma.ProductImageUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductImagePayload>;
+                };
+                aggregate: {
+                    args: Prisma.ProductImageAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateProductImage>;
+                };
+                groupBy: {
+                    args: Prisma.ProductImageGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.ProductImageGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.ProductImageCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.ProductImageCountAggregateOutputType> | number;
+                };
+            };
+        };
     };
 } & {
     other: {
@@ -1262,6 +1337,7 @@ export declare const OrderScalarFieldEnum: {
     readonly shipping_service: "shipping_service";
     readonly shipping_delivery_days: "shipping_delivery_days";
     readonly shipping_cost_estimated: "shipping_cost_estimated";
+    readonly expires_at: "expires_at";
     readonly user_id: "user_id";
     readonly address_id: "address_id";
     readonly coupon_id: "coupon_id";
@@ -1320,6 +1396,14 @@ export declare const IntegrationTokenScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type IntegrationTokenScalarFieldEnum = (typeof IntegrationTokenScalarFieldEnum)[keyof typeof IntegrationTokenScalarFieldEnum];
+export declare const ProductImageScalarFieldEnum: {
+    readonly id: "id";
+    readonly url: "url";
+    readonly position: "position";
+    readonly product_id: "product_id";
+    readonly createdAt: "createdAt";
+};
+export type ProductImageScalarFieldEnum = (typeof ProductImageScalarFieldEnum)[keyof typeof ProductImageScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";
@@ -1550,6 +1634,7 @@ export type GlobalOmitConfig = {
     coupon?: Prisma.CouponOmit;
     storeSettings?: Prisma.StoreSettingsOmit;
     integrationToken?: Prisma.IntegrationTokenOmit;
+    productImage?: Prisma.ProductImageOmit;
 };
 export type LogLevel = 'info' | 'query' | 'warn' | 'error';
 export type LogDefinition = {

@@ -27,6 +27,10 @@ class ListProductsService {
                     meta_description: true,
                     image_alt_text: true,
                     featured: true,
+                    images: {
+                        orderBy: { position: "asc" },
+                        select: { id: true, url: true, position: true },
+                    },
                 },
                 orderBy: {
                     createdAt: "desc",

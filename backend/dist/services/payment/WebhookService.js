@@ -115,68 +115,114 @@ class WebhookService {
             console.log("PAYMENT NÃO ENCONTRADO PARA ORDER:", orderId);
             return;
         }
-        if (existingPayment.status === PaymentStatus.APPROVED) {
+        // Aprovação repetida (webhook duplicado): nada a fazer. Mas um pagamento aprovado
+        // pode depois virar estorno/chargeback, que precisa ser registrado.
+        if (existingPayment.status === PaymentStatus.APPROVED && paymentInfo.status === "approved") {
             console.log("Pagamento já estava APPROVED, ignorando reprocessamento.");
             return;
         }
+        // Já aprovado e chega um status "menor" (pending/rejected atrasado): não regride
+        if (existingPayment.status === PaymentStatus.APPROVED &&
+            !["refunded", "charged_back"].includes(paymentInfo.status)) {
+            console.log(`Pagamento APPROVED; ignorando status atrasado "${paymentInfo.status}".`);
+            return;
+        }
         const payload = JSON.parse(JSON.stringify(paymentInfo));
-        if (paymentInfo.status === "approved") {
+        const paymentData = {
+            provider_payment_id: String(paymentInfo.id),
+            method: paymentInfo.payment_method_id ?? null,
+            raw_payload: payload,
+        };
+        switch (paymentInfo.status) {
+            case "approved":
+                await this.handleApproved(orderId, order.status, paymentData);
+                return;
+            // Recusado/cancelado/expirado NÃO cancela o pedido: no Checkout Pro o cliente pode
+            // tentar de novo (outro cartão) na mesma preference. Quem encerra o pedido e
+            // devolve o estoque é o job de expiração.
+            case "rejected":
+            case "cancelled":
+            case "expired":
+                await prismaClient.payment.update({
+                    where: { order_id: orderId },
+                    data: { status: PaymentStatus.REJECTED, ...paymentData },
+                });
+                console.log(`PAGAMENTO ${paymentInfo.status.toUpperCase()} (pedido segue pendente até expirar):`, orderId);
+                return;
+            // Estorno/chargeback: só registra; devolução de produto fica fora deste fluxo
+            case "refunded":
+            case "charged_back":
+                await prismaClient.payment.update({
+                    where: { order_id: orderId },
+                    data: { status: PaymentStatus.REFUNDED, ...paymentData },
+                });
+                console.log(`PAGAMENTO ${paymentInfo.status.toUpperCase()}:`, orderId);
+                return;
+            // in_process, pending, authorized...
+            default:
+                await prismaClient.payment.update({
+                    where: { order_id: orderId },
+                    data: { status: PaymentStatus.PENDING, ...paymentData },
+                });
+                console.log("PAGAMENTO PENDENTE:", orderId);
+        }
+    }
+    async handleApproved(orderId, orderStatus, paymentData) {
+        if (orderStatus !== OrderStatus.CANCELED) {
+            // Só promove de PENDING para PAID: um webhook duplicado não faz um pedido
+            // SHIPPED/DELIVERED voltar para PAID
             await prismaClient.$transaction([
-                prismaClient.order.update({
-                    where: { id: orderId },
+                prismaClient.order.updateMany({
+                    where: { id: orderId, status: OrderStatus.PENDING },
                     data: { status: OrderStatus.PAID },
                 }),
                 prismaClient.payment.update({
                     where: { order_id: orderId },
-                    data: {
-                        status: PaymentStatus.APPROVED,
-                        provider_payment_id: String(paymentInfo.id),
-                        method: paymentInfo.payment_method_id ?? null,
-                        raw_payload: payload,
-                    },
+                    data: { status: PaymentStatus.APPROVED, ...paymentData },
                 }),
             ]);
             console.log("PEDIDO PAGO:", orderId);
             return;
         }
-        if (paymentInfo.status === "rejected") {
+        // APROVAÇÃO TARDIA: o pedido já foi cancelado (expirou) e o estoque devolvido, mas o
+        // pagamento foi aprovado. Tenta reservar de novo, com a mesma regra atômica do checkout.
+        try {
             await prismaClient.$transaction(async (tx) => {
+                const items = await tx.orderItem.findMany({ where: { order_id: orderId } });
+                for (const item of items) {
+                    const reserved = await tx.product.updateMany({
+                        where: { id: item.product_id, stock: { gte: item.quantity } },
+                        data: { stock: { decrement: item.quantity } },
+                    });
+                    if (reserved.count === 0) {
+                        throw new Error(`sem estoque para o produto ${item.product_id}`);
+                    }
+                }
+                const reopened = await tx.order.updateMany({
+                    where: { id: orderId, status: OrderStatus.CANCELED },
+                    data: { status: OrderStatus.PAID },
+                });
+                if (reopened.count === 0) {
+                    throw new Error("status do pedido mudou durante o processamento");
+                }
                 await tx.payment.update({
                     where: { order_id: orderId },
-                    data: {
-                        status: PaymentStatus.REJECTED,
-                        provider_payment_id: String(paymentInfo.id),
-                        method: paymentInfo.payment_method_id ?? null,
-                        raw_payload: payload,
-                    },
-                });
-                const items = await tx.orderItem.findMany({
-                    where: { order_id: orderId },
-                });
-                for (const item of items) {
-                    await tx.product.update({
-                        where: { id: item.product_id },
-                        data: { stock: { increment: item.quantity } },
-                    });
-                }
-                await tx.order.update({
-                    where: { id: orderId },
-                    data: { status: OrderStatus.CANCELED },
+                    data: { status: PaymentStatus.APPROVED, ...paymentData },
                 });
             });
-            console.log("PAGAMENTO RECUSADO, ESTOQUE DEVOLVIDO:", orderId);
-            return;
+            console.log("APROVAÇÃO TARDIA: estoque reservado de novo, PEDIDO PAGO:", orderId);
         }
-        await prismaClient.payment.update({
-            where: { order_id: orderId },
-            data: {
-                status: PaymentStatus.PENDING,
-                provider_payment_id: String(paymentInfo.id),
-                method: paymentInfo.payment_method_id ?? null,
-                raw_payload: payload,
-            },
-        });
-        console.log("PAGAMENTO PENDENTE:", orderId);
+        catch (error) {
+            // Sem estoque: pedido continua CANCELED, pagamento fica registrado como APPROVED
+            // e o admin precisa ESTORNAR manualmente no painel do Mercado Pago.
+            await prismaClient.payment.update({
+                where: { order_id: orderId },
+                data: { status: PaymentStatus.APPROVED, ...paymentData },
+            });
+            console.error(`🚨 [REEMBOLSO MANUAL NECESSÁRIO] Pedido ${orderId}: pagamento APROVADO depois do pedido ser cancelado/expirar, ` +
+                `e não há estoque para reabrir (${error instanceof Error ? error.message : error}). ` +
+                `Estorne o pagamento ${paymentData.provider_payment_id} no painel do Mercado Pago.`);
+        }
     }
 }
 export { WebhookService };
