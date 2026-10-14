@@ -49,6 +49,7 @@ export function AdminStorefront() {
     // cupons
     const [couponFormOpen, setCouponFormOpen] = useState(false);
     const [busyCouponId, setBusyCouponId] = useState<string | null>(null);
+    const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
     const applySettings = useCallback((settings: StoreSettings) => {
         setAnnouncementText(settings.announcement_text);
@@ -134,6 +135,19 @@ export function AdminStorefront() {
         toast.success(`Cupom ${data.code} criado`);
         setCouponFormOpen(false);
         await fetchCoupons();
+    }
+
+    async function handleEditCoupon(payload: CouponFormPayload) {
+        if (!editingCoupon) return;
+        const { data } = await api.put<Coupon>(`/admin/coupons/${editingCoupon.id}`, payload);
+        toast.success(`Cupom ${data.code} atualizado`);
+        setEditingCoupon(null);
+        await fetchCoupons();
+    }
+
+    function openEditCoupon(coupon: Coupon) {
+        setCouponFormOpen(false);
+        setEditingCoupon(coupon);
     }
 
     async function handleToggleCoupon(coupon: Coupon, active: boolean) {
@@ -383,7 +397,15 @@ export function AdminStorefront() {
                 title={`Cupons (${coupons.length})`}
                 description="Cupons que qualquer cliente pode usar no checkout. Descontos exclusivos de um cliente ficam na página do usuário."
             >
-                {couponFormOpen ? (
+                {editingCoupon ? (
+                    <CouponForm
+                        key={editingCoupon.id}
+                        mode="generic"
+                        initial={editingCoupon}
+                        onSubmit={handleEditCoupon}
+                        onCancel={() => setEditingCoupon(null)}
+                    />
+                ) : couponFormOpen ? (
                     <CouponForm mode="generic" onSubmit={handleCreateCoupon} onCancel={() => setCouponFormOpen(false)} />
                 ) : (
                     <Button
@@ -399,6 +421,7 @@ export function AdminStorefront() {
                     showFirstPurchase
                     busyId={busyCouponId}
                     onToggle={handleToggleCoupon}
+                    onEdit={openEditCoupon}
                     onDelete={handleDeleteCoupon}
                     emptyText="Nenhum cupom criado ainda."
                 />

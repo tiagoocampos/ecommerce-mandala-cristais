@@ -3,8 +3,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { getApiErrorMessage } from "../../lib/utils-api";
-import { reaisToCents } from "../../lib/admin-format";
-import type { CouponType } from "../../types/admin";
+import { centsToReais, reaisToCents } from "../../lib/admin-format";
+import type { Coupon, CouponType } from "../../types/admin";
 
 export interface CouponFormPayload {
     code?: string;
@@ -19,17 +19,28 @@ interface CouponFormProps {
     mode: "personal" | "generic";
     onSubmit: (payload: CouponFormPayload) => Promise<void>;
     onCancel: () => void;
+    /** preenchido = edição desse cupom */
+    initial?: Coupon;
 }
 
 const fieldClass =
     "h-9 rounded-md border border-input bg-white px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20";
 
-export function CouponForm({ mode, onSubmit, onCancel }: CouponFormProps) {
-    const [code, setCode] = useState("");
-    const [type, setType] = useState<CouponType>("PERCENTAGE");
-    const [value, setValue] = useState("");
-    const [firstPurchaseOnly, setFirstPurchaseOnly] = useState(false);
-    const [expiresAt, setExpiresAt] = useState("");
+// expires_at é salvo como 23:59:59 de Brasília; volta para "YYYY-MM-DD" no mesmo fuso
+function toDateInput(iso: string | null): string {
+    if (!iso) return "";
+    return new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+}
+
+export function CouponForm({ mode, onSubmit, onCancel, initial }: CouponFormProps) {
+    const editing = !!initial;
+    const [code, setCode] = useState(initial?.code ?? "");
+    const [type, setType] = useState<CouponType>(initial?.type ?? "PERCENTAGE");
+    const [value, setValue] = useState(
+        !initial ? "" : initial.type === "PERCENTAGE" ? String(initial.value) : centsToReais(initial.value)
+    );
+    const [firstPurchaseOnly, setFirstPurchaseOnly] = useState(initial?.first_purchase_only ?? false);
+    const [expiresAt, setExpiresAt] = useState(toDateInput(initial?.expires_at ?? null));
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -71,7 +82,7 @@ export function CouponForm({ mode, onSubmit, onCancel }: CouponFormProps) {
         try {
             await onSubmit(payload);
         } catch (err) {
-            setError(getApiErrorMessage(err, "Erro ao criar cupom"));
+            setError(getApiErrorMessage(err, editing ? "Erro ao salvar cupom" : "Erro ao criar cupom"));
         } finally {
             setSubmitting(false);
         }
@@ -148,7 +159,7 @@ export function CouponForm({ mode, onSubmit, onCancel }: CouponFormProps) {
                 </label>
             )}
 
-            {mode === "personal" && (
+            {mode === "personal" && !editing && (
                 <p className="text-xs text-mc-ink/60">
                     O código é gerado automaticamente (ex.: MANDALA-MARIA-X7F2) e só funciona para este cliente.
                 </p>
@@ -162,7 +173,15 @@ export function CouponForm({ mode, onSubmit, onCancel }: CouponFormProps) {
                     disabled={submitting}
                     className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50"
                 >
-                    {submitting ? "Criando..." : mode === "personal" ? "Criar desconto" : "Criar cupom"}
+                    {editing
+                        ? submitting
+                            ? "Salvando..."
+                            : "Salvar alterações"
+                        : submitting
+                          ? "Criando..."
+                          : mode === "personal"
+                            ? "Criar desconto"
+                            : "Criar cupom"}
                 </Button>
                 <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
                     Cancelar

@@ -8,6 +8,7 @@ interface CouponsTableProps {
     showFirstPurchase?: boolean;
     busyId: string | null;
     onToggle: (coupon: Coupon, active: boolean) => void;
+    onEdit: (coupon: Coupon) => void;
     onDelete: (coupon: Coupon) => void;
     emptyText: string;
 }
@@ -26,7 +27,7 @@ function StatusBadge({ coupon }: { coupon: Coupon }) {
     );
 }
 
-export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, onDelete, emptyText }: CouponsTableProps) {
+export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, onEdit, onDelete, emptyText }: CouponsTableProps) {
     const colCount = showFirstPurchase ? 8 : 7;
 
     return (
@@ -41,7 +42,7 @@ export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, onD
                         <th className="py-2.5 px-4 font-medium">Validade</th>
                         <th className="py-2.5 px-4 font-medium text-right">Usos</th>
                         <th className="py-2.5 px-4 font-medium">Status</th>
-                        <th className="py-2.5 px-4 font-medium text-right">Ação</th>
+                        <th className="py-2.5 px-4 font-medium text-center">Ação</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-mc-violet-950/10 bg-white">
@@ -79,6 +80,14 @@ export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, onD
                                     </td>
                                     <td className="py-2.5 px-4 text-right">
                                         <div className="flex justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                disabled={busy}
+                                                onClick={() => onEdit(coupon)}
+                                                className="text-xs font-medium px-2.5 py-1 rounded-md border border-mc-violet-950/15 text-mc-violet-950 hover:bg-mc-blush-100 disabled:opacity-40"
+                                            >
+                                                Editar
+                                            </button>
                                             {coupon.active ? (
                                                 <ConfirmDelete
                                                     trigger={

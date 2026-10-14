@@ -85,12 +85,12 @@ class UpdateProductService {
                             id: product_id
                         }
                     }
-            });
+                });
 
-            if (productAlreadyExists) {
-                throw new ProductAlreadyExistsError();
+                if (productAlreadyExists) {
+                    throw new ProductAlreadyExistsError();
+                }
             }
-}
 
             const updated = await prismaClient.product.update({
                 where: { id: product_id },
@@ -148,7 +148,7 @@ class UpdateProductService {
             if (error instanceof ProductNotFoundError) {
                 throw error;
             }
-            if(error instanceof ProductAlreadyExistsError){
+            if (error instanceof ProductAlreadyExistsError) {
                 throw error;
             }
             throw new UpdateProductError();

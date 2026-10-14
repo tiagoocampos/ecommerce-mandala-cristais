@@ -36,6 +36,7 @@ export function AdminUserDetail() {
     const [error, setError] = useState<string | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [busyCouponId, setBusyCouponId] = useState<string | null>(null);
+    const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
     const fetchUser = useCallback(async () => {
         try {
@@ -58,6 +59,19 @@ export function AdminUserDetail() {
         toast.success(`Desconto criado: ${data.code}`);
         setFormOpen(false);
         await fetchUser();
+    }
+
+    async function handleEdit(payload: CouponFormPayload) {
+        if (!editingCoupon) return;
+        const { data } = await api.put<Coupon>(`/admin/coupons/${editingCoupon.id}`, payload);
+        toast.success(`Desconto ${data.code} atualizado`);
+        setEditingCoupon(null);
+        await fetchUser();
+    }
+
+    function openEdit(coupon: Coupon) {
+        setFormOpen(false);
+        setEditingCoupon(coupon);
     }
 
     async function handleToggle(coupon: Coupon, active: boolean) {
@@ -257,7 +271,8 @@ export function AdminUserDetail() {
             <Section
                 title={`Descontos (${user.coupons.length})`}
                 action={
-                    !formOpen && (
+                    !formOpen &&
+                    !editingCoupon && (
                         <Button
                             size="sm"
                             onClick={() => setFormOpen(true)}
@@ -271,10 +286,20 @@ export function AdminUserDetail() {
                 {formOpen && (
                     <CouponForm mode="personal" onSubmit={handleCreateDiscount} onCancel={() => setFormOpen(false)} />
                 )}
+                {editingCoupon && (
+                    <CouponForm
+                        key={editingCoupon.id}
+                        mode="personal"
+                        initial={editingCoupon}
+                        onSubmit={handleEdit}
+                        onCancel={() => setEditingCoupon(null)}
+                    />
+                )}
                 <CouponsTable
                     coupons={user.coupons}
                     busyId={busyCouponId}
                     onToggle={handleToggle}
+                    onEdit={openEdit}
                     onDelete={handleDelete}
                     emptyText="Nenhum desconto criado para este cliente."
                 />

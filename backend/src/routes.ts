@@ -24,7 +24,7 @@ import { ListUsersAdminController } from './controllers/user/admin/ListUsersAdmi
 import { DeleteUserAdminController } from './controllers/user/admin/DeleteUserAdminController.js';
 import { createUserDiscountSchema, userIdParamsSchema } from './schemas/userAdminSchema.js';
 import { GetUserAdminController } from './controllers/user/admin/GetUserAdminController.js';
-import { createCouponSchema, updateCouponStatusSchema, validateCouponSchema } from './schemas/couponSchema.js';
+import { createCouponSchema, deleteCouponSchema, editCouponSchema, updateCouponStatusSchema, validateCouponSchema } from './schemas/couponSchema.js';
 import { CreateUserDiscountController } from './controllers/coupon/CreateUserDiscountController.js';
 import { CreateCouponAdminController } from './controllers/coupon/CreateCouponAdminController.js';
 import { ListCouponsAdminController } from './controllers/coupon/ListCouponsAdminController.js';
@@ -67,6 +67,7 @@ import { GetOrderAdminController } from './controllers/order/GetOrderAdminContro
 import { CreatePreferenceController } from './controllers/payment/CreatePreferenceController.js';
 import { WebhookController } from './controllers/payment/WebhookController.js';
 import { DeleteCouponController } from './controllers/coupon/DeleteCouponController.js';
+import { EditCouponAdminController } from './controllers/coupon/EditCouponAdminController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -134,8 +135,9 @@ router.post("/admin/users/:id/discount", isAuthenticated, isAdmin, validateSchem
 router.get("/admin/coupons", isAuthenticated, isAdmin, new ListCouponsAdminController().handle)
 router.post("/admin/coupons", isAuthenticated, isAdmin, validateSchema(createCouponSchema), new CreateCouponAdminController().handle)
 router.patch("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(updateCouponStatusSchema), new UpdateCouponStatusController().handle)
+router.put("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(editCouponSchema), new EditCouponAdminController().handle)
 router.post("/coupons/validate", isAuthenticated, validateSchema(validateCouponSchema), new ValidateCouponController().handle)
-router.delete("/admin/coupons/:id", isAuthenticated, isAdmin, new DeleteCouponController().handle)
+router.delete("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(deleteCouponSchema), new DeleteCouponController().handle)
 
 router.get("/admin/dashboard", isAuthenticated, isAdmin, new GetDashboardAdminController().handle)
 
