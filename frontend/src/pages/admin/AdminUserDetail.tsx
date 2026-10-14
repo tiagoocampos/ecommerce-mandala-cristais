@@ -73,6 +73,19 @@ export function AdminUserDetail() {
         }
     }
 
+    async function handleDelete(coupon: Coupon) {
+        setBusyCouponId(coupon.id);
+        try {
+            await api.delete(`/admin/coupons/${coupon.id}`);
+            toast.success(`Cupom ${coupon.code} excluído`);
+            await fetchUser();
+        } catch (err) {
+            showApiError(err, "Erro ao excluir cupom");
+        } finally {
+            setBusyCouponId(null);
+        }
+    }
+
     if (loading) {
         return (
             <div className="p-6">
@@ -262,6 +275,7 @@ export function AdminUserDetail() {
                     coupons={user.coupons}
                     busyId={busyCouponId}
                     onToggle={handleToggle}
+                    onDelete={handleDelete}
                     emptyText="Nenhum desconto criado para este cliente."
                 />
             </Section>

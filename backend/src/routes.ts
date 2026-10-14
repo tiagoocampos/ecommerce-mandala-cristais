@@ -66,6 +66,7 @@ import { ListAllOrdersAdminController } from './controllers/order/ListAllOrdersA
 import { GetOrderAdminController } from './controllers/order/GetOrderAdminController.js';
 import { CreatePreferenceController } from './controllers/payment/CreatePreferenceController.js';
 import { WebhookController } from './controllers/payment/WebhookController.js';
+import { DeleteCouponController } from './controllers/coupon/DeleteCouponController.js';
 
 const router = Router();
 const upload = multer(uploadConfig);
@@ -134,6 +135,7 @@ router.get("/admin/coupons", isAuthenticated, isAdmin, new ListCouponsAdminContr
 router.post("/admin/coupons", isAuthenticated, isAdmin, validateSchema(createCouponSchema), new CreateCouponAdminController().handle)
 router.patch("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(updateCouponStatusSchema), new UpdateCouponStatusController().handle)
 router.post("/coupons/validate", isAuthenticated, validateSchema(validateCouponSchema), new ValidateCouponController().handle)
+router.delete("/admin/coupons/:id", isAuthenticated, isAdmin, new DeleteCouponController().handle)
 
 router.get("/admin/dashboard", isAuthenticated, isAdmin, new GetDashboardAdminController().handle)
 

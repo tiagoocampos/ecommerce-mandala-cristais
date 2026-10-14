@@ -149,6 +149,19 @@ export function AdminStorefront() {
         }
     }
 
+    async function handleDeleteCoupon(coupon: Coupon) {
+        setBusyCouponId(coupon.id);
+        try {
+            await api.delete(`/admin/coupons/${coupon.id}`);
+            toast.success(`Cupom ${coupon.code} excluído`);
+            await fetchCoupons();
+        } catch (error) {
+            showApiError(error, "Erro ao excluir cupom");
+        } finally {
+            setBusyCouponId(null);
+        }
+    }
+
     if (loading) {
         return (
             <div className="p-6">
@@ -386,6 +399,7 @@ export function AdminStorefront() {
                     showFirstPurchase
                     busyId={busyCouponId}
                     onToggle={handleToggleCoupon}
+                    onDelete={handleDeleteCoupon}
                     emptyText="Nenhum cupom criado ainda."
                 />
             </Block>

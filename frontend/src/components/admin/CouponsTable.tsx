@@ -8,6 +8,7 @@ interface CouponsTableProps {
     showFirstPurchase?: boolean;
     busyId: string | null;
     onToggle: (coupon: Coupon, active: boolean) => void;
+    onDelete: (coupon: Coupon) => void;
     emptyText: string;
 }
 
@@ -25,7 +26,7 @@ function StatusBadge({ coupon }: { coupon: Coupon }) {
     );
 }
 
-export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, emptyText }: CouponsTableProps) {
+export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, onDelete, emptyText }: CouponsTableProps) {
     const colCount = showFirstPurchase ? 8 : 7;
 
     return (
@@ -46,7 +47,7 @@ export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, emp
                 <tbody className="divide-y divide-mc-violet-950/10 bg-white">
                     {coupons.length === 0 ? (
                         <tr>
-                            <td colSpan={colCount}className="py-8 text-center text-mc-ink/50">
+                            <td colSpan={colCount} className="py-8 text-center text-mc-ink/50">
                                 {emptyText}
                             </td>
                         </tr>
@@ -77,33 +78,51 @@ export function CouponsTable({ coupons, showFirstPurchase, busyId, onToggle, emp
                                         <StatusBadge coupon={coupon} />
                                     </td>
                                     <td className="py-2.5 px-4 text-right">
-                                        {coupon.active ? (
+                                        <div className="flex justify-end gap-2">
+                                            {coupon.active ? (
+                                                <ConfirmDelete
+                                                    trigger={
+                                                        <button
+                                                            type="button"
+                                                            disabled={busy}
+                                                            className="text-xs font-medium px-2.5 py-1 rounded-md border border-mc-violet-950/15 text-mc-violet-950 hover:bg-mc-blush-100 disabled:opacity-40"
+                                                        >
+                                                            Desativar
+                                                        </button>
+                                                    }
+                                                    title={`Desativar o cupom ${coupon.code}?`}
+                                                    description="O cupom deixa de funcionar em novas compras. Se ele já foi enviado ao cliente (ex.: pelo WhatsApp), o cliente não vai conseguir usá-lo. Pedidos já feitos com ele não mudam."
+                                                    confirmText="Desativar"
+                                                    onConfirm={() => onToggle(coupon, false)}
+                                                    disabled={busy}
+                                                />
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    disabled={busy}
+                                                    onClick={() => onToggle(coupon, true)}
+                                                    className="text-xs font-medium px-2.5 py-1 rounded-md bg-mc-violet-950 text-mc-sand-50 hover:bg-mc-violet-800 disabled:opacity-40"
+                                                >
+                                                    Reativar
+                                                </button>
+                                            )}
                                             <ConfirmDelete
                                                 trigger={
                                                     <button
                                                         type="button"
                                                         disabled={busy}
-                                                        className="text-xs font-medium px-2.5 py-1 rounded-md border border-mc-violet-950/15 text-mc-violet-950 hover:bg-mc-blush-100 disabled:opacity-40"
+                                                        className="text-xs font-medium px-2.5 py-1 rounded-md border border-red-600/30 text-red-700 hover:bg-red-50 disabled:opacity-40"
                                                     >
-                                                        Desativar
+                                                        Excluir
                                                     </button>
                                                 }
-                                                title={`Desativar o cupom ${coupon.code}?`}
-                                                description="O cupom deixa de funcionar em novas compras. Se ele já foi enviado ao cliente (ex.: pelo WhatsApp), o cliente não vai conseguir usá-lo. Pedidos já feitos com ele não mudam."
-                                                confirmText="Desativar"
-                                                onConfirm={() => onToggle(coupon, false)}
+                                                title={`Excluir o cupom ${coupon.code}?`}
+                                                description="O cupom será removido do sistema e não poderá mais ser usado. Pedidos já feitos com ele não mudam."
+                                                confirmText="Excluir"
+                                                onConfirm={() => onDelete(coupon)}
                                                 disabled={busy}
                                             />
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                disabled={busy}
-                                                onClick={() => onToggle(coupon, true)}
-                                                className="text-xs font-medium px-2.5 py-1 rounded-md bg-mc-violet-950 text-mc-sand-50 hover:bg-mc-violet-800 disabled:opacity-40"
-                                            >
-                                                Reativar
-                                            </button>
-                                        )}
+                                        </div>
                                     </td>
                                 </tr>
                             );
