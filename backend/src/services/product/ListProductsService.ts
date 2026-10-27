@@ -1,4 +1,5 @@
 import prismaClient from "../../prisma/index.js";
+import { maybeExpireOrders } from "../order/MaybeExpireOrders.js";
 import { ListProductsError } from "../../exceptions/ProductErrors.js";
 
 interface ListProductsServiceProps {
@@ -7,6 +8,7 @@ interface ListProductsServiceProps {
 
 class ListProductsService {
   async execute({ disabled }: ListProductsServiceProps) {
+    maybeExpireOrders();
     try {
       const products = await prismaClient.product.findMany({
         where: {

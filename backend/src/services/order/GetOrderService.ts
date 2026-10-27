@@ -1,4 +1,5 @@
 import prismaClient from "../../prisma/index.js";
+import { maybeExpireOrders } from "./MaybeExpireOrders.js";
 
 interface GetOrderServiceProps {
     user_id: string;
@@ -7,6 +8,7 @@ interface GetOrderServiceProps {
 
 class GetOrderService {
     async execute({ user_id, order_id }: GetOrderServiceProps) {
+        maybeExpireOrders();
 
         const order = await prismaClient.order.findFirst({
             where: {

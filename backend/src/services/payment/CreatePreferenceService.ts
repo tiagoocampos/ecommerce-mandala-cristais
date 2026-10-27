@@ -3,6 +3,7 @@ import { client } from "../../config/mercadopago.js";
 import prismaClient from "../../prisma/index.js";
 import { OrderNotFoundError, OrderNotPayableError } from "../../exceptions/OrdersErrors.js";
 import { toMercadoPagoDate } from "../../utils/orderExpiration.js";
+import { cancelOrderAndRestoreStock } from "../order/CancelOrderAndRestoreStockService.js";
 import { PaymentCreationError } from "../../exceptions/PaymentErrors.js";
 
 interface CreatePreferenceServiceProps {
@@ -41,6 +42,8 @@ class CreatePreferenceService {
             throw new OrderNotPayableError();
         }
         if (order.expires_at && order.expires_at.getTime() <= Date.now()) {
+            // Vencido: cancela e devolve o estoque agora (idempotente), depois responde "expirado"
+            await cancelOrderAndRestoreStock(order.id);
             throw new OrderNotPayableError("O prazo para pagar este pedido expirou. Faça um novo pedido.");
         }
 

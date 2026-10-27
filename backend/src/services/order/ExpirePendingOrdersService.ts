@@ -3,46 +3,45 @@ import { cancelOrderAndRestoreStock } from "./CancelOrderAndRestoreStockService.
 
 // Margem para um pagamento aprovado no último minuto cujo webhook ainda não chegou
 const GRACE_MS = 2 * 60 * 1000;
-const INTERVAL_MS = 5 * 60 * 1000;
+const BATCH_SIZE = 50;
 
 // Cancela pedidos PENDING vencidos e devolve o estoque (via serviço idempotente, então
 // não precisa de lock: rodar em duas instâncias ao mesmo tempo é seguro).
 class ExpirePendingOrdersService {
     async execute() {
-        const overdue = await prismaClient.order.findMany({
-            where: { status: "PENDING", expires_at: { lt: new Date(Date.now() - GRACE_MS) } },
-            select: { id: true },
-        });
-
+        let checked = 0;
         let canceled = 0;
-        for (const { id } of overdue) {
-            try {
-                const { restored } = await cancelOrderAndRestoreStock(id);
-                if (restored) canceled++;
-            } catch (error) {
-                // erro em um pedido não interrompe os demais
-                console.error(`[expiração] Falha ao cancelar o pedido ${id}:`, error);
+        let batch: { id: string }[];
+
+        do {
+            batch = await prismaClient.order.findMany({
+                where: { status: "PENDING", expires_at: { lt: new Date(Date.now() - GRACE_MS) } },
+                select: { id: true },
+                take: BATCH_SIZE,
+            });
+
+            let failed = 0;
+            for (const { id } of batch) {
+                try {
+                    const { restored } = await cancelOrderAndRestoreStock(id);
+                    if (restored) canceled++;
+                } catch (error) {
+                    // erro em um pedido não interrompe os demais
+                    failed++;
+                    console.error(`[expiração] Falha ao cancelar o pedido ${id}:`, error);
+                }
             }
-        }
+            checked += batch.length;
+
+            // Repete só se o lote veio cheio; com falhas pararia de avançar, então encerra
+            if (failed > 0) break;
+        } while (batch.length === BATCH_SIZE);
 
         if (canceled > 0) {
             console.log(`[expiração] ${canceled} pedido(s) pendente(s) expirado(s) cancelado(s); estoque devolvido.`);
         }
-        return { checked: overdue.length, canceled };
+        return { checked, canceled };
     }
-}
-
-/** Roda uma vez na inicialização e depois a cada 5 minutos. */
-export function startOrderExpirationJob() {
-    const run = () =>
-        new ExpirePendingOrdersService().execute().catch((error) => {
-            console.error("[expiração] Falha no job de expiração de pedidos:", error);
-        });
-
-    void run();
-    const timer = setInterval(run, INTERVAL_MS);
-    timer.unref(); // não segura o processo aberto sozinho
-    return timer;
 }
 
 export { ExpirePendingOrdersService };

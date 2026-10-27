@@ -1,4 +1,5 @@
 import prismaClient from "../../prisma/index.js";
+import { maybeExpireOrders } from "./MaybeExpireOrders.js";
 
 interface ListOrdersServiceProps {
     user_id: string;
@@ -6,6 +7,7 @@ interface ListOrdersServiceProps {
 
 class ListOrdersService {
     async execute({ user_id }: ListOrdersServiceProps) {
+        maybeExpireOrders();
         const orders = await prismaClient.order.findMany({
             where: {
                 user_id,
