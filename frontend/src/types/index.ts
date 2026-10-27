@@ -99,4 +99,8 @@ export interface Order {
     /** prazo da reserva de estoque de um pedido PENDING */
     expires_at?: string | null;
     items: OrderItem[];
+    payment?: { method: string | null; status: string; discount_amount: number } | null;
+    /** só em pedido PENDING (GET /order/:id): desconto e total se pagar por Pix */
+    pix_discount?: number;
+    pix_total?: number;
 }

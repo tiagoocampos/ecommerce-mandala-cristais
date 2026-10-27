@@ -221,6 +221,8 @@ model Payment {
   status              PaymentStatus @default(PENDING)
   method              String?
   raw_payload         Json?
+  // centavos de desconto concedidos a esta forma de pagamento (Pix); consolidado no pedido só na aprovação
+  discount_amount     Int           @default(0)
 
   order_id String @unique
   order    Order @relation(fields: [order_id], references: [id], onDelete: Cascade)

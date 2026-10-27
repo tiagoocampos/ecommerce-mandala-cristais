@@ -125,6 +125,13 @@ export function CheckoutPage() {
     const selectedShipping = shippingOptions.find((option) => option.service === shippingService) ?? null;
     const shippingCost = selectedShipping?.price_cents ?? 0;
 
+    const [pixPercent, setPixPercent] = useState(0);
+    useEffect(() => {
+        api.get<{ discount_percent: number }>("/payment/pix-info")
+            .then(({ data }) => setPixPercent(data.discount_percent))
+            .catch(() => setPixPercent(0));
+    }, []);
+
     const discount = appliedCoupon ? previewDiscount(appliedCoupon, subtotal) : 0;
     const total = Math.max(0, subtotal - discount) + shippingCost;
 
@@ -492,6 +499,11 @@ export function CheckoutPage() {
                                                     {formatPrice(total)}
                                                 </span>
                                             </div>
+                                            {pixPercent > 0 && (
+                                                <p className="text-xs text-mc-success-700 text-right">
+                                                    {pixPercent}% de desconto pagando com Pix
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
 

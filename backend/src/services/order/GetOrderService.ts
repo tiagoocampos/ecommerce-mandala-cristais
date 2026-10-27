@@ -1,3 +1,4 @@
+import { calculatePixDiscount } from "../../config/pix.js";
 import prismaClient from "../../prisma/index.js";
 import { maybeExpireOrders } from "./MaybeExpireOrders.js";
 
@@ -16,6 +17,7 @@ class GetOrderService {
                 user_id,
             },
             include: {
+                payment: { select: { method: true, status: true, discount_amount: true } },
                 items: {
                     include: {
                         product: {
@@ -32,7 +34,12 @@ class GetOrderService {
             },
         });
 
-        return order;
+        if (!order || order.status !== "PENDING") {
+            return order;
+        }
+        // Só exibição: nada é gravado até o Pix ser aprovado
+        const pix_discount = calculatePixDiscount(order);
+        return { ...order, pix_discount, pix_total: order.total - pix_discount };
     }
 }
 

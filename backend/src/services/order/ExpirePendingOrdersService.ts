@@ -11,30 +11,31 @@ class ExpirePendingOrdersService {
     async execute() {
         let checked = 0;
         let canceled = 0;
+        const failed: string[] = []; // ficam fora do resto da execução, para não travar os demais
         let batch: { id: string }[];
 
         do {
             batch = await prismaClient.order.findMany({
-                where: { status: "PENDING", expires_at: { lt: new Date(Date.now() - GRACE_MS) } },
+                where: {
+                    status: "PENDING",
+                    expires_at: { lt: new Date(Date.now() - GRACE_MS) },
+                    ...(failed.length > 0 && { id: { notIn: failed } }),
+                },
                 select: { id: true },
                 take: BATCH_SIZE,
             });
 
-            let failed = 0;
             for (const { id } of batch) {
                 try {
-                    const { restored } = await cancelOrderAndRestoreStock(id);
+                    const { restored } = await cancelOrderAndRestoreStock(id, { onlyPending: true });
                     if (restored) canceled++;
                 } catch (error) {
-                    // erro em um pedido não interrompe os demais
-                    failed++;
+                    failed.push(id);
                     console.error(`[expiração] Falha ao cancelar o pedido ${id}:`, error);
+                    continue;
                 }
             }
             checked += batch.length;
-
-            // Repete só se o lote veio cheio; com falhas pararia de avançar, então encerra
-            if (failed > 0) break;
         } while (batch.length === BATCH_SIZE);
 
         if (canceled > 0) {

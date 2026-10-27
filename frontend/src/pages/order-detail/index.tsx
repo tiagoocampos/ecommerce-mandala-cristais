@@ -170,6 +170,12 @@ export function OrderDetail() {
                                                 <span>{formatPrice(order.shipping_cost)}</span>
                                             </div>
                                         )}
+                                        {order.payment?.method === "pix" && order.payment.discount_amount > 0 && (
+                                            <div className="flex justify-between text-mc-success-700">
+                                                <span>Desconto Pix</span>
+                                                <span>-{formatPrice(order.payment.discount_amount)}</span>
+                                            </div>
+                                        )}
                                         <div className="border-t border-mc-violet-950/10 pt-2 flex justify-between font-semibold text-mc-violet-950">
                                             <span>Total</span>
                                             <span>{formatPrice(order.total)}</span>

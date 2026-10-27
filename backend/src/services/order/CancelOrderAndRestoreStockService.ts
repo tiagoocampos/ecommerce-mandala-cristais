@@ -7,10 +7,16 @@ import prismaClient from "../../prisma/index.js";
 //
 // Cancelar um pedido PAID devolve o estoque (a peça não saiu), mas NÃO faz reembolso:
 // o estorno é manual, no painel do Mercado Pago.
-export async function cancelOrderAndRestoreStock(order_id: string): Promise<{ restored: boolean }> {
+//
+// onlyPending: true é o modo da expiração (job, abrir pagamento): só cancela PENDING, para que um
+// pedido pago no mesmo instante (ex.: Pix aprovado) jamais seja cancelado nem perca o estoque.
+export async function cancelOrderAndRestoreStock(
+    order_id: string,
+    { onlyPending = false }: { onlyPending?: boolean } = {}
+): Promise<{ restored: boolean }> {
     return prismaClient.$transaction(async (tx) => {
         const changed = await tx.order.updateMany({
-            where: { id: order_id, status: { in: ["PENDING", "PAID"] } },
+            where: { id: order_id, status: { in: onlyPending ? ["PENDING"] : ["PENDING", "PAID"] } },
             data: { status: "CANCELED" },
         });
 

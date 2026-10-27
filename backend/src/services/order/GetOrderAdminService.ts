@@ -22,6 +22,7 @@ class GetOrderAdminService {
                     },
                 },
                 address: true,
+                payment: { select: { method: true, status: true, discount_amount: true } },
                 items: {
                     include: {
                         product: {

@@ -8,6 +8,7 @@ import {
     AlertCircle,
     ExternalLink,
     Clock,
+    QrCode,
 } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
@@ -20,6 +21,7 @@ import { orderPaymentState } from "../../lib/orderPayment";
 import { api } from "../../services/api";
 import type { Order, OrderStatus } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
+import { PixPayment } from "../../components/store/PixPayment";
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
     PENDING: "Aguardando pagamento",
@@ -38,6 +40,14 @@ export function PaymentPage() {
     const [notFound, setNotFound] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showPix, setShowPix] = useState(false);
+    const [pixPercent, setPixPercent] = useState(0);
+
+    useEffect(() => {
+        api.get<{ discount_percent: number }>("/payment/pix-info")
+            .then(({ data }) => setPixPercent(data.discount_percent))
+            .catch(() => setPixPercent(0));
+    }, []);
 
 
     useEffect(() => {
@@ -271,14 +281,42 @@ export function PaymentPage() {
                                                 </p>
                                             )}
 
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
-                                                    Pix
-                                                </span>
-                                                <span className="text-xs bg-mc-sand-100 text-mc-ink/70 px-2.5 py-1 rounded-full">
-                                                    Cartão de crédito
-                                                </span>
-                                            </div>
+                                            {/* Pix dentro do site */}
+                                            {showPix ? (
+                                                <div className="border border-mc-gold-500/40 rounded-lg p-4">
+                                                    <PixPayment
+                                                        orderId={order.id}
+                                                        onPaid={() => navigate(`/pedido/${order.id}`)}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPix(true)}
+                                                    className="w-full text-left border-2 border-mc-gold-500 bg-mc-gold-500/10 hover:bg-mc-gold-500/20 rounded-lg p-4 flex items-center gap-3"
+                                                >
+                                                    <QrCode size={22} className="text-mc-violet-950 shrink-0" />
+                                                    <span className="flex-1">
+                                                        <span className="flex items-center gap-2 font-semibold text-mc-violet-950">
+                                                            Pagar com Pix
+                                                            {pixPercent > 0 && (
+                                                                <span className="text-[11px] bg-mc-success-700 text-white px-2 py-0.5 rounded-full">
+                                                                    {pixPercent}% OFF
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                        <span className="block text-xs text-mc-ink/60">
+                                                            Aprovação na hora, sem sair do site
+                                                            {order.pix_total !== undefined && order.pix_total < order.total && (
+                                                                <> · no cartão: {formatPrice(order.total)}</>
+                                                            )}
+                                                        </span>
+                                                    </span>
+                                                    <span className="font-display text-lg text-mc-violet-950">
+                                                        {formatPrice(order.pix_total ?? order.total)}
+                                                    </span>
+                                                </button>
+                                            )}
 
                                             <button
                                                 type="button"
@@ -294,7 +332,7 @@ export function PaymentPage() {
                                                 ) : (
                                                     <>
                                                         <ExternalLink size={16} />
-                                                        Pagar com Mercado Pago
+                                                        Cartão e outras formas (Mercado Pago)
                                                     </>
                                                 )}          
 

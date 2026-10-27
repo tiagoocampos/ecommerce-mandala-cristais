@@ -63,6 +63,7 @@ interface AdminDetailOrder {
     shipping_service?: string | null;
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
+    payment?: { method: string | null; status: string; discount_amount: number } | null;
     total: number;
     user_id: string;
     address_id: string;
@@ -310,6 +311,12 @@ export function AdminOrderDetail() {
                                     foi feito, e foi usado o valor que o cliente viu na tela. Confira o
                                     frete real antes de enviar.
                                 </p>
+                            )}
+                            {order.payment?.method === "pix" && order.payment.discount_amount > 0 && (
+                                <div className="flex justify-between text-mc-success-700">
+                                    <span>Desconto Pix</span>
+                                    <span>-{formatPrice(order.payment.discount_amount)}</span>
+                                </div>
                             )}
                             <div className="border-t border-mc-violet-950/10 pt-2 flex justify-between font-semibold text-mc-violet-950">
                                 <span>Total</span>

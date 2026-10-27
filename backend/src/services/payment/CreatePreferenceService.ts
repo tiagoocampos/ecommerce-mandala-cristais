@@ -43,7 +43,7 @@ class CreatePreferenceService {
         }
         if (order.expires_at && order.expires_at.getTime() <= Date.now()) {
             // Vencido: cancela e devolve o estoque agora (idempotente), depois responde "expirado"
-            await cancelOrderAndRestoreStock(order.id);
+            await cancelOrderAndRestoreStock(order.id, { onlyPending: true });
             throw new OrderNotPayableError("O prazo para pagar este pedido expirou. Faça um novo pedido.");
         }
 
@@ -135,6 +135,14 @@ class CreatePreferenceService {
                 },
             });
 
+
+            // Desistiu do Pix e foi para o cartão: o Checkout Pro cobra o preço cheio
+            if (paymentExists && paymentExists.discount_amount > 0) {
+                await prismaClient.payment.update({
+                    where: { order_id: order.id },
+                    data: { discount_amount: 0 },
+                });
+            }
 
             if (!paymentExists) {
                 await prismaClient.payment.create({

@@ -8,6 +8,7 @@ interface NormalizedPaymentInfo {
     status: string;
     external_reference: string | null;
     payment_method_id: string | null;
+    transaction_amount: number | null;
 }
 
 class WebhookService {
@@ -63,14 +64,19 @@ class WebhookService {
             return null;
         }
 
-        const payment = new Payment(client);
-        const paymentInfo = await payment.get({ id: paymentId });
+        return this.fetchPaymentById(paymentId);
+    }
+
+    // Sempre busca o pagamento completo: precisa do valor e da forma de pagamento
+    private async fetchPaymentById(paymentId: number): Promise<NormalizedPaymentInfo> {
+        const paymentInfo = await new Payment(client).get({ id: paymentId });
 
         return {
             id: Number(paymentInfo.id),
             status: paymentInfo.status as string,
             external_reference: paymentInfo.external_reference ?? null,
             payment_method_id: paymentInfo.payment_method_id ?? null,
+            transaction_amount: paymentInfo.transaction_amount ?? null,
         };
     }
 
@@ -117,11 +123,10 @@ class WebhookService {
             return null;
         }
 
+        const full = await this.fetchPaymentById(relevantPayment.id);
         return {
-            id: relevantPayment.id,
-            status: relevantPayment.status,
-            external_reference: merchantOrder.external_reference ?? null,
-            payment_method_id: null,
+            ...full,
+            external_reference: full.external_reference ?? merchantOrder.external_reference ?? null,
         };
     }
 
@@ -178,7 +183,12 @@ class WebhookService {
 
         switch (paymentInfo.status) {
             case "approved":
-                await this.handleApproved(orderId, order.status, paymentData);
+                await this.handleApproved(
+                    order,
+                    existingPayment.discount_amount,
+                    paymentInfo,
+                    paymentData
+                );
                 return;
 
             // Recusado/cancelado/expirado NÃO cancela o pedido: no Checkout Pro o cliente pode
@@ -215,23 +225,46 @@ class WebhookService {
     }
 
     private async handleApproved(
-        orderId: string,
-        orderStatus: OrderStatus,
+        order: { id: string; status: OrderStatus; total: number },
+        pixDiscountAmount: number,
+        paymentInfo: NormalizedPaymentInfo,
         paymentData: { provider_payment_id: string; method: string | null; raw_payload: any }
     ) {
-        if (orderStatus !== OrderStatus.CANCELED) {
+        const orderId = order.id;
+        const isPix = paymentInfo.payment_method_id === "pix";
+        // Só Pix tem desconto; cartão/Checkout Pro cobra o total cheio e não é validado por valor
+        const discount = isPix ? pixDiscountAmount : 0;
+
+        if (isPix) {
+            const expected = order.total - discount;
+            const received = Math.round((paymentInfo.transaction_amount ?? 0) * 100);
+            if (received !== expected) {
+                console.error(
+                    `🚨 [PIX COM VALOR DIVERGENTE] Pedido ${orderId} NÃO foi quitado: esperado ${expected} centavos, ` +
+                        `recebido ${received}. Confira o pagamento ${paymentData.provider_payment_id} no painel do Mercado Pago ` +
+                        `e reembolse se for o caso.`
+                );
+                return;
+            }
+        }
+
+        if (order.status !== OrderStatus.CANCELED) {
             // Só promove de PENDING para PAID: um webhook duplicado não faz um pedido
-            // SHIPPED/DELIVERED voltar para PAID
-            await prismaClient.$transaction([
-                prismaClient.order.updateMany({
+            // SHIPPED/DELIVERED voltar para PAID. O desconto do Pix é consolidado no total aqui.
+            await prismaClient.$transaction(async (tx) => {
+                const promoted = await tx.order.updateMany({
                     where: { id: orderId, status: OrderStatus.PENDING },
-                    data: { status: OrderStatus.PAID },
-                }),
-                prismaClient.payment.update({
+                    data: { status: OrderStatus.PAID, total: { decrement: discount } },
+                });
+                await tx.payment.update({
                     where: { order_id: orderId },
-                    data: { status: PaymentStatus.APPROVED, ...paymentData },
-                }),
-            ]);
+                    data: {
+                        status: PaymentStatus.APPROVED,
+                        ...paymentData,
+                        discount_amount: promoted.count > 0 ? discount : 0,
+                    },
+                });
+            });
             console.log("PEDIDO PAGO:", orderId);
             return;
         }
@@ -252,14 +285,14 @@ class WebhookService {
                 }
                 const reopened = await tx.order.updateMany({
                     where: { id: orderId, status: OrderStatus.CANCELED },
-                    data: { status: OrderStatus.PAID },
+                    data: { status: OrderStatus.PAID, total: { decrement: discount } },
                 });
                 if (reopened.count === 0) {
                     throw new Error("status do pedido mudou durante o processamento");
                 }
                 await tx.payment.update({
                     where: { order_id: orderId },
-                    data: { status: PaymentStatus.APPROVED, ...paymentData },
+                    data: { status: PaymentStatus.APPROVED, ...paymentData, discount_amount: discount },
                 });
             });
             console.log("APROVAÇÃO TARDIA: estoque reservado de novo, PEDIDO PAGO:", orderId);
