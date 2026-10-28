@@ -1,5 +1,6 @@
 import { calculatePixDiscount } from "../../config/pix.js";
 import prismaClient from "../../prisma/index.js";
+import { canCancelOrder } from "../../utils/orderExpiration.js";
 import { maybeExpireOrders } from "./MaybeExpireOrders.js";
 
 interface GetOrderServiceProps {
@@ -34,12 +35,16 @@ class GetOrderService {
             },
         });
 
-        if (!order || order.status !== "PENDING") {
+        if (!order) {
             return order;
+        }
+        const can_cancel = canCancelOrder(order);
+        if (order.status !== "PENDING") {
+            return { ...order, can_cancel };
         }
         // Só exibição: nada é gravado até o Pix ser aprovado
         const pix_discount = calculatePixDiscount(order);
-        return { ...order, pix_discount, pix_total: order.total - pix_discount };
+        return { ...order, can_cancel, pix_discount, pix_total: order.total - pix_discount };
     }
 }
 

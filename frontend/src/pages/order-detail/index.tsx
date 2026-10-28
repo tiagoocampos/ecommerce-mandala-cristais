@@ -185,7 +185,12 @@ export function OrderDetail() {
                                
                                 {/* "Pagar agora" (pendente no prazo) ou aviso de expirado/cancelado */}
                                 <div className="mb-6">
-                                    <OrderPaymentStrip order={order} state={orderPaymentState(order)} />
+                                    <OrderPaymentStrip
+                                        order={order}
+                                        state={orderPaymentState(order)}
+                                        onCanceled={(updated) => setOrder((o) => (o ? { ...o, ...updated } : updated))}
+                                        onCancelRejected={() => api.get<Order>(`/order/${order_id}`).then(({ data }) => setOrder(data))}
+                                    />
                                 </div>
 
                                 {/* botão para listagem */}

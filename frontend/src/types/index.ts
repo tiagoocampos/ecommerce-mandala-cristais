@@ -101,6 +101,8 @@ export interface Order {
     items: OrderItem[];
     payment?: { method: string | null; status: string; discount_amount: number } | null;
     /** só em pedido PENDING (GET /order/:id): desconto e total se pagar por Pix */
+    /** o backend decide: PENDING e dentro do prazo */
+    can_cancel?: boolean;
     pix_discount?: number;
     pix_total?: number;
 }

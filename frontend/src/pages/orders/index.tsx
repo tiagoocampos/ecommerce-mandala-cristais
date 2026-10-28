@@ -107,7 +107,15 @@ export function Orders() {
                                                 />
                                             </div>
                                         </button>
-                                        <OrderPaymentStrip order={order} state={payment} compact />
+                                        <OrderPaymentStrip
+                                            order={order}
+                                            state={payment}
+                                            compact
+                                            onCanceled={(updated) =>
+                                                setOrders((list) => list.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)))
+                                            }
+                                            onCancelRejected={fetchOrders}
+                                        />
                                         </div>
                                     );
                                 })}

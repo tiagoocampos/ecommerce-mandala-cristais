@@ -21,6 +21,7 @@ import { orderPaymentState } from "../../lib/orderPayment";
 import { api } from "../../services/api";
 import type { Order, OrderStatus } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
+import { CancelOrderButton } from "../../components/store/CancelOrderButton";
 import { PixPayment } from "../../components/store/PixPayment";
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -279,6 +280,21 @@ export function PaymentPage() {
                                                     {paymentState.reservedUntil}. Depois disso o pedido é
                                                     cancelado e os itens voltam para a loja.
                                                 </p>
+                                            )}
+
+                                            {order.can_cancel && (
+                                                <div className="text-center">
+                                                    <CancelOrderButton
+                                                        orderId={order.id}
+                                                        onCanceled={(updated) => {
+                                                            setShowPix(false); // desmonta o Pix e para a consulta
+                                                            setOrder((o) => (o ? { ...o, ...updated } : updated));
+                                                        }}
+                                                        onRejected={() =>
+                                                            api.get<Order>(`/order/${order.id}`).then(({ data }) => setOrder(data))
+                                                        }
+                                                    />
+                                                </div>
                                             )}
 
                                             {/* Pix dentro do site */}

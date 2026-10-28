@@ -65,6 +65,8 @@ import { UpdateOrderStatusController } from './controllers/order/UpdateOrderStat
 import { ListAllOrdersAdminController } from './controllers/order/ListAllOrdersAdminController.js';
 import { GetOrderAdminController } from './controllers/order/GetOrderAdminController.js';
 import { CreatePreferenceController } from './controllers/payment/CreatePreferenceController.js';
+import { CancelMyOrderController } from './controllers/order/CancelMyOrderController.js';
+import { cancelMyOrderSchema } from './schemas/cancelMyOrderSchema.js';
 import { CreatePixPaymentController } from './controllers/payment/CreatePixPaymentController.js';
 import { GetPixInfoController } from './controllers/payment/GetPixInfoController.js';
 import { createPixPaymentSchema } from './schemas/pixPaymentSchema.js';
@@ -158,6 +160,7 @@ router.get("/health", (req, res) => {
 });
 
 router.post("/payment/preference", isAuthenticated, new CreatePreferenceController().handle)
+router.post("/order/:id/cancel", isAuthenticated, validateSchema(cancelMyOrderSchema), new CancelMyOrderController().handle)
 router.post("/payment/pix", isAuthenticated, validateSchema(createPixPaymentSchema), new CreatePixPaymentController().handle)
 router.get("/payment/pix-info", new GetPixInfoController().handle)
 router.post("/payment/webhook", new WebhookController().handle)

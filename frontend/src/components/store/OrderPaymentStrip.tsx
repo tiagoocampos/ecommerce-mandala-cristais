@@ -3,17 +3,20 @@ import { Clock, CreditCard } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
 import type { orderPaymentState } from "../../lib/orderPayment";
-import type { OrderStatus } from "../../types";
+import type { Order, OrderStatus } from "../../types";
+import { CancelOrderButton } from "./CancelOrderButton";
 
 interface OrderPaymentStripProps {
-    order: { id: string; status: OrderStatus };
+    order: { id: string; status: OrderStatus; can_cancel?: boolean };
     state: ReturnType<typeof orderPaymentState>;
     compact?: boolean;
+    onCanceled?: (order: Order) => void;
+    onCancelRejected?: () => void;
 }
 
 // Faixa abaixo do pedido: "Pagar agora" para pendente dentro do prazo; aviso para
 // pendente vencido ou cancelado. Nada para pedidos pagos/enviados/entregues.
-export function OrderPaymentStrip({ order, state, compact = false }: OrderPaymentStripProps) {
+export function OrderPaymentStrip({ order, state, compact = false, onCanceled, onCancelRejected }: OrderPaymentStripProps) {
     const navigate = useNavigate();
 
     if (state.payable) {
@@ -28,13 +31,18 @@ export function OrderPaymentStrip({ order, state, compact = false }: OrderPaymen
                     <Clock size={13} aria-hidden="true" />
                     Aguardando pagamento · {state.reservedUntil}
                 </span>
-                <Button
-                    size="sm"
-                    onClick={() => navigate(`/payment/${order.id}`)}
-                    className="rounded-full bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 font-semibold px-4"
-                >
-                    <CreditCard size={14} /> Pagar agora
-                </Button>
+                <div className="flex items-center gap-3">
+                    {order.can_cancel && onCanceled && (
+                        <CancelOrderButton orderId={order.id} onCanceled={onCanceled} onRejected={onCancelRejected} />
+                    )}
+                    <Button
+                        size="sm"
+                        onClick={() => navigate(`/payment/${order.id}`)}
+                        className="rounded-full bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 font-semibold px-4"
+                    >
+                        <CreditCard size={14} /> Pagar agora
+                    </Button>
+                </div>
             </div>
         );
     }

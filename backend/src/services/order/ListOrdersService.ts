@@ -1,4 +1,5 @@
 import prismaClient from "../../prisma/index.js";
+import { canCancelOrder } from "../../utils/orderExpiration.js";
 import { maybeExpireOrders } from "./MaybeExpireOrders.js";
 
 interface ListOrdersServiceProps {
@@ -31,7 +32,7 @@ class ListOrdersService {
                 },
             },
         });
-        return orders;
+        return orders.map((order) => ({ ...order, can_cancel: canCancelOrder(order) }));
     }
 }
 

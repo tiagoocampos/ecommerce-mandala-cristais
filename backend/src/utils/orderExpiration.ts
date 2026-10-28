@@ -14,3 +14,9 @@ export function toMercadoPagoDate(date: Date): string {
     const brasilia = new Date(date.getTime() - 3 * 60 * 60 * 1000);
     return brasilia.toISOString().replace("Z", "-03:00");
 }
+
+
+/** O cliente só pode cancelar pedido PENDING e ainda dentro do prazo (vencido o job já cancela). */
+export function canCancelOrder(order: { status: string; expires_at: Date | null }): boolean {
+    return order.status === "PENDING" && !(order.expires_at && order.expires_at.getTime() <= Date.now());
+}
