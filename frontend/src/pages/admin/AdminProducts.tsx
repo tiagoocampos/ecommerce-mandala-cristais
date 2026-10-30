@@ -20,6 +20,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { ConfirmDelete } from "../../components/ui/confirm-delete";
 import { formatPrice, getApiErrorMessage, showApiError } from "../../lib/utils-api";
+import { centsToReais, reaisToCents } from "../../lib/admin-format";
 import { MAX_EXTRA_IMAGES, validateImageFile } from "../../lib/productImages";
 import { api } from "../../services/api";
 import type { Product, Category } from "../../types";
@@ -242,8 +243,8 @@ export function AdminProducts() {
         setForm({
             name: product.name,
             description: product.description,
-            price: String(product.price),
-            promo_price: product.promo_price ? String(product.promo_price) : "",
+            price: centsToReais(product.price),
+            promo_price: product.promo_price ? centsToReais(product.promo_price) : "",
             stock: String(product.stock),
             category_id: product.category_id || "",
             file: null,
@@ -270,11 +271,17 @@ export function AdminProducts() {
         const errors: typeof formErrors = {};
         if (!form.name.trim()) errors.name = "Nome é obrigatório";
         if (!form.description.trim()) errors.description = "Descrição é obrigatória";
-        if (!form.price || isNaN(Number(form.price))) errors.price = "Preço inválido";
+        const priceCents = reaisToCents(form.price);
+        const promoCents = form.promo_price.trim() ? reaisToCents(form.promo_price) : null;
+        if (priceCents === null || priceCents <= 0) errors.price = "Preço inválido";
         if (!form.stock || isNaN(Number(form.stock))) errors.stock = "Estoque inválido";
         if (!form.category_id) errors.category_id = "Selecione uma categoria";
-        if (form.promo_price && !isNaN(Number(form.promo_price)) && Number(form.promo_price) >= Number(form.price)) {
-            errors.promo_price = "Promoção deve ser menor que o preço normal";
+        if (form.promo_price.trim()) {
+            if (promoCents === null || promoCents <= 0) {
+                errors.promo_price = "Preço promocional inválido";
+            } else if (priceCents !== null && promoCents >= priceCents) {
+                errors.promo_price = "Promoção deve ser menor que o preço normal";
+            }
         }
         if (!editingId && !form.file) {
             errors.file = "A imagem principal é obrigatória";
@@ -301,11 +308,11 @@ export function AdminProducts() {
         
         fd.append("name", form.name);
         fd.append("description", form.description);
-        fd.append("price", form.price);
+        fd.append("price", String(reaisToCents(form.price)));
         fd.append("stock", form.stock);
         fd.append("category_id", form.category_id);
         fd.append("featured", form.featured ? "true" : "false");
-        if (form.promo_price) fd.append("promo_price", form.promo_price);
+        if (form.promo_price.trim()) fd.append("promo_price", String(reaisToCents(form.promo_price)));
         if (form.file) fd.append("file", form.file);
         for (const field of SHIPPING_FIELDS) {
             const value = form[field.key].trim();
@@ -901,14 +908,15 @@ export function AdminProducts() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <Label className="text-sm text-mc-ink/70">Preço (centavos)</Label>
+                                    <Label className="text-sm text-mc-ink/70">Preço (R$)</Label>
                                     <Input
                                         value={form.price}
+                                        inputMode="decimal"
                                         onChange={(e) =>
                                             setForm((p) => ({ ...p, price: e.target.value }))
                                         }
                                         className="bg-white border-mc-violet-950/15"
-                                        placeholder="Ex: 15000"
+                                        placeholder="Ex: 150,00"
                                     />
                                     {formErrors.price && (
                                         <p className="text-xs text-red-600 mt-1">
@@ -918,10 +926,11 @@ export function AdminProducts() {
                                 </div>
                                 <div>
                                     <Label className="text-sm text-mc-ink/70">
-                                        Preço promocional
+                                        Preço promocional (R$)
                                     </Label>
                                     <Input
                                         value={form.promo_price}
+                                        inputMode="decimal"
                                         onChange={(e) =>
                                             setForm((p) => ({
                                                 ...p,
