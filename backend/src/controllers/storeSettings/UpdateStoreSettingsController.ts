@@ -3,7 +3,7 @@ import { UpdateStoreSettingsService } from "../../services/storeSettings/UpdateS
 
 class UpdateStoreSettingsController {
     async handle(req: Request, res: Response) {
-        const { announcement_text, announcement_coupon_code, free_shipping_threshold, trust_strip_items } = req.body;
+        const { announcement_text, announcement_coupon_code, free_shipping_threshold, trust_strip_items, pickup_enabled, pickup_address, pickup_instructions } = req.body;
 
         const updateStoreSettingsService = new UpdateStoreSettingsService();
         const settings = await updateStoreSettingsService.execute({
@@ -11,6 +11,9 @@ class UpdateStoreSettingsController {
             announcement_coupon_code,
             free_shipping_threshold,
             trust_strip_items,
+            pickup_enabled,
+            pickup_address,
+            pickup_instructions,
         });
 
         return res.json(settings);
