@@ -40,12 +40,13 @@ interface AdminOrder {
     shipping_cost: number;
     total: number;
     user_id: string;
-    address_id: string;
+    address_id: string | null;
+    delivery_method?: "SHIPPING" | "PICKUP";
     createdAt: string;
     updatedAt: string;
     items: AdminOrderItem[];
     user: AdminOrderUser;
-    address: AdminOrderAddress;
+    address: AdminOrderAddress | null;
 }
 
 const STATUS_FILTERS: Array<{ label: string; value: OrderStatus | "ALL" }> = [
@@ -155,7 +156,14 @@ export function AdminOrders() {
                                             {formatDate(order.createdAt)}
                                         </td>
                                         <td className="py-3 px-4">
-                                            <OrderStatusBadge status={order.status} />
+                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                <OrderStatusBadge status={order.status} deliveryMethod={order.delivery_method} />
+                                                {order.delivery_method === "PICKUP" && (
+                                                    <span className="rounded-full border border-mc-gold-500/50 bg-mc-gold-500/15 px-2 py-0.5 text-[11px] font-medium text-mc-gold-800">
+                                                        Retirada
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="py-3 px-4 font-medium text-mc-violet-950 whitespace-nowrap">
                                             {formatPrice(order.total)}

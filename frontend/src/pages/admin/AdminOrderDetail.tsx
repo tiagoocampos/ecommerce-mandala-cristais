@@ -20,7 +20,9 @@ import { api } from "../../services/api";
 import type { OrderStatus } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
 import { OrderStatusBadge } from "../../components/OrderStatusBadge";
-import { ORDER_STATUS_LABELS } from "../../lib/order-status";
+import { orderStatusLabel } from "../../lib/order-status";
+import { SyncPaymentButton } from "../../components/store/SyncPaymentButton";
+import { useStoreSettings } from "../../hooks/useStoreSettings";
 
 // Interfaces específicas do admin detail
 interface AdminDetailUser {
@@ -66,12 +68,14 @@ interface AdminDetailOrder {
     payment?: { method: string | null; status: string; discount_amount: number } | null;
     total: number;
     user_id: string;
-    address_id: string;
+    address_id: string | null;
+    delivery_method?: "SHIPPING" | "PICKUP";
     createdAt: string;
     updatedAt: string;
     items: AdminDetailItem[];
     user: AdminDetailUser;
-    address: AdminDetailAddress;
+    /** null em pedido de retirada */
+    address: AdminDetailAddress | null;
 }
 
 // Mesmas regras do backend (UpdateOrderStatusService.ALLOWED_TRANSITIONS).
@@ -87,6 +91,7 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 export function AdminOrderDetail() {
     const { order_id } = useParams<{ order_id: string }>();
     const navigate = useNavigate();
+    const settings = useStoreSettings();
     const [order, setOrder] = useState<AdminDetailOrder | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -125,7 +130,7 @@ export function AdminOrderDetail() {
             const { data } = await api.patch<{ notice?: string }>(`/order/${order.id}/status`, {
                 status: selectedStatus,
             });
-            toast.success(`Status atualizado para "${ORDER_STATUS_LABELS[selectedStatus]}"`);
+            toast.success(`Status atualizado para "${orderStatusLabel(selectedStatus, order.delivery_method)}"`);
             // cancelamento de pedido pago: lembrete do reembolso manual
             if (data?.notice) toast.warning(data.notice, { duration: 10000 });
             setOrder((prev) =>
@@ -193,8 +198,21 @@ export function AdminOrderDetail() {
                                     {formatDate(order.createdAt)}
                                 </p>
                             </div>
-                            <OrderStatusBadge status={order.status} size="md" />
+                            <OrderStatusBadge status={order.status} deliveryMethod={order.delivery_method} size="md" />
                         </div>
+                        {(order.status === "PENDING" || order.status === "CANCELED") && (
+                            <div className="mt-4 flex flex-wrap items-center gap-2">
+                                <SyncPaymentButton
+                                    admin
+                                    orderId={order.id}
+                                    label="Verificar pagamento no Mercado Pago"
+                                    onSynced={(updated) => setOrder((o) => (o ? { ...o, ...(updated as unknown as Partial<AdminDetailOrder>) } : o))}
+                                />
+                                <span className="text-xs text-mc-ink/50">
+                                    Confere na API do Mercado Pago e confirma o pedido se já foi pago.
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     {/* customer info */}
@@ -214,29 +232,44 @@ export function AdminOrderDetail() {
                         </div>
                     </div>
 
-                    {/* address */}
+                    {/* address / retirada */}
                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
-                        <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
-                            <MapPin size={16} className="text-mc-gold-700" />
-                            Endereço de entrega
-                        </h2>
-                        <div className="text-sm space-y-1">
-                            <p className="text-mc-violet-950 font-medium">
-                                {order.address.street}, {order.address.number}
-                            </p>
-                            {order.address.complement && (
-                                <p className="text-mc-ink/70">
-                                    {order.address.complement}
-                                </p>
-                            )}
-                            <p className="text-mc-ink/70">
-                                {order.address.neighborhood}
-                            </p>
-                            <p className="text-mc-ink/70">
-                                {order.address.city} — {order.address.state}
-                            </p>
-                            <p className="text-mc-ink/70">{order.address.zip_code}</p>
-                        </div>
+                        {order.delivery_method === "PICKUP" || !order.address ? (
+                            <>
+                                <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
+                                    <MapPin size={16} className="text-mc-gold-700" />
+                                    Retirada na loja
+                                </h2>
+                                <div className="text-sm space-y-1">
+                                    <p className="text-mc-violet-950 font-medium">
+                                        Cliente vai retirar o pedido (sem endereço de entrega).
+                                    </p>
+                                    {settings.pickup_address && (
+                                        <p className="text-mc-ink/70 whitespace-pre-line">{settings.pickup_address}</p>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
+                                    <MapPin size={16} className="text-mc-gold-700" />
+                                    Endereço de entrega
+                                </h2>
+                                <div className="text-sm space-y-1">
+                                    <p className="text-mc-violet-950 font-medium">
+                                        {order.address.street}, {order.address.number}
+                                    </p>
+                                    {order.address.complement && (
+                                        <p className="text-mc-ink/70">{order.address.complement}</p>
+                                    )}
+                                    <p className="text-mc-ink/70">{order.address.neighborhood}</p>
+                                    <p className="text-mc-ink/70">
+                                        {order.address.city} — {order.address.state}
+                                    </p>
+                                    <p className="text-mc-ink/70">{order.address.zip_code}</p>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* items */}
@@ -332,7 +365,7 @@ export function AdminOrderDetail() {
                         </h2>
                         <p className="text-xs text-mc-ink/60 mb-3">
                             Status atual:{" "}
-                            <OrderStatusBadge status={order.status} className="ml-1 align-middle" />
+                            <OrderStatusBadge status={order.status} deliveryMethod={order.delivery_method} className="ml-1 align-middle" />
                         </p>
                         {ALLOWED_TRANSITIONS[order.status].length === 0 ? (
                             <p className="text-sm text-mc-ink/60">
@@ -350,7 +383,7 @@ export function AdminOrderDetail() {
                             className="w-full rounded-lg border border-mc-violet-950/15 bg-white px-3 py-2 text-sm outline-none focus:border-mc-violet-950/30 mb-3"
                         >
                             <option value={order.status}>
-                                {ORDER_STATUS_LABELS[order.status]} (atual)
+                                {orderStatusLabel(order.status, order.delivery_method)} (atual)
                             </option>
                             {(["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELED"] as OrderStatus[])
                                 .filter((s) => s !== order.status)
@@ -358,7 +391,7 @@ export function AdminOrderDetail() {
                                     const allowed = ALLOWED_TRANSITIONS[order.status].includes(s);
                                     return (
                                         <option key={s} value={s} disabled={!allowed}>
-                                            {ORDER_STATUS_LABELS[s]}
+                                            {orderStatusLabel(s, order.delivery_method)}
                                             {allowed ? "" : " (não permitido)"}
                                         </option>
                                     );
@@ -385,9 +418,9 @@ export function AdminOrderDetail() {
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
                                         O status será alterado de{" "}
-                                        <strong>{ORDER_STATUS_LABELS[order.status]}</strong> para{" "}
+                                        <strong>{orderStatusLabel(order.status, order.delivery_method)}</strong> para{" "}
                                         <strong>
-                                            {ORDER_STATUS_LABELS[selectedStatus || order.status]}
+                                            {orderStatusLabel(selectedStatus || order.status, order.delivery_method)}
                                         </strong>
                                         . O cliente final verá essa mudança.
                                         {selectedStatus === "CANCELED" && (

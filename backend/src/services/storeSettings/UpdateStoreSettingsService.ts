@@ -6,6 +6,9 @@ interface UpdateStoreSettingsServiceProps {
     announcement_coupon_code?: string | null;
     free_shipping_threshold?: number | null;
     trust_strip_items?: { icon: string; label: string }[];
+    pickup_enabled?: boolean;
+    pickup_address?: string;
+    pickup_instructions?: string;
 }
 
 class UpdateStoreSettingsService {
@@ -25,6 +28,8 @@ class UpdateStoreSettingsService {
             ...(data.announcement_coupon_code !== undefined && {
                 announcement_coupon_code: data.announcement_coupon_code?.trim().toUpperCase() || null,
             }),
+            ...(data.pickup_address !== undefined && { pickup_address: data.pickup_address.trim() }),
+            ...(data.pickup_instructions !== undefined && { pickup_instructions: data.pickup_instructions.trim() }),
             ...(data.trust_strip_items !== undefined && {
                 trust_strip_items: data.trust_strip_items.map((item) => ({
                     icon: item.icon,

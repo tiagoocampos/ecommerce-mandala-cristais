@@ -6,20 +6,31 @@ import { calculateCartSubtotal } from "../cart/calculateCartSubtotal.js";
 import { validateCoupon } from "../coupon/validateCoupon.js";
 import { orderExpiresAt } from "../../utils/orderExpiration.js";
 import { quoteShipping } from "../shipping/quoteShipping.js";
-import { ShippingServiceNotAvailableError, ShippingUnavailableError } from "../../exceptions/ShippingErrors.js";
+import {
+  PickupNotAvailableError,
+  ShippingServiceNotAvailableError,
+  ShippingServiceUnavailableError,
+  ShippingUnavailableError,
+} from "../../exceptions/ShippingErrors.js";
+import { GetStoreSettingsService } from "../storeSettings/GetStoreSettingsService.js";
+
+export const PICKUP_SERVICE_LABEL = "Retirada na loja";
 
 interface CreateOrderServiceProps {
   user_id: string;
-  address_id: string;
+  /** padrão SHIPPING; PICKUP ignora address_id/shipping_service */
+  delivery_method?: "SHIPPING" | "PICKUP";
+  address_id?: string;
   coupon_code?: string;
   /** nome do serviço escolhido no checkout, ex.: "PAC" */
-  shipping_service: string;
+  shipping_service?: string;
   /** último preço cotado na tela — usado SÓ se o Melhor Envio cair na hora de finalizar */
   shipping_quote_cents?: number;
 }
 
 class CreateOrderService {
-  async execute({ user_id, address_id, coupon_code, shipping_service, shipping_quote_cents }: CreateOrderServiceProps) {
+  async execute({ user_id, delivery_method = "SHIPPING", address_id, coupon_code, shipping_service, shipping_quote_cents }: CreateOrderServiceProps) {
+    const isPickup = delivery_method === "PICKUP";
     const cart = await prismaClient.cart.findUnique({
       where: {
         user_id,
@@ -41,14 +52,24 @@ class CreateOrderService {
 
 
 
-    const address = await prismaClient.address.findFirst({
-      where: {
-        id: address_id,
-        user_id,
-      },
-    });
+    if (isPickup) {
+      // Retirada: só se o lojista ligou nas configurações
+      const settings = await new GetStoreSettingsService().execute();
+      if (!settings.pickup_enabled) {
+        throw new PickupNotAvailableError();
+      }
+    }
 
-    if (!address) {
+    const address = isPickup || !address_id
+      ? null
+      : await prismaClient.address.findFirst({
+          where: {
+            id: address_id,
+            user_id,
+          },
+        });
+
+    if (!isPickup && !address) {
       throw new AddressNotFoundError();
     }
 
@@ -72,14 +93,21 @@ class CreateOrderService {
     }
 
     // Frete sempre recotado aqui — nunca confiar no preço vindo do frontend
-    let shipping_cost: number;
+    let shipping_cost = 0;
     let shipping_delivery_days: number | null = null;
     let shipping_cost_estimated = false;
-    try {
-      const { options } = await quoteShipping({
-        destinationZipCode: address.zip_code,
+    if (isPickup) {
+      // Retirada: sem endereço, sem frete e sem chamar o Melhor Envio
+      shipping_service = PICKUP_SERVICE_LABEL;
+    } else try {
+      const { options, unavailable } = await quoteShipping({
+        destinationZipCode: address!.zip_code,
         items: cart.items,
       });
+      const wanted = (shipping_service ?? "").trim().toLowerCase();
+      if (unavailable.some((item) => item.service.trim().toLowerCase() === wanted)) {
+        throw new ShippingServiceUnavailableError(shipping_service!);
+      }
       const chosen = options.find((option) => option.service === shipping_service);
       if (!chosen) {
         // preço mudou / serviço saiu do ar desde a cotação na tela
@@ -132,12 +160,13 @@ class CreateOrderService {
       const order = await tx.order.create({
         data: {
           user_id,
-          address_id,
+          delivery_method,
+          address_id: address ? address.id : null,
 
           subtotal,
           discount,
           shipping_cost,
-          shipping_service,
+          shipping_service: shipping_service ?? null,
           shipping_delivery_days,
           shipping_cost_estimated,
           // desconto (cupom) vale sobre os produtos; o frete é somado depois

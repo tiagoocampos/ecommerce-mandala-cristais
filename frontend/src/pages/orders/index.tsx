@@ -89,7 +89,7 @@ export function Orders() {
                                                         <span className="text-xs text-mc-ink/50">
                                                             {formatDate(order.createdAt)}
                                                         </span>
-                                                        <OrderStatusBadge status={order.status} />
+                                                        <OrderStatusBadge status={order.status} deliveryMethod={order.delivery_method} />
                                                     </div>
                                                     <div className="mt-2 flex items-baseline gap-2">
                                                         <span className="text-lg font-semibold text-mc-violet-950">

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { ORDER_STATUS_LABELS } from "@/lib/order-status";
-import type { OrderStatus } from "../types";
+import { orderStatusLabel } from "@/lib/order-status";
+import type { DeliveryMethod, OrderStatus } from "../types";
 
 const STATUS_STYLES: Record<OrderStatus, { badge: string; dot: string }> = {
     PENDING: { badge: "bg-mc-gold-500/20 text-mc-gold-800 border-mc-gold-500/50", dot: "bg-mc-gold-500" },
@@ -12,11 +12,12 @@ const STATUS_STYLES: Record<OrderStatus, { badge: string; dot: string }> = {
 
 interface OrderStatusBadgeProps {
     status: OrderStatus;
+    deliveryMethod?: DeliveryMethod | null | undefined;
     size?: "sm" | "md";
     className?: string;
 }
 
-export function OrderStatusBadge({ status, size = "sm", className }: OrderStatusBadgeProps) {
+export function OrderStatusBadge({ status, deliveryMethod, size = "sm", className }: OrderStatusBadgeProps) {
     const style = STATUS_STYLES[status];
     return (
         <span
@@ -28,7 +29,7 @@ export function OrderStatusBadge({ status, size = "sm", className }: OrderStatus
             )}
         >
             <span className={cn("h-1.5 w-1.5 rounded-full", style.dot)} aria-hidden="true" />
-            {ORDER_STATUS_LABELS[status]}
+            {orderStatusLabel(status, deliveryMethod)}
         </span>
     );
 }

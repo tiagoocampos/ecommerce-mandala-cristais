@@ -5,16 +5,17 @@ class CreateOrderController {
   async handle(req: Request, res: Response) {
     const user_id = req.user_id;
 
-    const { address_id, coupon_code, shipping_service, shipping_quote_cents } = req.body;
+    const { delivery_method, address_id, coupon_code, shipping_service, shipping_quote_cents } = req.body;
 
     const createOrderService = new CreateOrderService();
 
     const order = await createOrderService.execute({
       user_id,
-      address_id,
-      coupon_code,
-      shipping_service: String(shipping_service).trim(),
-      shipping_quote_cents,
+      delivery_method,
+      ...(address_id && { address_id }),
+      ...(coupon_code && { coupon_code }),
+      ...(shipping_service && { shipping_service: String(shipping_service).trim() }),
+      ...(shipping_quote_cents && { shipping_quote_cents }),
     });
 
     return res.json(order);

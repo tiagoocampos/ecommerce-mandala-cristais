@@ -14,6 +14,7 @@ import { Label } from "../../components/ui/label";
 
 import { api } from "../../services/api";
 import { applyFieldErrors, inputClassName } from "../../lib/utils-api";
+import { saveAuth } from "../../lib/auth";
 
 export function Register() {
   const [name, setName] = useState("");
@@ -58,16 +59,12 @@ export function Register() {
 
       const response = await api.post("/session", { email, password });
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: response.data.id,
-          name: response.data.name,
-          email: response.data.email,
-          role: response.data.role,
-        })
-      );
+      saveAuth(response.data.token, {
+        id: response.data.id,
+        name: response.data.name,
+        email: response.data.email,
+        role: response.data.role,
+      });
 
       toast.success("Cadastro realizado com sucesso!", { position: "top-center" });
       navigate("/profile");

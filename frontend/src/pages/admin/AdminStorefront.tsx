@@ -46,6 +46,11 @@ export function AdminStorefront() {
     const [trustItems, setTrustItems] = useState<TrustStripItemData[]>([]);
     const [savingTrust, setSavingTrust] = useState(false);
 
+    const [pickupEnabled, setPickupEnabled] = useState(false);
+    const [pickupAddress, setPickupAddress] = useState("");
+    const [pickupInstructions, setPickupInstructions] = useState("");
+    const [savingPickup, setSavingPickup] = useState(false);
+
     // cupons
     const [couponFormOpen, setCouponFormOpen] = useState(false);
     const [busyCouponId, setBusyCouponId] = useState<string | null>(null);
@@ -56,6 +61,9 @@ export function AdminStorefront() {
         setAnnouncementCoupon(settings.announcement_coupon_code ?? "");
         setFreeShipping(centsToReais(settings.free_shipping_threshold));
         setTrustItems(settings.trust_strip_items);
+        setPickupEnabled(!!settings.pickup_enabled);
+        setPickupAddress(settings.pickup_address ?? "");
+        setPickupInstructions(settings.pickup_instructions ?? "");
     }, []);
 
     const fetchCoupons = useCallback(async () => {
@@ -127,6 +135,29 @@ export function AdminStorefront() {
             showApiError(error, "Erro ao salvar faixa de confiança");
         } finally {
             setSavingTrust(false);
+        }
+    }
+
+    async function handleSavePickup(e: React.FormEvent) {
+        e.preventDefault();
+        if (pickupEnabled && !pickupAddress.trim()) {
+            toast.error("Informe o endereço de retirada para ativar a retirada na loja.");
+            return;
+        }
+        setSavingPickup(true);
+        try {
+            await save(
+                {
+                    pickup_enabled: pickupEnabled,
+                    pickup_address: pickupAddress,
+                    pickup_instructions: pickupInstructions,
+                },
+                "Retirada na loja salva"
+            );
+        } catch (error) {
+            showApiError(error, "Erro ao salvar retirada na loja");
+        } finally {
+            setSavingPickup(false);
         }
     }
 
@@ -390,6 +421,58 @@ export function AdminStorefront() {
                 <div className="overflow-hidden rounded-md border border-mc-violet-950/10">
                     <TrustStrip />
                 </div>
+            </Block>
+
+            {/* Retirada na loja */}
+            <Block
+                title="Retirada na loja"
+                description="Permite ao cliente escolher retirar o pedido na loja, sem frete. O pedido segue os mesmos status: “Enviado” vira “Pronto para retirada” e “Entregue” vira “Retirado”."
+            >
+                <form onSubmit={handleSavePickup} className="space-y-4">
+                    <label className="flex items-center gap-2 text-sm text-mc-violet-950 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={pickupEnabled}
+                            onChange={(e) => setPickupEnabled(e.target.checked)}
+                            className="h-4 w-4 accent-mc-violet-950"
+                        />
+                        Oferecer retirada na loja no checkout
+                    </label>
+
+                    <div className="space-y-1.5">
+                        <Label htmlFor="pickup-address">Endereço de retirada</Label>
+                        <textarea
+                            id="pickup-address"
+                            value={pickupAddress}
+                            onChange={(e) => setPickupAddress(e.target.value)}
+                            maxLength={300}
+                            rows={2}
+                            placeholder="Rua, número, bairro, cidade/UF"
+                            className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <Label htmlFor="pickup-instructions">Instruções (horário, referência, o que levar)</Label>
+                        <textarea
+                            id="pickup-instructions"
+                            value={pickupInstructions}
+                            onChange={(e) => setPickupInstructions(e.target.value)}
+                            maxLength={600}
+                            rows={3}
+                            placeholder="Ex.: Seg a sex, 9h às 17h. Leve um documento com foto."
+                            className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+                        />
+                    </div>
+
+                    <Button
+                        type="submit"
+                        disabled={savingPickup}
+                        className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50"
+                    >
+                        {savingPickup ? "Salvando..." : "Salvar retirada"}
+                    </Button>
+                </form>
             </Block>
 
             {/* 3. Cupons */}

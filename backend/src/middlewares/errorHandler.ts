@@ -85,6 +85,7 @@ export const errorHandler = (
   if (error instanceof InvalidToken) {
     return res.status(error.statusCode).json({
       error: error.message,
+      code: error.code,
     });
   }
 

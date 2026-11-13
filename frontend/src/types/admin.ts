@@ -87,4 +87,7 @@ export interface StoreSettings {
     /** centavos */
     free_shipping_threshold: number | null;
     trust_strip_items: TrustStripItemData[];
+    pickup_enabled: boolean;
+    pickup_address: string;
+    pickup_instructions: string;
 }

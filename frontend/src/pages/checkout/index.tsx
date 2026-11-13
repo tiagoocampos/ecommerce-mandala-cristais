@@ -10,6 +10,8 @@ import {
     AlertCircle,
     Tag,
     X,
+    Store,
+    Truck,
 } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
@@ -24,7 +26,9 @@ import type { Address } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
 import { Input } from "../../components/ui/input";
 import type { CouponType } from "../../types/admin";
-import { ShippingOptions, type ShippingOption } from "../../components/store/ShippingOptions";
+import { ShippingOptions, type ShippingOption, type UnavailableShipping } from "../../components/store/ShippingOptions";
+import { useStoreSettings } from "../../hooks/useStoreSettings";
+import type { DeliveryMethod } from "../../types";
 
 interface AppliedCoupon {
     code: string;
@@ -41,6 +45,12 @@ function previewDiscount(coupon: AppliedCoupon, subtotal: number): number {
 export function CheckoutPage() {
     const navigate = useNavigate();
     const { cart, loading: cartLoading, refreshCart } = useCart();
+    const settings = useStoreSettings();
+    const pickupEnabled = settings.pickup_enabled;
+
+    const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("SHIPPING");
+    // retirada desligada depois de escolhida (ex.: configurações carregaram agora): volta para entrega
+    const isPickup = deliveryMethod === "PICKUP" && pickupEnabled;
 
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [addressesLoading, setAddressesLoading] = useState(true);
@@ -54,6 +64,7 @@ export function CheckoutPage() {
     const [applyingCoupon, setApplyingCoupon] = useState(false);
 
     const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+    const [unavailableShipping, setUnavailableShipping] = useState<UnavailableShipping[]>([]);
     const [shippingService, setShippingService] = useState<string | null>(null);
     const [shippingLoading, setShippingLoading] = useState(false);
     const [shippingError, setShippingError] = useState<string | null>(null);
@@ -99,20 +110,27 @@ export function CheckoutPage() {
     const cartSignature = items.map((item) => `${item.product.id}:${item.quantity}`).join("|");
     useEffect(() => {
         setShippingOptions([]);
+        setUnavailableShipping([]);
         setShippingService(null);
         setShippingError(null);
-        if (!selectedAddressId || !cartSignature) return;
+        // Retirada: sem frete e sem consultar o Melhor Envio
+        if (isPickup || !selectedAddressId || !cartSignature) return;
 
         const requestId = ++quoteRequestId.current;
         setShippingLoading(true);
-        api.post<ShippingOption[]>("/shipping/quote", { address_id: selectedAddressId })
+        api.post<{ options: ShippingOption[]; unavailable: UnavailableShipping[] }>("/shipping/quote", { address_id: selectedAddressId })
             .then(({ data }) => {
                 if (requestId !== quoteRequestId.current) return; // resposta de um endereço antigo
-                setShippingOptions(data);
-                setShippingService(data[0]?.service ?? null); // mais barato já vem primeiro
+                setShippingOptions(data.options);
+                setUnavailableShipping(data.unavailable ?? []);
+                setShippingService(data.options[0]?.service ?? null); // mais barato já vem primeiro
             })
             .catch((err) => {
                 if (requestId !== quoteRequestId.current) return;
+                // 422 sem nenhuma opção válida: o backend ainda manda PAC/SEDEX como indisponíveis
+                if (axios.isAxiosError(err) && Array.isArray(err.response?.data?.unavailable)) {
+                    setUnavailableShipping(err.response.data.unavailable);
+                }
                 setShippingError(
                     getApiErrorMessage(err, "Não conseguimos calcular o frete agora, tente novamente em instantes.")
                 );
@@ -120,10 +138,10 @@ export function CheckoutPage() {
             .finally(() => {
                 if (requestId === quoteRequestId.current) setShippingLoading(false);
             });
-    }, [selectedAddressId, cartSignature, shippingRefresh]);
+    }, [selectedAddressId, cartSignature, shippingRefresh, isPickup]);
 
     const selectedShipping = shippingOptions.find((option) => option.service === shippingService) ?? null;
-    const shippingCost = selectedShipping?.price_cents ?? 0;
+    const shippingCost = isPickup ? 0 : (selectedShipping?.price_cents ?? 0);
 
     const [pixPercent, setPixPercent] = useState(0);
     useEffect(() => {
@@ -136,7 +154,7 @@ export function CheckoutPage() {
     const total = Math.max(0, subtotal - discount) + shippingCost;
 
     // Frete é obrigatório: sem opção escolhida não finaliza
-    const isReady = items.length > 0 && !!selectedAddressId && !!selectedShipping && !submitting;
+    const isReady = items.length > 0 && !submitting && (isPickup || (!!selectedAddressId && !!selectedShipping));
 
     async function handleApplyCoupon(e: React.FormEvent) {
         e.preventDefault();
@@ -163,7 +181,7 @@ export function CheckoutPage() {
     }
 
     async function handleCheckout() {
-        if (!selectedAddressId || !selectedShipping) return;
+        if (!isPickup && (!selectedAddressId || !selectedShipping)) return;
 
         setSubmitting(true);
         setError(null);
@@ -173,9 +191,14 @@ export function CheckoutPage() {
             // Envia só códigos: o backend recota o frete e recalcula o desconto.
             // shipping_quote_cents só é usado se o Melhor Envio cair na hora de finalizar.
             const { data: orderData } = await api.post<{ id: string }>("/order", {
-                address_id: selectedAddressId,
-                shipping_service: selectedShipping.service,
-                shipping_quote_cents: selectedShipping.price_cents,
+                ...(isPickup
+                    ? { delivery_method: "PICKUP" }
+                    : {
+                          delivery_method: "SHIPPING",
+                          address_id: selectedAddressId,
+                          shipping_service: selectedShipping!.service,
+                          shipping_quote_cents: selectedShipping!.price_cents,
+                      }),
                 ...(appliedCoupon && { coupon_code: appliedCoupon.code }),
             });
 
@@ -267,6 +290,63 @@ export function CheckoutPage() {
                             <div className="grid lg:grid-cols-[1fr_420px] gap-8 items-start">
                                 {/* COLUNA ESQUERDA: Endereço */}
                                 <div className="space-y-6">
+                                    {/* Forma de entrega: só aparece se a loja liberou a retirada */}
+                                    {pickupEnabled && (
+                                        <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
+                                            <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
+                                                <Truck size={18} className="text-mc-gold-700" />
+                                                Como você quer receber?
+                                            </h2>
+                                            <div className="grid sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Forma de entrega">
+                                                {([
+                                                    { value: "SHIPPING", label: "Entregar no meu endereço", Icon: MapPin },
+                                                    { value: "PICKUP", label: "Retirar na loja (grátis)", Icon: Store },
+                                                ] as const).map(({ value, label, Icon }) => {
+                                                    const active = deliveryMethod === value;
+                                                    return (
+                                                        <button
+                                                            key={value}
+                                                            type="button"
+                                                            role="radio"
+                                                            aria-checked={active}
+                                                            onClick={() => setDeliveryMethod(value)}
+                                                            className={`flex items-center gap-2 text-left border rounded-lg p-3 text-sm transition-all ${
+                                                                active
+                                                                    ? "border-mc-gold-500 bg-mc-blush-100 ring-1 ring-mc-gold-500/40 font-medium text-mc-violet-950"
+                                                                    : "border-mc-violet-950/10 bg-mc-sand-50 hover:bg-mc-blush-100 text-mc-ink/80"
+                                                            }`}
+                                                        >
+                                                            <Icon size={16} className="text-mc-gold-700 shrink-0" />
+                                                            {label}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {isPickup ? (
+                                        <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
+                                            <h2 className="font-display text-lg text-mc-violet-950 mb-3 flex items-center gap-2">
+                                                <Store size={18} className="text-mc-gold-700" />
+                                                Retirada na loja
+                                            </h2>
+                                            {settings.pickup_address && (
+                                                <p className="text-sm text-mc-violet-950 font-medium whitespace-pre-line">
+                                                    {settings.pickup_address}
+                                                </p>
+                                            )}
+                                            {settings.pickup_instructions && (
+                                                <p className="text-sm text-mc-ink/60 mt-2 whitespace-pre-line">
+                                                    {settings.pickup_instructions}
+                                                </p>
+                                            )}
+                                            <p className="text-xs text-mc-ink/50 mt-3">
+                                                Avisaremos no seu pedido quando ele estiver pronto para retirada.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <>
                                     {/* Seção de endereço */}
                                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
                                         <h2 className="font-display text-lg text-mc-violet-950 mb-4 flex items-center gap-2">
@@ -348,10 +428,15 @@ export function CheckoutPage() {
                                         loading={shippingLoading}
                                         error={shippingError}
                                         options={shippingOptions}
+                                        unavailable={unavailableShipping}
                                         selected={shippingService}
                                         onSelect={setShippingService}
                                         onRetry={() => setShippingRefresh((n) => n + 1)}
+                                        pickupEnabled={pickupEnabled}
+                                        onChoosePickup={() => setDeliveryMethod("PICKUP")}
                                     />
+                                        </>
+                                    )}
 
                                     {/* Seção de pagamento (informativa) */}
                                     <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5">
@@ -483,9 +568,11 @@ export function CheckoutPage() {
                                             )}
                                             <div className="flex justify-between text-sm text-mc-ink/70">
                                                 <span>
-                                                    Frete{selectedShipping ? ` (${selectedShipping.service})` : ""}
+                                                    {isPickup ? "Retirada na loja" : `Frete${selectedShipping ? ` (${selectedShipping.service})` : ""}`}
                                                 </span>
-                                                {selectedShipping ? (
+                                                {isPickup ? (
+                                                    <span>{formatPrice(0)}</span>
+                                                ) : selectedShipping ? (
                                                     <span>{formatPrice(selectedShipping.price_cents)}</span>
                                                 ) : (
                                                     <span className="text-xs">
@@ -517,6 +604,8 @@ export function CheckoutPage() {
                                                 <Loader2 size={16} className="animate-spin" />
                                                 Processando...
                                             </span>
+                                        ) : isPickup ? (
+                                            "Finalizar compra"
                                         ) : !selectedAddressId ? (
                                             "Selecione um endereço"
                                         ) : !selectedShipping ? (

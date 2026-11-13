@@ -23,6 +23,19 @@ export class MelhorEnvioNotConnectedError extends Error {
     }
 }
 
+// IDs dos serviços dos Correios no Melhor Envio (docs.melhorenvio.com.br, "Cálculo de fretes
+// por produtos": PAC = 1, SEDEX = 2). Sobrescrevíveis por env caso o Melhor Envio mude.
+function idFromEnv(name: string, fallback: number): number {
+    const value = Number(process.env[name]);
+    return Number.isInteger(value) && value > 0 ? value : fallback;
+}
+export const SHIPPING_SERVICE_PAC_ID = idFromEnv("MELHORENVIO_PAC_ID", 1);
+export const SHIPPING_SERVICE_SEDEX_ID = idFromEnv("MELHORENVIO_SEDEX_ID", 2);
+export const REQUIRED_SHIPPING_SERVICES = [
+    { id: SHIPPING_SERVICE_PAC_ID, name: "PAC" },
+    { id: SHIPPING_SERVICE_SEDEX_ID, name: "SEDEX" },
+] as const;
+
 function env() {
     const environment = process.env.MELHORENVIO_ENV === "production" ? "production" : "sandbox";
     return {
@@ -221,5 +234,16 @@ const melhorenvio = {
         return raw;
     },
 };
+
+/**
+ * Parâmetro `services` da cotação. Vazio = o Melhor Envio cota todos (PAC/SEDEX já inclusos).
+ * Com MELHORENVIO_SERVICES preenchida, PAC e SEDEX entram na união (sem duplicar).
+ */
+export function servicesWithRequired(configured: string): string {
+    if (!configured) return "";
+    const ids = new Set(configured.split(",").map(Number));
+    for (const required of REQUIRED_SHIPPING_SERVICES) ids.add(required.id);
+    return [...ids].join(",");
+}
 
 export { melhorenvio };

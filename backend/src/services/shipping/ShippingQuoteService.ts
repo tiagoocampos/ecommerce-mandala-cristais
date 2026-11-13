@@ -38,12 +38,13 @@ class ShippingQuoteService {
             throw new EmptyCartError();
         }
 
-        const { options } = await quoteShipping({
+        const { options, unavailable } = await quoteShipping({
             destinationZipCode: address.zip_code,
             items: cart.items,
         });
 
-        return options;
+        // `options` no formato de sempre; `unavailable` = PAC/SEDEX sem cotação (aparecem desabilitados)
+        return { options, unavailable };
     }
 }
 

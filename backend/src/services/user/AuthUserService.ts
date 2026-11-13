@@ -1,6 +1,6 @@
 import { compare } from "bcrypt";
 import prismaClient from "../../prisma/index.js";
-import jwt from "jsonwebtoken";
+import { signUserToken } from "../../utils/authToken.js";
 import { PasswordNotMatchError } from "../../exceptions/passwordNotMatch.js";
 import { UserNotFoundError } from "../../exceptions/UserErrors.js";
 
@@ -27,10 +27,7 @@ class AuthUserService {
             throw new PasswordNotMatchError();
         }
 
-        const token = jwt.sign({
-            name: user.name,
-            email: user.email,
-        }, process.env.JWT_SECRET as string, { subject: user.id, expiresIn: "30d" });
+        const token = signUserToken(user);
 
         return {
             id: user.id,

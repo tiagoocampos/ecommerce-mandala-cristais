@@ -19,18 +19,12 @@ import { ProtectedRoute } from "../../components/ProtectedRoute";
 import { formatPrice, formatDate, getApiErrorMessage } from "../../lib/utils-api";
 import { orderPaymentState } from "../../lib/orderPayment";
 import { api } from "../../services/api";
-import type { Order, OrderStatus } from "../../types";
+import type { Order } from "../../types";
 import { ProductImage } from "../../components/store/ProductImage";
 import { CancelOrderButton } from "../../components/store/CancelOrderButton";
 import { PixPayment } from "../../components/store/PixPayment";
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-    PENDING: "Aguardando pagamento",
-    PAID: "Pago",
-    SHIPPED: "Enviado",
-    DELIVERED: "Entregue",
-    CANCELED: "Cancelado",
-};
+import { SyncPaymentButton } from "../../components/store/SyncPaymentButton";
+import { orderStatusLabel } from "../../lib/order-status";
 
 export function PaymentPage() {
     const { order_id } = useParams<{ order_id: string }>();
@@ -160,7 +154,7 @@ export function PaymentPage() {
                                             </h1>
                                             <p className="text-xs text-mc-ink/60">
                                                 {formatDate(order.createdAt)} —{" "}
-                                                {STATUS_LABELS[order.status]}
+                                                {orderStatusLabel(order.status, order.delivery_method)}
                                             </p>
                                         </div>
                                     </div>
@@ -282,6 +276,17 @@ export function PaymentPage() {
                                                 </p>
                                             )}
 
+                                            {/* conferência manual: cobre notificação de pagamento que não chegou */}
+                                            <div className="text-center">
+                                                <SyncPaymentButton
+                                                    orderId={order.id}
+                                                    onSynced={(updated) => {
+                                                        setOrder((o) => (o ? { ...o, ...updated } : updated));
+                                                        if (updated.status === "PAID") navigate(`/pedido/${order.id}`);
+                                                    }}
+                                                />
+                                            </div>
+
                                             {order.can_cancel && (
                                                 <div className="text-center">
                                                     <CancelOrderButton
@@ -393,7 +398,7 @@ export function PaymentPage() {
                                             <p className="text-sm text-mc-ink/60 text-center">
                                                 Status:{" "}
                                                 <strong>
-                                                    {STATUS_LABELS[order.status]}
+                                                    {orderStatusLabel(order.status, order.delivery_method)}
                                                 </strong>
                                             </p>
                                         </div>

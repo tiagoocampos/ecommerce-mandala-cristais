@@ -14,6 +14,7 @@ import { Label } from "../../components/ui/label";
 
 import { api } from "../../services/api";
 import { applyFieldErrors, inputClassName } from "../../lib/utils-api";
+import { consumeRedirectPath, consumeSessionExpired, saveAuth } from "../../lib/auth";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -25,6 +26,8 @@ export function Login() {
   });
 
   const navigate = useNavigate();
+  // lido uma única vez (o aviso some ao recarregar a página)
+  const [sessionExpired] = useState(() => consumeSessionExpired());
 
   async function handleLogin() {
     try {
@@ -38,20 +41,16 @@ export function Login() {
 
       const response = await api.post("/session", { email, password });
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: response.data.id,
-          name: response.data.name,
-          email: response.data.email,
-          role: response.data.role,
-        })
-      );
+      saveAuth(response.data.token, {
+        id: response.data.id,
+        name: response.data.name,
+        email: response.data.email,
+        role: response.data.role,
+      });
 
       toast.success("Login realizado com sucesso!", { position: "top-center" });
-      // Fluxo mais natural: após login, ir para a área do cliente.
-      navigate("/");
+      // Volta para a página em que o cliente estava quando a sessão acabou
+      navigate(consumeRedirectPath() ?? "/");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const data = error.response?.data;
@@ -91,6 +90,15 @@ export function Login() {
               Acesse sua conta para continuar
             </p>
           </div>
+
+          {sessionExpired && (
+            <div
+              role="alert"
+              className="mb-4 rounded-md border border-mc-gold-500/50 bg-mc-gold-500/15 px-4 py-3 text-sm text-mc-gold-800"
+            >
+              Sua sessão expirou. Faça login novamente para continuar.
+            </div>
+          )}
 
           <div className="bg-mc-blush-100 border border-mc-violet-950/10 rounded-md p-6 sm:p-7">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

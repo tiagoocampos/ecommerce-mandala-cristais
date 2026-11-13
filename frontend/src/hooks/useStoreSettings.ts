@@ -13,6 +13,9 @@ export const FALLBACK_STORE_SETTINGS: StoreSettings = {
         { icon: "CreditCard", label: "Até 3x sem juros" },
         { icon: "Tag", label: "10% OFF na primeira compra" },
     ],
+    pickup_enabled: false,
+    pickup_address: "",
+    pickup_instructions: "",
 };
 
 // Cache compartilhado entre AnnouncementBar, TrustStrip etc.: uma requisição por carregamento do site.

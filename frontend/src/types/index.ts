@@ -68,6 +68,8 @@ export interface Cart {
     items: CartItem[];
 }
 
+export type DeliveryMethod = "SHIPPING" | "PICKUP";
+
 export type OrderStatus = "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELED";
 
 export interface OrderItemProduct {
@@ -93,7 +95,11 @@ export interface Order {
     shipping_cost: number;
     total: number;
     user_id: string;
-    address_id: string;
+    /** pedido de retirada não tem endereço */
+    address_id: string | null;
+    delivery_method?: DeliveryMethod;
+    shipping_service?: string | null;
+    shipping_delivery_days?: number | null;
     createdAt: string;
     updatedAt: string;
     /** prazo da reserva de estoque de um pedido PENDING */

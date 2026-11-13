@@ -5,6 +5,7 @@ import {
     ArrowLeft,
     ShoppingBag,
     ChevronRight,
+    Store,
 } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
@@ -19,10 +20,12 @@ import { ProductImage } from "../../components/store/ProductImage";
 import { OrderStatusBadge } from "../../components/OrderStatusBadge";
 import { OrderPaymentStrip } from "../../components/store/OrderPaymentStrip";
 import { orderPaymentState } from "../../lib/orderPayment";
+import { useStoreSettings } from "../../hooks/useStoreSettings";
 
 export function OrderDetail() {
     const { order_id } = useParams<{ order_id: string }>();
     const navigate = useNavigate();
+    const settings = useStoreSettings();
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -111,8 +114,37 @@ export function OrderDetail() {
                                             </p>
                                         </div>
                                     </div>
-                                    <OrderStatusBadge status={order.status} size="md" />
+                                    <OrderStatusBadge status={order.status} deliveryMethod={order.delivery_method} size="md" />
                                 </div>
+
+                                {/* retirada na loja: endereço e instruções (sem rastreio nem prazo de entrega) */}
+                                {order.delivery_method === "PICKUP" && (
+                                    <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6">
+                                        <h2 className="font-display text-lg text-mc-violet-950 mb-3 flex items-center gap-2">
+                                            <Store size={18} className="text-mc-gold-700" />
+                                            Retirar na loja
+                                        </h2>
+                                        {settings.pickup_address ? (
+                                            <p className="text-sm font-medium text-mc-violet-950 whitespace-pre-line">
+                                                {settings.pickup_address}
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm text-mc-ink/60">
+                                                Combine a retirada com a loja pelo WhatsApp.
+                                            </p>
+                                        )}
+                                        {settings.pickup_instructions && (
+                                            <p className="text-sm text-mc-ink/60 mt-2 whitespace-pre-line">
+                                                {settings.pickup_instructions}
+                                            </p>
+                                        )}
+                                        {order.status === "SHIPPED" && (
+                                            <p className="text-sm font-medium text-mc-success-700 mt-3">
+                                                Seu pedido está pronto para retirada!
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* itens do pedido */}
                                 <div className="bg-white border border-mc-violet-950/10 rounded-lg p-5 sm:p-6 mb-6">
@@ -164,11 +196,18 @@ export function OrderDetail() {
                                                 <span>-{formatPrice(order.discount)}</span>
                                             </div>
                                         )}
-                                        {order.shipping_cost > 0 && (
+                                        {order.delivery_method === "PICKUP" ? (
                                             <div className="flex justify-between text-mc-ink/70">
-                                                <span>Frete</span>
-                                                <span>{formatPrice(order.shipping_cost)}</span>
+                                                <span>Retirada na loja</span>
+                                                <span>{formatPrice(0)}</span>
                                             </div>
+                                        ) : (
+                                            order.shipping_cost > 0 && (
+                                                <div className="flex justify-between text-mc-ink/70">
+                                                    <span>Frete</span>
+                                                    <span>{formatPrice(order.shipping_cost)}</span>
+                                                </div>
+                                            )
                                         )}
                                         {order.payment?.method === "pix" && order.payment.discount_amount > 0 && (
                                             <div className="flex justify-between text-mc-success-700">
@@ -190,6 +229,7 @@ export function OrderDetail() {
                                         state={orderPaymentState(order)}
                                         onCanceled={(updated) => setOrder((o) => (o ? { ...o, ...updated } : updated))}
                                         onCancelRejected={() => api.get<Order>(`/order/${order_id}`).then(({ data }) => setOrder(data))}
+                                        onSynced={(updated) => setOrder((o) => (o ? { ...o, ...updated } : updated))}
                                     />
                                 </div>
 

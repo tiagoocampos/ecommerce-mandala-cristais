@@ -72,6 +72,7 @@ import { GetPixInfoController } from './controllers/payment/GetPixInfoController
 import { createPixPaymentSchema } from './schemas/pixPaymentSchema.js';
 import { WebhookController } from './controllers/payment/WebhookController.js';
 import { DeleteCouponController } from './controllers/coupon/DeleteCouponController.js';
+import { SyncOrderPaymentController } from './controllers/order/SyncOrderPaymentController.js';
 import { EditCouponAdminController } from './controllers/coupon/EditCouponAdminController.js';
 
 const router = Router();
@@ -128,6 +129,9 @@ router.get("/integrations/melhorenvio/callback", new MelhorEnvioIntegrationContr
 router.get("/order/:order_id", isAuthenticated, validateSchema(getOrderSchema), new GetOrderController().handle)
 router.get("/orders", isAuthenticated, new ListOrdersController().handle)
 router.patch("/order/:order_id/status", isAuthenticated, isAdmin, validateSchema(updateOrderStatusSchema), new UpdateOrderStatusController().handle)
+
+router.post("/order/:order_id/sync-payment", isAuthenticated, validateSchema(getOrderSchema), new SyncOrderPaymentController().handle)
+router.post("/admin/orders/:order_id/sync-payment", isAuthenticated, isAdmin, validateSchema(getOrderSchema), new SyncOrderPaymentController().handleAdmin)
 
 router.get("/admin/orders", isAuthenticated, isAdmin, new ListAllOrdersAdminController().handle)
 router.get("/admin/orders/:order_id", isAuthenticated, isAdmin, new GetOrderAdminController().handle)

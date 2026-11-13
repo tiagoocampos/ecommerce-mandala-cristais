@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { getToken } from "../lib/auth";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getToken, saveRedirectPath } from "../lib/auth";
 import { Loading } from "./Loading";
 
 interface ProtectedRouteProps {
@@ -9,16 +9,19 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
     useEffect(() => {
+        // getToken() já trata token vencido como deslogado (mesma fonte do menu do cabeçalho)
         const token = getToken();
         if (!token) {
+            saveRedirectPath(location.pathname + location.search);
             navigate("/login");
             return;
         }
         setIsAuthenticated(true);
-    }, [navigate]);
+    }, [navigate, location.pathname, location.search]);
 
     if (isAuthenticated === null) {
         return (

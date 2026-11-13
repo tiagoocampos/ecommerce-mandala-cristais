@@ -2,6 +2,7 @@ import { calculatePixDiscount } from "../../config/pix.js";
 import prismaClient from "../../prisma/index.js";
 import { canCancelOrder } from "../../utils/orderExpiration.js";
 import { maybeExpireOrders } from "./MaybeExpireOrders.js";
+import { maybeReconcileOrderPayment } from "../payment/reconcileOrderPayment.js";
 
 interface GetOrderServiceProps {
     user_id: string;
@@ -41,6 +42,11 @@ class GetOrderService {
         const can_cancel = canCancelOrder(order);
         if (order.status !== "PENDING") {
             return { ...order, can_cancel };
+        }
+        // Rede de segurança para webhook perdido: confere no Mercado Pago em segundo plano
+        // (sem await, com throttle por pedido); a resposta atual não espera por isso.
+        if (order.payment) {
+            maybeReconcileOrderPayment(order.id);
         }
         // Só exibição: nada é gravado até o Pix ser aprovado
         const pix_discount = calculatePixDiscount(order);

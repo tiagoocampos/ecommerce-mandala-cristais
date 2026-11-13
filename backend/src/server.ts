@@ -10,7 +10,8 @@ import { startOrderExpirationJob } from './services/order/MaybeExpireOrders.js';
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+// X-New-Token: renovação deslizante do login; sem expor, o navegador não deixa o frontend ler
+app.use(cors({ exposedHeaders: ["X-New-Token"] }));
 
 app.use(router);
 

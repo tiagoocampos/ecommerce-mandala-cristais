@@ -1,314 +1,127 @@
 import { Payment } from "mercadopago";
 import { client } from "../../config/mercadopago.js";
-import prismaClient from "../../prisma/index.js";
-import { OrderStatus, PaymentStatus } from "../../generated/prisma/enums.js";
+import { applyPaymentInfo, isDiscardableOutcome, NormalizedPaymentInfo } from "./applyPaymentInfo.js";
 
-interface NormalizedPaymentInfo {
-    id: number;
-    status: string;
-    external_reference: string | null;
-    payment_method_id: string | null;
-    transaction_amount: number | null;
+/** Resultado do webhook: handled=false = descartado (não adianta o Mercado Pago repetir). */
+export type WebhookResult = { handled: boolean; reason: string };
+
+// Erro do SDK do Mercado Pago: o corpo da resposta é lançado, com `status` HTTP
+export function mpErrorStatus(error: unknown): number | null {
+    const status = (error as { status?: unknown } | null)?.status;
+    return typeof status === "number" ? status : null;
 }
 
+export function normalizePayment(info: {
+    id?: number | string;
+    status?: string;
+    external_reference?: string | null;
+    payment_method_id?: string | null;
+    transaction_amount?: number | null;
+}): NormalizedPaymentInfo {
+    return {
+        id: Number(info.id),
+        status: info.status as string,
+        external_reference: info.external_reference ?? null,
+        payment_method_id: info.payment_method_id ?? null,
+        transaction_amount: info.transaction_amount ?? null,
+    };
+}
+
+/**
+ * Transitório (banco fora, rede, 5xx do Mercado Pago, token inválido) → a exceção sobe e o
+ * controller responde 5xx, então o Mercado Pago repete. Descartável (tópico não tratado,
+ * pagamento 404 — inclui as notificações de teste do painel —, pedido inexistente...) →
+ * retorna normalmente e o controller responde 200.
+ */
 class WebhookService {
-    async execute(body: any) {
-        try {
-            console.log("===== WEBHOOK RECEBIDO =====");
-            console.log(JSON.stringify(body, null, 2));
+    async execute(body: any): Promise<WebhookResult> {
+        const topic: unknown = body?.type ?? body?.topic;
+        const dataId = body?.data?.id ?? null;
 
-            const topic = body.type ?? body.topic;
-            console.log("TOPIC RECEBIDO:", topic);
-
-            let paymentInfo: NormalizedPaymentInfo | null = null;
-
-            if (topic === "payment") {
-                paymentInfo = await this.fetchFromPaymentTopic(body);
-            } else if (typeof topic === "string" && topic.includes("merchant_order")) {
-                // Em alguns casos a notificação de "payment" não chega — o
-                // Mercado Pago sempre manda a de merchant_order também, e ela
-                // carrega os pagamentos vinculados àquele pedido. Usamos isso
-                // como caminho alternativo, não só como o principal.
-                paymentInfo = await this.fetchFromMerchantOrderTopic(body);
-            } else {
-                console.log("Evento ignorado:", topic);
-                return;
-            }
-
-            if (!paymentInfo) {
-                console.log("Não foi possível obter dados de pagamento para este evento.");
-                return;
-            }
-
-            await this.applyPaymentInfo(paymentInfo);
-        } catch (error) {
-            console.error("ERRO NO WEBHOOK:", error);
-            throw error;
+        let paymentInfo: NormalizedPaymentInfo | null;
+        if (topic === "payment") {
+            paymentInfo = await this.fetchFromPaymentTopic(body);
+        } else if (typeof topic === "string" && topic.includes("merchant_order")) {
+            // Caminho alternativo: a notificação de merchant_order carrega os pagamentos do pedido
+            paymentInfo = await this.fetchFromMerchantOrderTopic(body);
+        } else {
+            return this.discard(`tópico não tratado (${String(topic)})`);
         }
+
+        if (!paymentInfo) {
+            return this.discard(`sem dados de pagamento (tópico=${String(topic)}, id=${dataId})`);
+        }
+
+        const applied = await applyPaymentInfo(paymentInfo);
+        console.log(
+            `[webhook] tópico=${String(topic)} pagamento=${paymentInfo.id} status=${paymentInfo.status} ` +
+                `pedido=${paymentInfo.external_reference ?? "-"} resultado=${applied.outcome}`
+        );
+        if (isDiscardableOutcome(applied.outcome)) {
+            return { handled: false, reason: applied.message };
+        }
+        return { handled: true, reason: applied.outcome };
+    }
+
+    private discard(reason: string): WebhookResult {
+        console.log(`[webhook] descartado: ${reason}`);
+        return { handled: false, reason };
     }
 
     private async fetchFromPaymentTopic(body: any): Promise<NormalizedPaymentInfo | null> {
         let paymentId: number;
-
         if (body.data?.id) {
             paymentId = Number(body.data.id);
-        } else if (body.resource) {
+        } else if (typeof body.resource === "string") {
             paymentId = Number(body.resource.split("/").pop());
         } else {
-            console.log("Sem payment id");
             return null;
         }
-
         if (!paymentId || Number.isNaN(paymentId)) {
-            console.log("Payment ID inválido:", paymentId);
             return null;
         }
-
         return this.fetchPaymentById(paymentId);
     }
 
-    // Sempre busca o pagamento completo: precisa do valor e da forma de pagamento
-    private async fetchPaymentById(paymentId: number): Promise<NormalizedPaymentInfo> {
-        const paymentInfo = await new Payment(client).get({ id: paymentId });
-
-        return {
-            id: Number(paymentInfo.id),
-            status: paymentInfo.status as string,
-            external_reference: paymentInfo.external_reference ?? null,
-            payment_method_id: paymentInfo.payment_method_id ?? null,
-            transaction_amount: paymentInfo.transaction_amount ?? null,
-        };
+    // Sempre busca o pagamento completo: precisa do valor e da forma de pagamento.
+    // 404 (inclui o id fictício das notificações de teste) = descartável → null.
+    private async fetchPaymentById(paymentId: number): Promise<NormalizedPaymentInfo | null> {
+        try {
+            return normalizePayment(await new Payment(client).get({ id: paymentId }));
+        } catch (error) {
+            if (mpErrorStatus(error) === 404) return null;
+            throw error;
+        }
     }
 
-    private async fetchFromMerchantOrderTopic(
-        body: any
-    ): Promise<NormalizedPaymentInfo | null> {
+    private async fetchFromMerchantOrderTopic(body: any): Promise<NormalizedPaymentInfo | null> {
         const merchantOrderId = body.data?.id ?? body.id;
-
         if (!merchantOrderId) {
-            console.log("Sem merchant_order id");
             return null;
         }
 
-        const response = await fetch(
-            `https://api.mercadopago.com/merchant_orders/${merchantOrderId}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
-                },
-            }
-        );
-
+        const response = await fetch(`https://api.mercadopago.com/merchant_orders/${encodeURIComponent(String(merchantOrderId))}`, {
+            headers: { Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}` },
+        });
+        if (response.status === 404) return null;
         if (!response.ok) {
-            console.log("Falha ao consultar merchant_order:", response.status);
-            return null;
+            // 401/5xx...: transitório ou de configuração → 5xx para o Mercado Pago repetir
+            throw new Error(`merchant_orders respondeu ${response.status}`);
         }
 
         const merchantOrder = (await response.json()) as {
             external_reference?: string;
-            payments?: { id: number; status: string; status_detail?: string }[];
+            payments?: { id: number; status: string }[];
         };
-
         const payments = merchantOrder.payments ?? [];
-        if (payments.length === 0) {
-            console.log("merchant_order sem pagamentos ainda.");
-            return null;
-        }
-
-        const relevantPayment =
-            payments.find((p) => p.status === "approved") ?? payments[payments.length - 1];
-
+        const relevantPayment = payments.find((p) => p.status === "approved") ?? payments[payments.length - 1];
         if (!relevantPayment) {
-            console.log("Não foi possível determinar o pagamento relevante.");
             return null;
         }
 
         const full = await this.fetchPaymentById(relevantPayment.id);
-        return {
-            ...full,
-            external_reference: full.external_reference ?? merchantOrder.external_reference ?? null,
-        };
-    }
-
-    private async applyPaymentInfo(paymentInfo: NormalizedPaymentInfo) {
-        console.log("===== DADOS PAGAMENTO NORMALIZADOS =====");
-        console.log(paymentInfo);
-
-        const orderId = paymentInfo.external_reference;
-
-        if (!orderId) {
-            console.log("Sem external_reference");
-            return;
-        }
-
-        const order = await prismaClient.order.findUnique({
-            where: { id: orderId },
-        });
-
-        if (!order) {
-            console.log("PEDIDO NÃO ENCONTRADO:", orderId);
-            return;
-        }
-
-        const existingPayment = await prismaClient.payment.findUnique({
-            where: { order_id: orderId },
-        });
-
-        if (!existingPayment) {
-            console.log("PAYMENT NÃO ENCONTRADO PARA ORDER:", orderId);
-            return;
-        }
-
-        // Aprovação repetida (webhook duplicado): nada a fazer. Mas um pagamento aprovado
-        // pode depois virar estorno/chargeback, que precisa ser registrado.
-        if (existingPayment.status === PaymentStatus.APPROVED && paymentInfo.status === "approved") {
-            console.log("Pagamento já estava APPROVED, ignorando reprocessamento.");
-            return;
-        }
-        // Já aprovado e chega um status "menor" (pending/rejected atrasado): não regride
-        if (
-            existingPayment.status === PaymentStatus.APPROVED &&
-            !["refunded", "charged_back"].includes(paymentInfo.status)
-        ) {
-            console.log(`Pagamento APPROVED; ignorando status atrasado "${paymentInfo.status}".`);
-            return;
-        }
-
-        const payload = JSON.parse(JSON.stringify(paymentInfo));
-        const paymentData = {
-            provider_payment_id: String(paymentInfo.id),
-            method: paymentInfo.payment_method_id ?? null,
-            raw_payload: payload,
-        };
-
-        switch (paymentInfo.status) {
-            case "approved":
-                await this.handleApproved(
-                    order,
-                    existingPayment.discount_amount,
-                    paymentInfo,
-                    paymentData
-                );
-                return;
-
-            // Recusado/cancelado/expirado NÃO cancela o pedido: no Checkout Pro o cliente pode
-            // tentar de novo (outro cartão) na mesma preference. Quem encerra o pedido e
-            // devolve o estoque é o job de expiração.
-            case "rejected":
-            case "cancelled":
-            case "expired":
-                await prismaClient.payment.update({
-                    where: { order_id: orderId },
-                    data: { status: PaymentStatus.REJECTED, ...paymentData },
-                });
-                console.log(`PAGAMENTO ${paymentInfo.status.toUpperCase()} (pedido segue pendente até expirar):`, orderId);
-                return;
-
-            // Estorno/chargeback: só registra; devolução de produto fica fora deste fluxo
-            case "refunded":
-            case "charged_back":
-                await prismaClient.payment.update({
-                    where: { order_id: orderId },
-                    data: { status: PaymentStatus.REFUNDED, ...paymentData },
-                });
-                console.log(`PAGAMENTO ${paymentInfo.status.toUpperCase()}:`, orderId);
-                return;
-
-            // in_process, pending, authorized...
-            default:
-                await prismaClient.payment.update({
-                    where: { order_id: orderId },
-                    data: { status: PaymentStatus.PENDING, ...paymentData },
-                });
-                console.log("PAGAMENTO PENDENTE:", orderId);
-        }
-    }
-
-    private async handleApproved(
-        order: { id: string; status: OrderStatus; total: number },
-        pixDiscountAmount: number,
-        paymentInfo: NormalizedPaymentInfo,
-        paymentData: { provider_payment_id: string; method: string | null; raw_payload: any }
-    ) {
-        const orderId = order.id;
-        const isPix = paymentInfo.payment_method_id === "pix";
-        // Só Pix tem desconto; cartão/Checkout Pro cobra o total cheio e não é validado por valor
-        const discount = isPix ? pixDiscountAmount : 0;
-
-        if (isPix) {
-            const expected = order.total - discount;
-            const received = Math.round((paymentInfo.transaction_amount ?? 0) * 100);
-            if (received !== expected) {
-                console.error(
-                    `🚨 [PIX COM VALOR DIVERGENTE] Pedido ${orderId} NÃO foi quitado: esperado ${expected} centavos, ` +
-                        `recebido ${received}. Confira o pagamento ${paymentData.provider_payment_id} no painel do Mercado Pago ` +
-                        `e reembolse se for o caso.`
-                );
-                return;
-            }
-        }
-
-        if (order.status !== OrderStatus.CANCELED) {
-            // Só promove de PENDING para PAID: um webhook duplicado não faz um pedido
-            // SHIPPED/DELIVERED voltar para PAID. O desconto do Pix é consolidado no total aqui.
-            await prismaClient.$transaction(async (tx) => {
-                const promoted = await tx.order.updateMany({
-                    where: { id: orderId, status: OrderStatus.PENDING },
-                    data: { status: OrderStatus.PAID, total: { decrement: discount } },
-                });
-                await tx.payment.update({
-                    where: { order_id: orderId },
-                    data: {
-                        status: PaymentStatus.APPROVED,
-                        ...paymentData,
-                        discount_amount: promoted.count > 0 ? discount : 0,
-                    },
-                });
-            });
-            console.log("PEDIDO PAGO:", orderId);
-            return;
-        }
-
-        // APROVAÇÃO TARDIA: o pedido já foi cancelado (expirou) e o estoque devolvido, mas o
-        // pagamento foi aprovado. Tenta reservar de novo, com a mesma regra atômica do checkout.
-        try {
-            await prismaClient.$transaction(async (tx) => {
-                const items = await tx.orderItem.findMany({ where: { order_id: orderId } });
-                for (const item of items) {
-                    const reserved = await tx.product.updateMany({
-                        where: { id: item.product_id, stock: { gte: item.quantity } },
-                        data: { stock: { decrement: item.quantity } },
-                    });
-                    if (reserved.count === 0) {
-                        throw new Error(`sem estoque para o produto ${item.product_id}`);
-                    }
-                }
-                const reopened = await tx.order.updateMany({
-                    where: { id: orderId, status: OrderStatus.CANCELED },
-                    data: { status: OrderStatus.PAID, total: { decrement: discount } },
-                });
-                if (reopened.count === 0) {
-                    throw new Error("status do pedido mudou durante o processamento");
-                }
-                await tx.payment.update({
-                    where: { order_id: orderId },
-                    data: { status: PaymentStatus.APPROVED, ...paymentData, discount_amount: discount },
-                });
-            });
-            console.log("APROVAÇÃO TARDIA: estoque reservado de novo, PEDIDO PAGO:", orderId);
-        } catch (error) {
-            // Sem estoque: pedido continua CANCELED, pagamento fica registrado como APPROVED
-            // e o admin precisa ESTORNAR manualmente no painel do Mercado Pago.
-            await prismaClient.payment.update({
-                where: { order_id: orderId },
-                data: { status: PaymentStatus.APPROVED, ...paymentData },
-            });
-            console.error(
-                `🚨 [REEMBOLSO MANUAL NECESSÁRIO] Pedido ${orderId}: pagamento APROVADO depois do pedido ser cancelado/expirar, ` +
-                    `e não há estoque para reabrir (${error instanceof Error ? error.message : error}). ` +
-                    `Estorne o pagamento ${paymentData.provider_payment_id} no painel do Mercado Pago.`
-            );
-        }
+        if (!full) return null;
+        return { ...full, external_reference: full.external_reference ?? merchantOrder.external_reference ?? null };
     }
 }
 

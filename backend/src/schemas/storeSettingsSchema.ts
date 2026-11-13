@@ -32,6 +32,9 @@ export const updateStoreSettingsSchema = z.object({
       announcement_coupon_code: z.string().trim().toUpperCase().max(30).nullable(),
       free_shipping_threshold: z.number().int().min(0).nullable(),
       trust_strip_items: z.array(trustStripItemSchema).max(8),
+      pickup_enabled: z.boolean(),
+      pickup_address: z.string().trim().max(300),
+      pickup_instructions: z.string().trim().max(600),
     })
     .partial(),
 });

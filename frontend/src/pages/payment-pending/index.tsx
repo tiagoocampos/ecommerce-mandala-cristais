@@ -1,12 +1,17 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Clock, PackageSearch, ArrowLeft } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { StoreFooter } from "../../components/store/StoreFooter";
 import { Button } from "../../components/ui/button";
+import { SyncPaymentButton } from "../../components/store/SyncPaymentButton";
+import { getToken } from "../../lib/auth";
 
 export function PaymentPendingPage() {
     const navigate = useNavigate();
+    // o Mercado Pago devolve o id do pedido (external_reference) na URL de retorno
+    const [params] = useSearchParams();
+    const orderId = params.get("external_reference");
 
     return (
         <div className="min-h-screen bg-mc-sand-50 flex flex-col">
@@ -57,6 +62,17 @@ export function PaymentPendingPage() {
                             </li>
                         </ul>
                     </div>
+
+                    {orderId && getToken() && (
+                        <div className="mb-4">
+                            <SyncPaymentButton
+                                orderId={orderId}
+                                onSynced={(updated) => {
+                                    if (updated.status === "PAID") navigate(`/pedido/${updated.id}`);
+                                }}
+                            />
+                        </div>
+                    )}
 
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <Button

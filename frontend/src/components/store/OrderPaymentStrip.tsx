@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 import type { orderPaymentState } from "../../lib/orderPayment";
 import type { Order, OrderStatus } from "../../types";
 import { CancelOrderButton } from "./CancelOrderButton";
+import { SyncPaymentButton } from "./SyncPaymentButton";
 
 interface OrderPaymentStripProps {
     order: { id: string; status: OrderStatus; can_cancel?: boolean };
@@ -12,11 +13,13 @@ interface OrderPaymentStripProps {
     compact?: boolean;
     onCanceled?: (order: Order) => void;
     onCancelRejected?: () => void;
+    /** habilita "Já paguei — verificar pagamento" (recebe o pedido reconciliado) */
+    onSynced?: (order: Order) => void;
 }
 
 // Faixa abaixo do pedido: "Pagar agora" para pendente dentro do prazo; aviso para
 // pendente vencido ou cancelado. Nada para pedidos pagos/enviados/entregues.
-export function OrderPaymentStrip({ order, state, compact = false, onCanceled, onCancelRejected }: OrderPaymentStripProps) {
+export function OrderPaymentStrip({ order, state, compact = false, onCanceled, onCancelRejected, onSynced }: OrderPaymentStripProps) {
     const navigate = useNavigate();
 
     if (state.payable) {
@@ -31,7 +34,8 @@ export function OrderPaymentStrip({ order, state, compact = false, onCanceled, o
                     <Clock size={13} aria-hidden="true" />
                     Aguardando pagamento · {state.reservedUntil}
                 </span>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                    {onSynced && <SyncPaymentButton orderId={order.id} onSynced={onSynced} />}
                     {order.can_cancel && onCanceled && (
                         <CancelOrderButton orderId={order.id} onCanceled={onCanceled} onRejected={onCancelRejected} />
                     )}

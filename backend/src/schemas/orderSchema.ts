@@ -1,20 +1,28 @@
 import { z } from "zod";
 
 export const createOrderSchema = z.object({
-  body: z.object({
-    address_id: z.string({
-      message: "O address_id deve ser um texto"
-    }).uuid({
-      message: "O address_id deve ser um UUID válido"
+  body: z
+    .object({
+      // SHIPPING é o padrão para não quebrar o frontend antigo
+      delivery_method: z
+        .enum(["SHIPPING", "PICKUP"], { message: "Forma de entrega inválida" })
+        .default("SHIPPING"),
+      address_id: z.string({ message: "O address_id deve ser um texto" }).optional(),
+      coupon_code: z.string().trim().min(1).optional(),
+      shipping_service: z.string().trim().optional(),
+      // fallback: só é usado se o Melhor Envio estiver fora do ar ao finalizar
+      shipping_quote_cents: z.number().int().positive().optional(),
+    })
+    .superRefine((body, ctx) => {
+      // Endereço e frete só são exigidos na entrega; na retirada são ignorados
+      if (body.delivery_method !== "SHIPPING") return;
+      if (!body.address_id || !z.string().uuid().safeParse(body.address_id).success) {
+        ctx.addIssue({ code: "custom", path: ["address_id"], message: "O address_id deve ser um UUID válido" });
+      }
+      if (!body.shipping_service) {
+        ctx.addIssue({ code: "custom", path: ["shipping_service"], message: "Escolha uma opção de frete" });
+      }
     }),
-    coupon_code: z.string().trim().min(1).optional(),
-    shipping_service: z
-      .string({ message: "Escolha uma opção de frete" })
-      .trim()
-      .min(1, { message: "Escolha uma opção de frete" }),
-    // fallback: só é usado se o Melhor Envio estiver fora do ar ao finalizar
-    shipping_quote_cents: z.number().int().positive().optional(),
-  }),
 });
 
 export const AddItemSchema = z.object({

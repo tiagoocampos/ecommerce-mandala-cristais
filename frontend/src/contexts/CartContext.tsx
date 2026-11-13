@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { ReactNode } from "react";
 import axios from "axios";
 import { api } from "../services/api";
-import { getToken } from "../lib/auth";
+import { getToken, SESSION_ENDED_EVENT } from "../lib/auth";
 import type { Cart } from "../types";
 
 interface CartContextData {
@@ -30,11 +30,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
         try {
             const { data } = await api.get<Cart>("/cart");
             setCart(data);
-        } catch {
-            setCart(null);
+        } catch (error) {
+            // Sessão vencida/inválida: o interceptor da api encerra a sessão (limpa tudo e vai
+            // para o login); aqui não engolimos o erro como se fosse "carrinho vazio".
+            // Outros erros (rede, 500): mantém o carrinho anterior em vez de zerar a tela.
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                setCart(null);
+            }
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    // Sessão encerrada (token vencido/inválido): limpa o estado em memória
+    useEffect(() => {
+        const onSessionEnded = () => setCart(null);
+        window.addEventListener(SESSION_ENDED_EVENT, onSessionEnded);
+        return () => window.removeEventListener(SESSION_ENDED_EVENT, onSessionEnded);
     }, []);
 
     useEffect(() => {

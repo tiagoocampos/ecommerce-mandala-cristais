@@ -42,3 +42,22 @@ export class InvalidOAuthStateError extends Error {
         Object.setPrototypeOf(this, InvalidOAuthStateError.prototype);
     }
 }
+
+
+export class ShippingServiceUnavailableError extends Error {
+    public statusCode: number = 409
+    constructor(service: string) {
+        super(`${service} está indisponível para este endereço/pedido. Escolha outra opção de entrega.`);
+        this.name = "ShippingServiceUnavailableError";
+        Object.setPrototypeOf(this, ShippingServiceUnavailableError.prototype);
+    }
+}
+
+export class PickupNotAvailableError extends Error {
+    public statusCode: number = 422
+    constructor() {
+        super("A retirada na loja não está disponível no momento. Escolha a entrega no seu endereço.");
+        this.name = "PickupNotAvailableError";
+        Object.setPrototypeOf(this, PickupNotAvailableError.prototype);
+    }
+}

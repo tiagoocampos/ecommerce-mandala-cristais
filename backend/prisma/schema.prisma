@@ -30,6 +30,12 @@ enum PaymentStatus {
   REFUNDED
 }
 
+// Como o pedido chega ao cliente. PICKUP = retirada na loja (sem endereço e sem frete)
+enum DeliveryMethod {
+  SHIPPING
+  PICKUP
+}
+
 enum CouponType {
   PERCENTAGE
   FIXED
@@ -184,8 +190,11 @@ model Order {
   user_id String
   user    User @relation(fields: [user_id], references: [id])
 
-  address_id String
-  address    Address @relation(fields: [address_id], references: [id])
+  delivery_method DeliveryMethod @default(SHIPPING)
+
+  // null em pedido de retirada (PICKUP). onDelete: Restrict mantém a FK atual do banco.
+  address_id String?
+  address    Address? @relation(fields: [address_id], references: [id], onDelete: Restrict)
 
   coupon_id String?
   coupon    Coupon? @relation(fields: [coupon_id], references: [id])
@@ -262,6 +271,12 @@ model StoreSettings {
   announcement_coupon_code String?
   free_shipping_threshold  Int? // em centavos
   trust_strip_items        Json // [{ icon: "Gem", label: "Pedras 100% naturais" }, ...]
+
+  // Retirada na loja
+  pickup_enabled      Boolean @default(false)
+  pickup_address      String  @default("")
+  pickup_instructions String  @default("") // horário, referência, o que levar
+
   updatedAt                DateTime @updatedAt
 
   @@map("store_settings")
