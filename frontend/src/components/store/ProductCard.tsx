@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, ShoppingBag } from "lucide-react";
 import { Button } from "../ui/button";
-import { ProductImage } from "./ProductImage";
+import { CARD_ASPECT_CLASS, CARD_RATIO, ProductImage } from "./ProductImage";
 import { formatPrice } from "../../lib/utils-api";
 import { discountPercent, type MandalaProduct } from "../../types/mandala";
 
@@ -12,12 +12,16 @@ interface ProductCardProps {
     onAddToCart?: (product: MandalaProduct) => void | Promise<boolean>;
 }
 
+const CARD_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 46vw";
+
 type AddState = "idle" | "adding" | "added";
 
 // Cartão com borda fina, sem sombra em repouso (leve no hover). Altura uniforme: o rodapé
 // com "Ver produto →" fica sempre alinhado ao fundo.
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     const [addState, setAddState] = useState<AddState>("idle");
+    // a 2ª foto só é baixada quando o mouse chega ao card (não dobra os downloads da vitrine)
+    const [hoverLoaded, setHoverLoaded] = useState(false);
     const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -41,20 +45,19 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     }
 
     return (
-        <article className="group flex h-full flex-col overflow-hidden rounded-md border border-mc-violet-950/10 bg-white transition-shadow duration-200 hover:shadow-md motion-reduce:transition-none">
-            <Link to={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-5/4 overflow-hidden bg-mc-blush-100">
+        <article onMouseEnter={() => setHoverLoaded(true)} className="group flex h-full flex-col overflow-hidden rounded-md border border-mc-violet-950/10 bg-white transition-shadow duration-200 hover:shadow-md motion-reduce:transition-none">
+            <Link to={href} tabIndex={-1} aria-hidden="true" className={`relative block ${CARD_ASPECT_CLASS} overflow-hidden bg-mc-blush-100`}>
                 <ProductImage
                     src={product.banner}
-                    alt=""
-                    className="transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none"
+                    alt={product.image_alt_text || product.name}
+                    frameRatio={CARD_RATIO}
+                    sizes={CARD_SIZES}
                 />
-                {hoverImage && (
-                    <img
-                        src={hoverImage}
-                        alt=""
-                        loading="lazy"
-                        className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:transition-none"
-                    />
+                {/* segunda foto no hover: mesma regra de encaixe, sem mudar o enquadramento */}
+                {hoverImage && hoverLoaded && (
+                    <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:transition-none">
+                        <ProductImage bare src={hoverImage} alt="" frameRatio={CARD_RATIO} sizes={CARD_SIZES} />
+                    </div>
                 )}
                 {hasPromo && !soldOut && (
                     <span className="absolute left-2.5 top-2.5 rounded-full bg-mc-violet-950 px-2 py-0.5 text-[11px] font-medium text-mc-sand-50">

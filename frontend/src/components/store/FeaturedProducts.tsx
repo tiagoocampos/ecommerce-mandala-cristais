@@ -89,7 +89,7 @@ export function FeaturedProducts({ products, loading = false, error = false, onR
                 <ul className="flex gap-5 overflow-hidden" role="status" aria-label="Carregando produtos">
                     {[0, 1, 2, 3].map((i) => (
                         <li key={i} aria-hidden="true" className="w-[46%] shrink-0 animate-pulse sm:w-[31%] lg:w-[calc(25%-15px)]">
-                            <div className="aspect-5/4 rounded-t-md bg-mc-blush-100" />
+                            <div className="aspect-3/4 rounded-t-md bg-mc-blush-100" />
                             <div className="space-y-3 rounded-b-md border border-t-0 border-mc-violet-950/10 bg-white p-4">
                                 <div className="h-3.5 w-4/5 rounded bg-mc-blush-100" />
                                 <div className="h-4 w-1/3 rounded bg-mc-blush-200" />

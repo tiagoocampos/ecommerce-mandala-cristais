@@ -52,17 +52,14 @@ export function ProductGallery({ banner, images = [], name, altText, overlay }: 
                 >
                     {slides.map((url, i) => (
                         <div key={url} className="h-full w-full flex-none snap-start">
-                            {i === 0 ? (
-                                <ProductImage src={url} alt={altFor(i)} iconSize={64} />
-                            ) : (
-                                <img
-                                    src={url}
-                                    alt={altFor(i)}
-                                    loading="lazy"
-                                    draggable={false}
-                                    className="h-full w-full object-cover"
-                                />
-                            )}
+                            <ProductImage
+                                src={url}
+                                alt={altFor(i)}
+                                iconSize={64}
+                                frameRatio={1}
+                                sizes="(min-width: 1024px) 50vw, 100vw"
+                                priority={i === 0}
+                            />
                         </div>
                     ))}
                 </div>
@@ -110,13 +107,7 @@ export function ProductGallery({ banner, images = [], name, altText, overlay }: 
                                 i === active ? "border-mc-gold-600" : "border-transparent opacity-75 hover:opacity-100"
                             )}
                         >
-                            <img
-                                src={url}
-                                alt=""
-                                loading={i === 0 ? undefined : "lazy"}
-                                draggable={false}
-                                className="h-full w-full object-cover"
-                            />
+                            <ProductImage src={url} alt="" frameRatio={1} sizes="120px" />
                         </button>
                     ))}
                 </div>

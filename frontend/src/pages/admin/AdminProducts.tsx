@@ -678,14 +678,11 @@ export function AdminProducts() {
                             {/* imagem principal */}
                             <div>
                                 <Label className="text-sm text-mc-ink/70">Imagem principal</Label>
+                                <p className="text-xs text-mc-ink/50">Prefira fotos na vertical (3:4): é a proporção dos cards da loja. Fotos mais altas aparecem inteiras, com fundo suave nas laterais.</p>
                                 <div className="mt-1 flex items-center gap-3">
                                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-mc-blush-100 border border-mc-violet-950/10 shrink-0">
                                         {previewUrl ? (
-                                            <img
-                                                src={previewUrl}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover"
-                                            />
+                                            <ProductImage src={previewUrl} alt="Pré-visualização" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-mc-ink/30">
                                                 <ImageIcon size={20} />
@@ -718,7 +715,7 @@ export function AdminProducts() {
                                 <div className="grid grid-cols-4 gap-2">
                                     {savedImages.map((image) => (
                                         <div key={image.id} className="group relative aspect-square overflow-hidden rounded-lg border border-mc-violet-950/10 bg-mc-blush-100">
-                                            <img src={image.url} alt="" className="h-full w-full object-cover" />
+                                            <ProductImage src={image.url} alt="" />
                                             <div className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-mc-violet-950/75 p-1">
                                                 <button
                                                     type="button"
@@ -754,7 +751,7 @@ export function AdminProducts() {
                                     ))}
                                     {extraFiles.map((item, index) => (
                                         <div key={item.url} className="relative aspect-square overflow-hidden rounded-lg border border-dashed border-mc-gold-500/70 bg-mc-blush-100">
-                                            <img src={item.url} alt="" className="h-full w-full object-cover" />
+                                            <ProductImage src={item.url} alt="" />
                                             <span className="absolute left-1 top-1 rounded bg-mc-gold-500 px-1 text-[9px] font-semibold text-mc-violet-950">
                                                 nova
                                             </span>
