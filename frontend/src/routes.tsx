@@ -31,11 +31,15 @@ import { AdminOrderDetail } from "./pages/admin/AdminOrderDetail";
 import { AdminUsers } from "./pages/admin/AdminUsers";
 import { AdminUserDetail } from "./pages/admin/AdminUserDetail";
 import { AdminStorefront } from "./pages/admin/AdminStorefront";
+import { ScrollToTop } from "./components/ScrollToTop";
+import { AboutPage, ContactPage, DeliveryTimesPage, PaymentMethodsPage, ReturnsPage } from "./pages/info";
+import { FaqPage } from "./pages/info/Faq";
 import { WhatsAppWidget } from "./components/store/WhatsAppWidget";
 
 export function RoutesApp() {
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Routes>
                 {/* públicas */}
                 <Route path="/" element={<MandalaHome />} />
@@ -48,6 +52,14 @@ export function RoutesApp() {
                 <Route path="/categoria/:slug" element={<CategoryDetail />} />
                 <Route path="/produtos" element={<Products />} />
                 <Route path="/produto/:slug" element={<ProductDetail />} />
+
+                {/* institucionais */}
+                <Route path="/sobre" element={<AboutPage />} />
+                <Route path="/contato" element={<ContactPage />} />
+                <Route path="/formas-de-pagamento" element={<PaymentMethodsPage />} />
+                <Route path="/prazos-de-entrega" element={<DeliveryTimesPage />} />
+                <Route path="/perguntas-frequentes" element={<FaqPage />} />
+                <Route path="/trocas-e-devolucoes" element={<ReturnsPage />} />
 
                 {/* protegidas (o próprio componente exige login) */}
                 <Route path="/profile" element={<Profile />} />

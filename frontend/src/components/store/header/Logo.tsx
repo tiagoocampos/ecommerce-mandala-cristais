@@ -6,9 +6,11 @@ type LogoProps = {
   onClick?: () => void;
   /** "roxa" para fundos claros, "branca" para fundos escuros */
   variant?: "roxa" | "branca";
+  /** menor, usado quando o cabeçalho encolhe ao rolar */
+  compact?: boolean;
 };
 
-export function Logo({ className, onClick, variant = "roxa" }: LogoProps) {
+export function Logo({ className, onClick, variant = "roxa", compact = false }: LogoProps) {
   const navigate = useNavigate();
 
   function handleClick() {
@@ -31,7 +33,7 @@ export function Logo({ className, onClick, variant = "roxa" }: LogoProps) {
         alt="Mandala Crystais"
         width={400}
         height={279}
-        className="h-11 w-auto sm:h-14"
+        className={cn("w-auto transition-[height] duration-200 motion-reduce:transition-none", compact ? "h-9 sm:h-11" : "h-11 sm:h-14")}
       />
     </button>
   );

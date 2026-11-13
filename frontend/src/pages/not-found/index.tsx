@@ -28,7 +28,7 @@ export function NotFound() {
                     <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
                         <Button
                             onClick={() => navigate("/")}
-                            className="facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none px-7 h-11"
+                            className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full px-7 h-11"
                         >
                             <ArrowLeft size={16} className="mr-1" />
                             Voltar para a Home

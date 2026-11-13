@@ -15,7 +15,7 @@ import { Label } from "../../components/ui/label";
 import { ConfirmDelete } from "../../components/ui/confirm-delete";
 
 import {
-  clearAuth,
+  logout,
   getAuthHeaders,
 } from "../../lib/auth";
 
@@ -125,7 +125,7 @@ export function Profile() {
   }, [fetchData]);
 
   function handleLogout() {
-    clearAuth();
+    logout();
     toast.success("Você saiu da sua conta", { position: "top-center" });
     navigate("/login");
   }
@@ -359,7 +359,7 @@ export function Profile() {
                       <Button
                         onClick={handleCreateAddress}
                         disabled={creating}
-                        className="mt-5 facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none w-full"
+                        className="mt-5 bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full w-full"
                       >
                         {creating ? "Salvando..." : "Adicionar endereço"}
                       </Button>

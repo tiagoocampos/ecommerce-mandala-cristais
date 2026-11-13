@@ -1,14 +1,16 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import axios from "axios";
 import { api } from "../services/api";
-import { getToken, SESSION_ENDED_EVENT } from "../lib/auth";
+import { getToken, subscribeAuth } from "../lib/auth";
 import type { Cart } from "../types";
 
 interface CartContextData {
     cart: Cart | null;
     itemCount: number;
     loading: boolean;
+    /** a última tentativa de carregar o carrinho falhou (rede/500) */
+    error: boolean;
     refreshCart: () => Promise<void>;
     addItem: (product_id: string, quantity?: number) => Promise<void>;
     updateItem: (item_id: string, quantity: number) => Promise<void>;
@@ -20,37 +22,48 @@ const CartContext = createContext<CartContextData | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<Cart | null>(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+    // Cada mudança de sessão invalida respostas em voo: o carrinho de quem saiu nunca "volta"
+    const sessionVersion = useRef(0);
 
     const refreshCart = useCallback(async () => {
         if (!getToken()) {
             setCart(null);
             return;
         }
+        const version = sessionVersion.current;
         setLoading(true);
         try {
             const { data } = await api.get<Cart>("/cart");
+            if (version !== sessionVersion.current) return; // sessão mudou durante a requisição
             setCart(data);
-        } catch (error) {
+            setError(false);
+        } catch (err) {
             // Sessão vencida/inválida: o interceptor da api encerra a sessão (limpa tudo e vai
             // para o login); aqui não engolimos o erro como se fosse "carrinho vazio".
             // Outros erros (rede, 500): mantém o carrinho anterior em vez de zerar a tela.
-            if (axios.isAxiosError(error) && error.response?.status === 401) {
-                setCart(null);
+            if (version === sessionVersion.current) {
+                if (axios.isAxiosError(err) && err.response?.status === 401) setCart(null);
+                else setError(true);
             }
         } finally {
-            setLoading(false);
+            if (version === sessionVersion.current) setLoading(false);
         }
     }, []);
 
-    // Sessão encerrada (token vencido/inválido): limpa o estado em memória
+    // Login/logout/expiração (nesta aba ou em outra): sem token zera na hora; com token busca o carrinho DESSA conta
     useEffect(() => {
-        const onSessionEnded = () => setCart(null);
-        window.addEventListener(SESSION_ENDED_EVENT, onSessionEnded);
-        return () => window.removeEventListener(SESSION_ENDED_EVENT, onSessionEnded);
-    }, []);
-
-    useEffect(() => {
-        refreshCart();
+        return subscribeAuth(() => {
+            sessionVersion.current += 1;
+            setError(false);
+            if (!getToken()) {
+                setCart(null);
+                setLoading(false);
+            } else {
+                setCart(null); // não mostra o carrinho da conta anterior enquanto carrega
+                refreshCart();
+            }
+        });
     }, [refreshCart]);
 
     const addItem = useCallback(
@@ -95,7 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ cart, itemCount, loading, refreshCart, addItem, updateItem, removeItem }}
+            value={{ cart, itemCount, loading, error, refreshCart, addItem, updateItem, removeItem }}
         >
             {children}
         </CartContext.Provider>

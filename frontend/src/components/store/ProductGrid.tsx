@@ -9,7 +9,7 @@ interface ProductGridProps {
     subtitle?: string;
     products: MandalaProduct[];
     seeAllHref?: string;
-    onAddToCart?: (product: MandalaProduct) => void;
+    onAddToCart?: (product: MandalaProduct) => void | Promise<boolean>;
     loading?: boolean;
 }
 

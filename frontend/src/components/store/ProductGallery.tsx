@@ -43,7 +43,7 @@ export function ProductGallery({ banner, images = [], name, altText, overlay }: 
 
     return (
         <div>
-            <div className="relative facet-cut overflow-hidden bg-mc-blush-100 aspect-square">
+            <div className="relative rounded-md overflow-hidden bg-mc-blush-100 aspect-square">
                 <div
                     ref={trackRef}
                     onScroll={handleScroll}

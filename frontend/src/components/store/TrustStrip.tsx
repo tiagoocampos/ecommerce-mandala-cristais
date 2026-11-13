@@ -8,13 +8,12 @@ export type TrustItem = { icon: LucideIcon; label: string };
 interface TrustStripProps {
     /** Itens fixos (ex.: rodapé). Sem isso, usa os itens editáveis em /admin/vitrine. */
     items?: TrustItem[];
-    /** "light" para fundo claro (home), "dark" para fundo roxo (rodapé) */
-    tone?: "light" | "dark";
+    /** "band": faixa roxa em largura total (home) | "dark": linha discreta dentro do rodapé */
+    tone?: "band" | "dark";
 }
 
-export function TrustStrip({ items, tone = "light" }: TrustStripProps) {
+export function TrustStrip({ items, tone = "band" }: TrustStripProps) {
     const settings = useStoreSettings();
-    const dark = tone === "dark";
 
     const resolved: TrustItem[] =
         items ??
@@ -22,23 +21,32 @@ export function TrustStrip({ items, tone = "light" }: TrustStripProps) {
 
     if (resolved.length === 0) return null;
 
+    const band = tone === "band";
+
     return (
-        <div className={dark ? "border-b border-white/10" : "border-y border-mc-violet-950/10 bg-mc-blush-100/60"}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4">
+        <div className={band ? "bg-mc-violet-950 text-mc-sand-50" : "border-b border-white/10"}>
+            <ul
+                className={cn(
+                    "mx-auto grid max-w-7xl px-4 sm:px-6 lg:px-8",
+                    band ? "grid-cols-2 gap-y-6 py-8 sm:py-10 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:gap-y-0" : "grid-cols-2 gap-4 py-5 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]"
+                )}
+            >
                 {resolved.map(({ icon: Icon, label }, index) => (
-                    <div key={`${label}-${index}`} className="flex items-center gap-2.5">
-                        <Icon size={18} className={cn("shrink-0", dark ? "text-mc-gold-400" : "text-mc-violet-700")} />
-                        <span
-                            className={cn(
-                                "text-xs sm:text-[13px] font-medium leading-tight",
-                                dark ? "text-white/80" : "text-mc-ink/70"
-                            )}
-                        >
+                    <li
+                        key={`${label}-${index}`}
+                        className={cn(
+                            band
+                                ? "flex flex-col items-center gap-3 px-3 text-center md:border-l md:border-white/20 md:first:border-l-0"
+                                : "flex items-center gap-2.5"
+                        )}
+                    >
+                        <Icon size={band ? 26 : 16} strokeWidth={1.25} aria-hidden="true" className="shrink-0 text-mc-sand-50/90" />
+                        <span className={cn("leading-tight", band ? "text-[13px] text-mc-sand-50/90" : "text-xs text-white/80")}>
                             {label}
                         </span>
-                    </div>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </div>
     );
 }

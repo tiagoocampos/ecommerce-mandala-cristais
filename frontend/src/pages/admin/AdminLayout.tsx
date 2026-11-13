@@ -15,7 +15,7 @@ import {
     Mail,
 } from "lucide-react";
 import { ProtectedRoute } from "../../components/ProtectedRoute";
-import { getStoredUser, clearAuth } from "../../lib/auth";
+import { getStoredUser, logout } from "../../lib/auth";
 import { Loading } from "../../components/Loading";
 
 const NAV_ITEMS = [
@@ -63,7 +63,7 @@ export function AdminLayout() {
     const user = getStoredUser();
 
     function handleLogout() {
-        clearAuth();
+        logout();
         toast.success("Você saiu da conta", { position: "top-center" });
         navigate("/login");
     }

@@ -13,6 +13,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 
 import { api } from "../../services/api";
+import { useFocusFirstError } from "../../hooks/useFocusFirstError";
 import { applyFieldErrors, inputClassName } from "../../lib/utils-api";
 import { saveAuth } from "../../lib/auth";
 
@@ -33,6 +34,7 @@ export function Register() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  useFocusFirstError(errors);
 
   async function handleRegister() {
     try {
@@ -108,6 +110,8 @@ export function Register() {
                 <Label className="text-sm text-mc-ink/70">Nome</Label>
                 <Input
                   value={name}
+                  autoFocus
+                  aria-invalid={!!errors.name}
                   onChange={(e) => setName(e.target.value)}
                   type="text"
                   placeholder="Seu nome"
@@ -123,6 +127,7 @@ export function Register() {
                 <Label className="text-sm text-mc-ink/70">Email</Label>
                 <Input
                   value={email}
+                  aria-invalid={!!errors.email}
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   placeholder="seu@email.com"
@@ -140,8 +145,11 @@ export function Register() {
                 <Label className="text-sm text-mc-ink/70">Telefone (opcional)</Label>
                 <Input
                   value={phone}
+                  aria-invalid={!!errors.phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  type="text"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   placeholder="(opcional)"
                   className={`${inputClassName} cursor-pointer`}
                 />
@@ -154,6 +162,7 @@ export function Register() {
                 <Label className="text-sm text-mc-ink/70">Senha</Label>
                 <Input
                   value={password}
+                  aria-invalid={!!errors.password}
                   onChange={(e) => setPassword(e.target.value)}
                   type="password"
                   placeholder="mínimo 6 caracteres"
@@ -188,7 +197,7 @@ export function Register() {
                 <Button
                   onClick={handleRegister}
                   disabled={loading}
-                  className="facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none w-full cursor-pointer text-sm font-medium"
+                  className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full w-full cursor-pointer text-sm font-medium"
                 >
                   {loading ? <Loading /> : "Cadastrar"}
                 </Button>

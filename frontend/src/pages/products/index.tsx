@@ -63,7 +63,7 @@ export function Products() {
     }, [products, query, categorySlug]);
 
     function handleAddToCart(product: MandalaProduct) {
-        addToCart(product.id);
+        return addToCart(product.id);
     }
 
     function setCategoryFilter(slug: string) {

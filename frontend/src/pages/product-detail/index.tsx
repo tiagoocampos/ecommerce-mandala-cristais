@@ -20,7 +20,7 @@ function ProductDetailSkeleton() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 animate-pulse" role="status" aria-label="Carregando produto">
             <div className="h-4 w-56 rounded bg-mc-blush-100 mb-6 sm:mb-8" />
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
-                <div className="facet-cut aspect-square bg-mc-blush-100" />
+                <div className="rounded-md aspect-square bg-mc-blush-100" />
                 <div>
                     <div className="h-3 w-24 rounded bg-mc-blush-200 mb-3" />
                     <div className="h-9 w-3/4 rounded bg-mc-blush-100 mb-5" />
@@ -47,6 +47,7 @@ export function ProductDetail() {
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
     const [adding, setAdding] = useState(false);
+    const [added, setAdded] = useState(false);
     const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
     // <title> e <meta name="description"> da página (meta_description vem do cadastro/IA)
@@ -84,8 +85,12 @@ export function ProductDetail() {
     async function handleAddToCart() {
         if (!product) return;
         setAdding(true);
-        await addToCart(product.id, quantity);
+        const ok = await addToCart(product.id, quantity);
         setAdding(false);
+        if (ok) {
+            setAdded(true);
+            setTimeout(() => setAdded(false), 1500);
+        }
     }
 
     if (loading || !product) {
@@ -117,7 +122,7 @@ export function ProductDetail() {
     const outOfStock = product.stock === 0;
     // Descrição longa aparece resumida, com "Ver mais"
     const descriptionExcerpt = truncateText(product.description ?? "", 280);
-    const addLabel = outOfStock ? "Indisponível" : adding ? "Adicionando..." : "Adicionar ao carrinho";
+    const addLabel = outOfStock ? "Indisponível" : adding ? "Adicionando…" : added ? "Adicionado ✓" : "Adicionar ao carrinho";
 
     return (
         <div className="min-h-screen bg-mc-sand-50 flex flex-col">
@@ -263,7 +268,7 @@ export function ProductDetail() {
                             <Button
                                 disabled={outOfStock || adding}
                                 onClick={handleAddToCart}
-                                className="hidden lg:inline-flex facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none px-8 py-6 text-sm font-medium disabled:opacity-40"
+                                className="hidden lg:inline-flex bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full px-8 py-6 text-sm font-medium disabled:opacity-40"
                             >
                                 <ShoppingBag size={16} className="mr-2" />
                                 {addLabel}
@@ -301,10 +306,10 @@ export function ProductDetail() {
                     <Button
                         disabled={outOfStock || adding}
                         onClick={handleAddToCart}
-                        className="ml-auto flex-1 max-w-xs facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none h-11 text-sm font-medium disabled:opacity-40"
+                        className="ml-auto flex-1 max-w-xs bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full h-11 text-sm font-medium disabled:opacity-40"
                     >
                         <ShoppingBag size={16} className="mr-1.5" />
-                        {outOfStock ? "Indisponível" : adding ? "Adicionando..." : quantity > 1 ? `Adicionar (${quantity})` : "Adicionar"}
+                        {outOfStock ? "Indisponível" : adding ? "Adicionando…" : added ? "Adicionado ✓" : quantity > 1 ? `Adicionar (${quantity})` : "Adicionar"}
                     </Button>
                 </div>
             </div>

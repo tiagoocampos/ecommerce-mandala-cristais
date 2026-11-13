@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { SearchBar } from "./SearchBar";
 import { CategoriesBar } from "./CategoriesBar";
-import { clearAuth } from "@/lib/auth";
+import { logout } from "@/lib/auth";
 import type { Category, User as UserType } from "@/types";
 
 type MobileMenuSheetProps = {
@@ -75,7 +75,7 @@ export function MobileMenuSheet({
   const navigate = useNavigate();
 
   function handleLogout() {
-    clearAuth();
+    logout();
     navigate("/");
   }
 

@@ -96,7 +96,7 @@ export function ResetPassword() {
                 <Button
                     type="submit"
                     disabled={saving}
-                    className="facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none w-full h-10 text-sm font-medium"
+                    className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full w-full h-10 text-sm font-medium"
                 >
                     {saving ? "Salvando..." : "Salvar nova senha"}
                 </Button>

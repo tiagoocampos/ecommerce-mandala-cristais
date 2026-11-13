@@ -1,15 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Gem } from "lucide-react";
 import { AnnouncementBar } from "../../components/store/AnnouncementBar";
 import { StoreHeader } from "../../components/store/StoreHeader";
 import { Hero } from "../../components/store/Hero";
-import { FeaturedCarousel } from "../../components/store/FeaturedCarousel";
+import { FeaturedProducts } from "../../components/store/FeaturedProducts";
 import { TrustStrip } from "../../components/store/TrustStrip";
-import { CategoryStrip } from "../../components/store/CategoryStrip";
-import { ProductGrid } from "../../components/store/ProductGrid";
-import { PromoBanner } from "../../components/store/PromoBanner";
+import { AboutSection } from "../../components/store/AboutSection";
+import { Reveal } from "../../components/store/Reveal";
 import { StoreFooter } from "../../components/store/StoreFooter";
 import { EmptyState } from "../../components/store/EmptyState";
-import { Gem } from "lucide-react";
 import { api } from "../../services/api";
 import { useAddToCart } from "../../hooks/useAddToCart";
 import type { MandalaProduct } from "../../types/mandala";
@@ -18,41 +17,37 @@ export function MandalaHome() {
   const addToCart = useAddToCart();
   const [products, setProducts] = useState<MandalaProduct[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [error, setError] = useState(false);
 
   function handleAddToCart(product: MandalaProduct) {
-    addToCart(product.id);
+    return addToCart(product.id);
   }
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchProducts() {
-      try {
-        const res = await api.get<MandalaProduct[]>("/products?disabled=false");
-        if (!mounted) return;
-        setProducts(Array.isArray(res.data) ? res.data : []);
-      } catch {
-        if (!mounted) return;
-        setProducts([]);
-      } finally {
-        if (!mounted) return;
-        setLoadingProducts(false);
-      }
+  const fetchProducts = useCallback(async () => {
+    setLoadingProducts(true);
+    setError(false);
+    try {
+      const res = await api.get<MandalaProduct[]>("/products?disabled=false");
+      setProducts(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setProducts([]);
+      setError(true);
+    } finally {
+      setLoadingProducts(false);
     }
-
-    fetchProducts();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
-  // Carrossel do topo: os produtos marcados como destaque no admin; se nenhum estiver
-  // marcado, mostra os produtos da loja (até 12) — o carrossel sempre aparece ao entrar.
-  const featured = useMemo(() => products.filter((p) => p.featured), [products]);
-  const carouselProducts = featured.length > 0 ? featured : products.slice(0, 12);
-  const topPicks = useMemo(() => products.slice(0, 4), [products]);
-  const forBeginners = useMemo(() => products.slice(4, 8), [products]);
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Destaques: produtos marcados no admin; se nenhum estiver marcado, os primeiros da loja
+  const featured = useMemo(() => {
+    const marked = products.filter((p) => p.featured);
+    return marked.length > 0 ? marked : products.slice(0, 12);
+  }, [products]);
+
+  const emptyStore = !loadingProducts && !error && products.length === 0;
 
   return (
     <div className="min-h-screen bg-mc-sand-50 flex flex-col">
@@ -60,18 +55,10 @@ export function MandalaHome() {
       <StoreHeader />
 
       <main className="flex-1">
-        {/* Primeira coisa abaixo do header, antes do banner */}
-        <FeaturedCarousel
-          products={carouselProducts}
-          loading={loadingProducts}
-          title={featured.length > 0 ? "Destaques" : "Nossos produtos"}
-        />
         <Hero />
-        <TrustStrip />
-        <CategoryStrip />
 
-        {!loadingProducts && products.length === 0 ? (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+        {emptyStore ? (
+          <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
             <EmptyState
               icon={Gem}
               title="Nossa vitrine está sendo preparada"
@@ -79,28 +66,21 @@ export function MandalaHome() {
             />
           </section>
         ) : (
-          <>
-            <ProductGrid
-              title="Escolhas da semana"
-              subtitle="Os itens mais procurados da semana"
-              products={topPicks}
+          <Reveal>
+            <FeaturedProducts
+              products={featured}
               loading={loadingProducts}
-              seeAllHref="/produtos"
+              error={error}
+              onRetry={fetchProducts}
               onAddToCart={handleAddToCart}
             />
-
-            <PromoBanner />
-
-            <ProductGrid
-              title="Para começar sua jornada"
-              subtitle="Recomendados para quem está dando os primeiros passos"
-              products={forBeginners}
-              loading={loadingProducts}
-              seeAllHref="/produtos"
-              onAddToCart={handleAddToCart}
-            />
-          </>
+          </Reveal>
         )}
+
+        <TrustStrip />
+        <Reveal>
+          <AboutSection />
+        </Reveal>
       </main>
 
       <StoreFooter />

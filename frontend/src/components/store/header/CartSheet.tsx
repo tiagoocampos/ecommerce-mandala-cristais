@@ -19,7 +19,7 @@ function unitPrice(item: CartItem) {
 export function CartSheet() {
   const navigate = useNavigate();
   const { open, setOpen } = useCartDrawer();
-  const { cart, itemCount, loading, updateItem, removeItem } = useCart();
+  const { cart, itemCount, loading, error, refreshCart, updateItem, removeItem } = useCart();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const items = cart?.items ?? [];
@@ -57,6 +57,17 @@ export function CartSheet() {
           <div className="flex flex-1 items-center justify-center">
             <Spinner className="size-6 text-mc-violet-700" />
           </div>
+        ) : error && items.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 text-center" role="alert">
+            <p className="text-sm text-mc-ink/70">Não conseguimos carregar a sua sacola agora.</p>
+            <Button
+              variant="outline"
+              onClick={() => refreshCart()}
+              className="rounded-full border-mc-violet-950/20 text-mc-violet-950"
+            >
+              Tentar de novo
+            </Button>
+          </div>
         ) : items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 text-center">
             <ShoppingBag size={52} strokeWidth={1.25} className="text-mc-violet-300" aria-hidden="true" />
@@ -85,7 +96,7 @@ export function CartSheet() {
                     <button
                       type="button"
                       onClick={() => go(`/produto/${item.product.slug}`)}
-                      className="facet-cut-sm h-20 w-20 shrink-0 overflow-hidden bg-mc-blush-100"
+                      className="rounded-md h-20 w-20 shrink-0 overflow-hidden bg-mc-blush-100"
                     >
                       <ProductImage src={item.product.banner} alt={item.product.name} iconSize={22} />
                     </button>
@@ -149,7 +160,7 @@ export function CartSheet() {
               <p className="text-xs text-mc-ink/50">Frete e descontos calculados no checkout.</p>
               <Button
                 onClick={() => go("/checkout")}
-                className="facet-cut-sm h-11 w-full rounded-none bg-mc-violet-950 text-mc-sand-50 hover:bg-mc-violet-800"
+                className="h-11 w-full rounded-full bg-mc-violet-950 text-mc-sand-50 hover:bg-mc-violet-800"
               >
                 Finalizar compra
               </Button>

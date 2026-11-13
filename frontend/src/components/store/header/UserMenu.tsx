@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { clearAuth } from "@/lib/auth";
+import { logout } from "@/lib/auth";
 import type { User as UserType } from "@/types";
 
 type UserMenuProps = {
@@ -25,7 +25,7 @@ export function UserMenu({ user, isLogged }: UserMenuProps) {
   const navigate = useNavigate();
 
   function handleLogout() {
-    clearAuth();
+    logout();
     navigate("/");
   }
 

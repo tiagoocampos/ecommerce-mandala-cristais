@@ -13,6 +13,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 
 import { api } from "../../services/api";
+import { useFocusFirstError } from "../../hooks/useFocusFirstError";
 import { applyFieldErrors, inputClassName } from "../../lib/utils-api";
 import { consumeRedirectPath, consumeSessionExpired, saveAuth } from "../../lib/auth";
 
@@ -26,6 +27,7 @@ export function Login() {
   });
 
   const navigate = useNavigate();
+  useFocusFirstError(errors);
   // lido uma única vez (o aviso some ao recarregar a página)
   const [sessionExpired] = useState(() => consumeSessionExpired());
 
@@ -106,8 +108,12 @@ export function Login() {
                 <Label className="text-sm text-mc-ink/70">Email</Label>
                 <Input
                   value={email}
+                  autoFocus
+                  aria-invalid={!!errors.email}
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="seu@email.com"
                   className={`${inputClassName} cursor-pointer`}
                   onKeyDown={(e) => {
@@ -123,6 +129,7 @@ export function Login() {
                 <Label className="text-sm text-mc-ink/70">Senha</Label>
                 <Input
                   value={password}
+                  aria-invalid={!!errors.password}
                   onChange={(e) => setPassword(e.target.value)}
                   type="password"
                   placeholder="sua senha"
@@ -146,7 +153,7 @@ export function Login() {
                 <Button
                   onClick={handleLogin}
                   disabled={loading}
-                  className="facet-cut-sm bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-none w-full cursor-pointer text-sm font-medium"
+                  className="bg-mc-violet-950 hover:bg-mc-violet-800 text-mc-sand-50 rounded-full w-full cursor-pointer text-sm font-medium"
                 >
                   {loading ? <Loading /> : "Entrar"}
                 </Button>

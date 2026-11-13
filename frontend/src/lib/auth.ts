@@ -6,8 +6,36 @@ const USER_KEY = "user";
 const SESSION_EXPIRED_KEY = "session_expired";
 const REDIRECT_KEY = "post_login_redirect";
 
-/** Evento global disparado quando a sessão acaba (o CartContext limpa o carrinho ao ouvi-lo). */
-export const SESSION_ENDED_EVENT = "auth:session-ended";
+/**
+ * Evento único da sessão: disparado em login, logout, expiração e quando OUTRA aba muda o token
+ * (evento `storage`). Carrinho e cabeçalho ouvem este evento para nunca mostrar dado de outra conta.
+ */
+export const AUTH_CHANGED_EVENT = "auth:changed";
+
+function notifyAuthChanged(): void {
+    // microtask: getToken() pode limpar a sessão durante um render, e não dá para
+    // atualizar outro componente no meio do render
+    queueMicrotask(() => window.dispatchEvent(new Event(AUTH_CHANGED_EVENT)));
+}
+
+/** Assina mudanças de sessão (inclui outras abas). Retorna a função de cancelar. */
+export function subscribeAuth(listener: () => void): () => void {
+    const onStorage = (event: StorageEvent) => {
+        // key === null: localStorage.clear() em outra aba
+        if (event.key === null || event.key === TOKEN_KEY || event.key === USER_KEY) listener();
+    };
+    window.addEventListener(AUTH_CHANGED_EVENT, listener);
+    window.addEventListener("storage", onStorage);
+    return () => {
+        window.removeEventListener(AUTH_CHANGED_EVENT, listener);
+        window.removeEventListener("storage", onStorage);
+    };
+}
+
+/** Texto estável que muda quando a sessão muda (para useSyncExternalStore). */
+export function getAuthSnapshot(): string {
+    return `${localStorage.getItem(TOKEN_KEY) ?? ""}|${localStorage.getItem(USER_KEY) ?? ""}`;
+}
 
 /**
  * Lê o `exp` (segundos) do JWT SEM verificar assinatura — só para tratar token vencido como
@@ -69,6 +97,7 @@ export function saveAuth(token: string, user: User): void {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     sessionStorage.removeItem(SESSION_EXPIRED_KEY);
+    notifyAuthChanged();
 }
 
 export function getAuthHeaders(): { Authorization: string } | null {
@@ -80,6 +109,17 @@ export function getAuthHeaders(): { Authorization: string } | null {
 export function clearAuth(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    notifyAuthChanged();
+}
+
+/**
+ * Saída da conta (única porta de logout): apaga token e usuário e avisa o app inteiro.
+ * Nenhum dado de carrinho/usuário é guardado em storage; o estado em memória é zerado
+ * pelos ouvintes de AUTH_CHANGED_EVENT.
+ */
+export function logout(): void {
+    clearAuth();
+    sessionStorage.removeItem(REDIRECT_KEY);
 }
 
 export function markSessionExpired(): void {

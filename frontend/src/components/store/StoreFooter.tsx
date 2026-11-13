@@ -1,20 +1,20 @@
-import { Send, Truck, ShieldCheck, CreditCard } from "lucide-react";
+import { Truck, ShieldCheck, CreditCard } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInstagram, faWhatsapp, faTiktok, faFacebookF } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
-import { Button } from "../ui/button";
 import { TrustStrip } from "./TrustStrip";
 import { useStoreSettings } from "../../hooks/useStoreSettings";
 import { formatPrice } from "../../lib/utils-api";
-import { WHATSAPP_URL } from "../../lib/whatsapp";
+import { ACCEPTED_PAYMENT_METHODS, STORE, WHATSAPP_URL } from "../../config/store";
+import { useCategories } from "../../hooks/useCategories";
 
-// TODO: trocar os "#" pelos perfis reais quando existirem.
+// Só aparecem redes com endereço preenchido em src/config/store.ts
 const SOCIALS = [
-    { name: "Instagram", icon: faInstagram, url: "https://www.instagram.com/mandalacrystais/" },
+    { name: "Instagram", icon: faInstagram, url: STORE.instagramUrl },
     { name: "WhatsApp", icon: faWhatsapp, url: WHATSAPP_URL },
-    { name: "TikTok", icon: faTiktok, url: "#" },
-    { name: "Facebook", icon: faFacebookF, url: "#" },
-];
+    { name: "TikTok", icon: faTiktok, url: STORE.tiktokUrl },
+    { name: "Facebook", icon: faFacebookF, url: STORE.facebookUrl },
+].filter((social) => !!social.url);
 
 const FOOTER_TRUST = [
     { icon: ShieldCheck, label: "Pagamento 100% seguro" },
@@ -25,34 +25,26 @@ const LINK_COLUMNS = [
     {
         title: "Institucional",
         links: [
-            "Sobre nós",
-            "Nossa curadoria",
-            "Trocas e devoluções",
-            "Fale conosco",
+            { label: "Sobre nós", to: "/sobre" },
+            { label: "Nossa curadoria", to: "/sobre#curadoria" },
+            { label: "Trocas e devoluções", to: "/trocas-e-devolucoes" },
+            { label: "Fale conosco", to: "/contato" },
         ],
     },
     {
         title: "Ajuda",
         links: [
-            "Rastrear pedido",
-            "Formas de pagamento",
-            "Prazo de entrega",
-            "Perguntas frequentes",
-        ],
-    },
-    {
-        title: "Categorias",
-        links: [
-            "Pedras",
-            "Incensos",
-            "Energia",
-            "Kits iniciante",
+            { label: "Rastrear pedido", to: "/pedidos" },
+            { label: "Formas de pagamento", to: "/formas-de-pagamento" },
+            { label: "Prazo de entrega", to: "/prazos-de-entrega" },
+            { label: "Perguntas frequentes", to: "/perguntas-frequentes" },
         ],
     },
 ];
 
 export function StoreFooter() {
     const { free_shipping_threshold } = useStoreSettings();
+    const categories = useCategories();
     const shippingItem = {
         icon: Truck,
         label: free_shipping_threshold
@@ -95,10 +87,10 @@ export function StoreFooter() {
                                 <a
                                     key={social.name}
                                     href={social.url}
-                                    target={social.url === "#" ? undefined : "_blank"}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label={social.name}
-                                    className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-mc-gold-400 hover:text-mc-gold-400 transition-colors cursor-pointer"
+                                    className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center hover:border-mc-gold-400 hover:text-mc-gold-400 transition-colors "
                                 >
                                     <FontAwesomeIcon icon={social.icon} className="text-base" />
                                 </a>
@@ -107,50 +99,46 @@ export function StoreFooter() {
                     </div>
 
                     {LINK_COLUMNS.map((col) => (
-                        <div key={col.title}>
+                        <nav key={col.title} aria-label={col.title}>
                             <h4 className="text-xs font-semibold uppercase tracking-wide text-mc-gold-400 mb-4">
                                 {col.title}
                             </h4>
 
-                            <ul className="space-y-2.5">
+                            <ul className="space-y-1">
                                 {col.links.map((link) => (
-                                    <li
-                                        key={link}
-                                        className="text-sm text-white/60 hover:text-white cursor-pointer transition-colors"
-                                    >
-                                        {link}
+                                    <li key={link.label}>
+                                        <Link
+                                            to={link.to}
+                                            className="inline-block py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+                                        >
+                                            {link.label}
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>
-                        </div>
+                        </nav>
                     ))}
 
-                    <div>
-                        <h4 className="text-xs font-semibold uppercase tracking-wide text-mc-gold-400 mb-4">
-                            Receba novidades!
-                        </h4>
+                    {categories.length > 0 && (
+                        <nav aria-label="Categorias">
+                            <h4 className="text-xs font-semibold uppercase tracking-wide text-mc-gold-400 mb-4">
+                                Categorias
+                            </h4>
 
-                        <p className="text-sm text-white/60 mb-3">
-                            Lançamentos e conteúdos sobre cristais, direto no seu e-mail.
-                        </p>
-
-                        <div className="flex gap-2">
-                            <input
-                                type="email"
-                                placeholder="Seu e-mail"
-                                aria-label="Seu e-mail"
-                                className="min-w-0 flex-1 rounded-full bg-white/10 border border-white/20 px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-mc-gold-500/50"
-                            />
-
-                            <Button
-                                size="icon"
-                                aria-label="Inscrever"
-                                className="rounded-full bg-mc-gold-500 hover:bg-mc-gold-600 text-mc-violet-950 shrink-0"
-                            >
-                                <Send size={15} />
-                            </Button>
-                        </div>
-                    </div>
+                            <ul className="space-y-1">
+                                {categories.slice(0, 6).map((category) => (
+                                    <li key={category.id}>
+                                        <Link
+                                            to={`/categoria/${category.slug}`}
+                                            className="inline-block py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+                                        >
+                                            {category.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    )}
                 </div>
 
                 <div className="border-t border-white/10">
@@ -159,9 +147,7 @@ export function StoreFooter() {
                             © {new Date().getFullYear()} Mandala Crystais. Todos os direitos reservados.
                         </span>
 
-                        <span>
-                            Pix · Cartão de crédito
-                        </span>
+                        <span>{ACCEPTED_PAYMENT_METHODS.join(" · ")}</span>
                     </div>
                 </div>
             </div>

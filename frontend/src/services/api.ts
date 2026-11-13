@@ -1,11 +1,10 @@
 import axios from "axios";
 import {
-  clearAuth,
   getToken,
   markSessionExpired,
   saveRedirectPath,
   setToken,
-  SESSION_ENDED_EVENT,
+  logout,
 } from "../lib/auth";
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -35,12 +34,11 @@ function endSession() {
 
   // guarda a rota atual para voltar depois do login
   const current = window.location.pathname + window.location.search;
-  if (!current.startsWith("/login")) saveRedirectPath(current);
 
-  clearAuth();
+  // mesmo logout do menu: dispara auth:changed (carrinho e cabeçalho zeram) e leva ao login
+  logout();
   markSessionExpired();
-  // limpa o estado em memória (carrinho etc.) e leva ao login; o aviso aparece lá, uma única vez
-  window.dispatchEvent(new Event(SESSION_ENDED_EVENT));
+  if (!current.startsWith("/login")) saveRedirectPath(current);
   window.location.replace("/login");
 }
 

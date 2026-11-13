@@ -55,7 +55,7 @@ export function CategoryDetail() {
     }, [slug]);
 
     function handleAddToCart(product: MandalaProduct) {
-        addToCart(product.id);
+        return addToCart(product.id);
     }
 
     return (
