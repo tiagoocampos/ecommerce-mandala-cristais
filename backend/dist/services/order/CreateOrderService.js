@@ -6,9 +6,12 @@ import { calculateCartSubtotal } from "../cart/calculateCartSubtotal.js";
 import { validateCoupon } from "../coupon/validateCoupon.js";
 import { orderExpiresAt } from "../../utils/orderExpiration.js";
 import { quoteShipping } from "../shipping/quoteShipping.js";
-import { ShippingServiceNotAvailableError, ShippingUnavailableError } from "../../exceptions/ShippingErrors.js";
+import { PickupNotAvailableError, ShippingServiceNotAvailableError, ShippingServiceUnavailableError, ShippingUnavailableError, } from "../../exceptions/ShippingErrors.js";
+import { GetStoreSettingsService } from "../storeSettings/GetStoreSettingsService.js";
+export const PICKUP_SERVICE_LABEL = "Retirada na loja";
 class CreateOrderService {
-    async execute({ user_id, address_id, coupon_code, shipping_service, shipping_quote_cents }) {
+    async execute({ user_id, delivery_method = "SHIPPING", address_id, coupon_code, shipping_service, shipping_quote_cents }) {
+        const isPickup = delivery_method === "PICKUP";
         const cart = await prismaClient.cart.findUnique({
             where: {
                 user_id,
@@ -24,13 +27,22 @@ class CreateOrderService {
         if (!cart || cart.items.length === 0) {
             throw new EmptyCartError();
         }
-        const address = await prismaClient.address.findFirst({
-            where: {
-                id: address_id,
-                user_id,
-            },
-        });
-        if (!address) {
+        if (isPickup) {
+            // Retirada: só se o lojista ligou nas configurações
+            const settings = await new GetStoreSettingsService().execute();
+            if (!settings.pickup_enabled) {
+                throw new PickupNotAvailableError();
+            }
+        }
+        const address = isPickup || !address_id
+            ? null
+            : await prismaClient.address.findFirst({
+                where: {
+                    id: address_id,
+                    user_id,
+                },
+            });
+        if (!isPickup && !address) {
             throw new AddressNotFoundError();
         }
         const subtotal = calculateCartSubtotal(cart.items);
@@ -50,39 +62,48 @@ class CreateOrderService {
             coupon_id = result.coupon.id;
         }
         // Frete sempre recotado aqui — nunca confiar no preço vindo do frontend
-        let shipping_cost;
+        let shipping_cost = 0;
         let shipping_delivery_days = null;
         let shipping_cost_estimated = false;
-        try {
-            const { options } = await quoteShipping({
-                destinationZipCode: address.zip_code,
-                items: cart.items,
-            });
-            const chosen = options.find((option) => option.service === shipping_service);
-            if (!chosen) {
-                // preço mudou / serviço saiu do ar desde a cotação na tela
-                throw new ShippingServiceNotAvailableError();
-            }
-            shipping_cost = chosen.price_cents;
-            shipping_delivery_days = chosen.delivery_days;
+        if (isPickup) {
+            // Retirada: sem endereço, sem frete e sem chamar o Melhor Envio
+            shipping_service = PICKUP_SERVICE_LABEL;
         }
-        catch (error) {
-            // DECISÃO DE NEGÓCIO: se o Melhor Envio estiver fora do ar bem na hora de finalizar
-            // (o cliente já viu uma cotação na tela), preferimos não perder a venda. Gravamos
-            // o último valor cotado enviado pelo frontend e marcamos o pedido com
-            // shipping_cost_estimated = true para o admin conferir o frete antes de enviar.
-            // Vale SÓ para indisponibilidade da API — serviço inexistente, CEP inválido
-            // ou falta de opções continuam bloqueando o pedido.
-            const canUseQuotedFallback = error instanceof ShippingUnavailableError &&
-                typeof shipping_quote_cents === "number" &&
-                shipping_quote_cents > 0;
-            if (!canUseQuotedFallback) {
-                throw error;
+        else
+            try {
+                const { options, unavailable } = await quoteShipping({
+                    destinationZipCode: address.zip_code,
+                    items: cart.items,
+                });
+                const wanted = (shipping_service ?? "").trim().toLowerCase();
+                if (unavailable.some((item) => item.service.trim().toLowerCase() === wanted)) {
+                    throw new ShippingServiceUnavailableError(shipping_service);
+                }
+                const chosen = options.find((option) => option.service === shipping_service);
+                if (!chosen) {
+                    // preço mudou / serviço saiu do ar desde a cotação na tela
+                    throw new ShippingServiceNotAvailableError();
+                }
+                shipping_cost = chosen.price_cents;
+                shipping_delivery_days = chosen.delivery_days;
             }
-            console.warn(`[frete] Melhor Envio indisponível ao criar pedido do usuário ${user_id}; usando frete cotado na tela (${shipping_quote_cents} centavos, ${shipping_service}).`);
-            shipping_cost = shipping_quote_cents;
-            shipping_cost_estimated = true;
-        }
+            catch (error) {
+                // DECISÃO DE NEGÓCIO: se o Melhor Envio estiver fora do ar bem na hora de finalizar
+                // (o cliente já viu uma cotação na tela), preferimos não perder a venda. Gravamos
+                // o último valor cotado enviado pelo frontend e marcamos o pedido com
+                // shipping_cost_estimated = true para o admin conferir o frete antes de enviar.
+                // Vale SÓ para indisponibilidade da API — serviço inexistente, CEP inválido
+                // ou falta de opções continuam bloqueando o pedido.
+                const canUseQuotedFallback = error instanceof ShippingUnavailableError &&
+                    typeof shipping_quote_cents === "number" &&
+                    shipping_quote_cents > 0;
+                if (!canUseQuotedFallback) {
+                    throw error;
+                }
+                console.warn(`[frete] Melhor Envio indisponível ao criar pedido do usuário ${user_id}; usando frete cotado na tela (${shipping_quote_cents} centavos, ${shipping_service}).`);
+                shipping_cost = shipping_quote_cents;
+                shipping_cost_estimated = true;
+            }
         // RISCO ACEITO: subtotal, unit_price, cupom e frete usam os preços lidos do carrinho
         // logo acima. Se o admin mudar o preço de um produto no intervalo de milissegundos
         // entre essa leitura e a transação, o pedido sai com o preço anterior. Revalidar
@@ -104,11 +125,12 @@ class CreateOrderService {
             const order = await tx.order.create({
                 data: {
                     user_id,
-                    address_id,
+                    delivery_method,
+                    address_id: address ? address.id : null,
                     subtotal,
                     discount,
                     shipping_cost,
-                    shipping_service,
+                    shipping_service: shipping_service ?? null,
                     shipping_delivery_days,
                     shipping_cost_estimated,
                     // desconto (cupom) vale sobre os produtos; o frete é somado depois

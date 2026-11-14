@@ -373,9 +373,9 @@ export type AddressMinOrderByAggregateInput = {
     user_id?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
 };
-export type AddressScalarRelationFilter = {
-    is?: Prisma.AddressWhereInput;
-    isNot?: Prisma.AddressWhereInput;
+export type AddressNullableScalarRelationFilter = {
+    is?: Prisma.AddressWhereInput | null;
+    isNot?: Prisma.AddressWhereInput | null;
 };
 export type AddressCreateNestedManyWithoutUserInput = {
     create?: Prisma.XOR<Prisma.AddressCreateWithoutUserInput, Prisma.AddressUncheckedCreateWithoutUserInput> | Prisma.AddressCreateWithoutUserInput[] | Prisma.AddressUncheckedCreateWithoutUserInput[];
@@ -420,10 +420,12 @@ export type AddressCreateNestedOneWithoutOrdersInput = {
     connectOrCreate?: Prisma.AddressCreateOrConnectWithoutOrdersInput;
     connect?: Prisma.AddressWhereUniqueInput;
 };
-export type AddressUpdateOneRequiredWithoutOrdersNestedInput = {
+export type AddressUpdateOneWithoutOrdersNestedInput = {
     create?: Prisma.XOR<Prisma.AddressCreateWithoutOrdersInput, Prisma.AddressUncheckedCreateWithoutOrdersInput>;
     connectOrCreate?: Prisma.AddressCreateOrConnectWithoutOrdersInput;
     upsert?: Prisma.AddressUpsertWithoutOrdersInput;
+    disconnect?: Prisma.AddressWhereInput | boolean;
+    delete?: Prisma.AddressWhereInput | boolean;
     connect?: Prisma.AddressWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.AddressUpdateToOneWithWhereWithoutOrdersInput, Prisma.AddressUpdateWithoutOrdersInput>, Prisma.AddressUncheckedUpdateWithoutOrdersInput>;
 };

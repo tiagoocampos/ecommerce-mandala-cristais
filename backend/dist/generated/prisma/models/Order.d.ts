@@ -39,6 +39,7 @@ export type OrderMinAggregateOutputType = {
     shipping_cost_estimated: boolean | null;
     expires_at: Date | null;
     user_id: string | null;
+    delivery_method: $Enums.DeliveryMethod | null;
     address_id: string | null;
     coupon_id: string | null;
     createdAt: Date | null;
@@ -56,6 +57,7 @@ export type OrderMaxAggregateOutputType = {
     shipping_cost_estimated: boolean | null;
     expires_at: Date | null;
     user_id: string | null;
+    delivery_method: $Enums.DeliveryMethod | null;
     address_id: string | null;
     coupon_id: string | null;
     createdAt: Date | null;
@@ -73,6 +75,7 @@ export type OrderCountAggregateOutputType = {
     shipping_cost_estimated: number;
     expires_at: number;
     user_id: number;
+    delivery_method: number;
     address_id: number;
     coupon_id: number;
     createdAt: number;
@@ -105,6 +108,7 @@ export type OrderMinAggregateInputType = {
     shipping_cost_estimated?: true;
     expires_at?: true;
     user_id?: true;
+    delivery_method?: true;
     address_id?: true;
     coupon_id?: true;
     createdAt?: true;
@@ -122,6 +126,7 @@ export type OrderMaxAggregateInputType = {
     shipping_cost_estimated?: true;
     expires_at?: true;
     user_id?: true;
+    delivery_method?: true;
     address_id?: true;
     coupon_id?: true;
     createdAt?: true;
@@ -139,6 +144,7 @@ export type OrderCountAggregateInputType = {
     shipping_cost_estimated?: true;
     expires_at?: true;
     user_id?: true;
+    delivery_method?: true;
     address_id?: true;
     coupon_id?: true;
     createdAt?: true;
@@ -233,7 +239,8 @@ export type OrderGroupByOutputType = {
     shipping_cost_estimated: boolean;
     expires_at: Date | null;
     user_id: string;
-    address_id: string;
+    delivery_method: $Enums.DeliveryMethod;
+    address_id: string | null;
     coupon_id: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -261,12 +268,13 @@ export type OrderWhereInput = {
     shipping_cost_estimated?: Prisma.BoolFilter<"Order"> | boolean;
     expires_at?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null;
     user_id?: Prisma.StringFilter<"Order"> | string;
-    address_id?: Prisma.StringFilter<"Order"> | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFilter<"Order"> | $Enums.DeliveryMethod;
+    address_id?: Prisma.StringNullableFilter<"Order"> | string | null;
     coupon_id?: Prisma.StringNullableFilter<"Order"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string;
     user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
-    address?: Prisma.XOR<Prisma.AddressScalarRelationFilter, Prisma.AddressWhereInput>;
+    address?: Prisma.XOR<Prisma.AddressNullableScalarRelationFilter, Prisma.AddressWhereInput> | null;
     coupon?: Prisma.XOR<Prisma.CouponNullableScalarRelationFilter, Prisma.CouponWhereInput> | null;
     items?: Prisma.OrderItemListRelationFilter;
     payment?: Prisma.XOR<Prisma.PaymentNullableScalarRelationFilter, Prisma.PaymentWhereInput> | null;
@@ -283,7 +291,8 @@ export type OrderOrderByWithRelationInput = {
     shipping_cost_estimated?: Prisma.SortOrder;
     expires_at?: Prisma.SortOrderInput | Prisma.SortOrder;
     user_id?: Prisma.SortOrder;
-    address_id?: Prisma.SortOrder;
+    delivery_method?: Prisma.SortOrder;
+    address_id?: Prisma.SortOrderInput | Prisma.SortOrder;
     coupon_id?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
@@ -308,12 +317,13 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
     shipping_cost_estimated?: Prisma.BoolFilter<"Order"> | boolean;
     expires_at?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null;
     user_id?: Prisma.StringFilter<"Order"> | string;
-    address_id?: Prisma.StringFilter<"Order"> | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFilter<"Order"> | $Enums.DeliveryMethod;
+    address_id?: Prisma.StringNullableFilter<"Order"> | string | null;
     coupon_id?: Prisma.StringNullableFilter<"Order"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string;
     user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
-    address?: Prisma.XOR<Prisma.AddressScalarRelationFilter, Prisma.AddressWhereInput>;
+    address?: Prisma.XOR<Prisma.AddressNullableScalarRelationFilter, Prisma.AddressWhereInput> | null;
     coupon?: Prisma.XOR<Prisma.CouponNullableScalarRelationFilter, Prisma.CouponWhereInput> | null;
     items?: Prisma.OrderItemListRelationFilter;
     payment?: Prisma.XOR<Prisma.PaymentNullableScalarRelationFilter, Prisma.PaymentWhereInput> | null;
@@ -330,7 +340,8 @@ export type OrderOrderByWithAggregationInput = {
     shipping_cost_estimated?: Prisma.SortOrder;
     expires_at?: Prisma.SortOrderInput | Prisma.SortOrder;
     user_id?: Prisma.SortOrder;
-    address_id?: Prisma.SortOrder;
+    delivery_method?: Prisma.SortOrder;
+    address_id?: Prisma.SortOrderInput | Prisma.SortOrder;
     coupon_id?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
@@ -355,7 +366,8 @@ export type OrderScalarWhereWithAggregatesInput = {
     shipping_cost_estimated?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean;
     expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null;
     user_id?: Prisma.StringWithAggregatesFilter<"Order"> | string;
-    address_id?: Prisma.StringWithAggregatesFilter<"Order"> | string;
+    delivery_method?: Prisma.EnumDeliveryMethodWithAggregatesFilter<"Order"> | $Enums.DeliveryMethod;
+    address_id?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null;
     coupon_id?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string;
@@ -371,10 +383,11 @@ export type OrderCreateInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
+    delivery_method?: $Enums.DeliveryMethod;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     user: Prisma.UserCreateNestedOneWithoutOrdersInput;
-    address: Prisma.AddressCreateNestedOneWithoutOrdersInput;
+    address?: Prisma.AddressCreateNestedOneWithoutOrdersInput;
     coupon?: Prisma.CouponCreateNestedOneWithoutOrdersInput;
     items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput;
     payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput;
@@ -391,7 +404,8 @@ export type OrderUncheckedCreateInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -409,10 +423,11 @@ export type OrderUpdateInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput;
-    address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput;
+    address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput;
     coupon?: Prisma.CouponUpdateOneWithoutOrdersNestedInput;
     items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput;
     payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput;
@@ -429,7 +444,8 @@ export type OrderUncheckedUpdateInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -448,7 +464,8 @@ export type OrderCreateManyInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -464,6 +481,7 @@ export type OrderUpdateManyMutationInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -479,7 +497,8 @@ export type OrderUncheckedUpdateManyInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -504,6 +523,7 @@ export type OrderCountOrderByAggregateInput = {
     shipping_cost_estimated?: Prisma.SortOrder;
     expires_at?: Prisma.SortOrder;
     user_id?: Prisma.SortOrder;
+    delivery_method?: Prisma.SortOrder;
     address_id?: Prisma.SortOrder;
     coupon_id?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -528,6 +548,7 @@ export type OrderMaxOrderByAggregateInput = {
     shipping_cost_estimated?: Prisma.SortOrder;
     expires_at?: Prisma.SortOrder;
     user_id?: Prisma.SortOrder;
+    delivery_method?: Prisma.SortOrder;
     address_id?: Prisma.SortOrder;
     coupon_id?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -545,6 +566,7 @@ export type OrderMinOrderByAggregateInput = {
     shipping_cost_estimated?: Prisma.SortOrder;
     expires_at?: Prisma.SortOrder;
     user_id?: Prisma.SortOrder;
+    delivery_method?: Prisma.SortOrder;
     address_id?: Prisma.SortOrder;
     coupon_id?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -640,6 +662,9 @@ export type OrderUncheckedUpdateManyWithoutAddressNestedInput = {
 export type EnumOrderStatusFieldUpdateOperationsInput = {
     set?: $Enums.OrderStatus;
 };
+export type EnumDeliveryMethodFieldUpdateOperationsInput = {
+    set?: $Enums.DeliveryMethod;
+};
 export type OrderCreateNestedOneWithoutItemsInput = {
     create?: Prisma.XOR<Prisma.OrderCreateWithoutItemsInput, Prisma.OrderUncheckedCreateWithoutItemsInput>;
     connectOrCreate?: Prisma.OrderCreateOrConnectWithoutItemsInput;
@@ -713,9 +738,10 @@ export type OrderCreateWithoutUserInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
+    delivery_method?: $Enums.DeliveryMethod;
     createdAt?: Date | string;
     updatedAt?: Date | string;
-    address: Prisma.AddressCreateNestedOneWithoutOrdersInput;
+    address?: Prisma.AddressCreateNestedOneWithoutOrdersInput;
     coupon?: Prisma.CouponCreateNestedOneWithoutOrdersInput;
     items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput;
     payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput;
@@ -731,7 +757,8 @@ export type OrderUncheckedCreateWithoutUserInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -774,7 +801,8 @@ export type OrderScalarWhereInput = {
     shipping_cost_estimated?: Prisma.BoolFilter<"Order"> | boolean;
     expires_at?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null;
     user_id?: Prisma.StringFilter<"Order"> | string;
-    address_id?: Prisma.StringFilter<"Order"> | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFilter<"Order"> | $Enums.DeliveryMethod;
+    address_id?: Prisma.StringNullableFilter<"Order"> | string | null;
     coupon_id?: Prisma.StringNullableFilter<"Order"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Order"> | Date | string;
@@ -790,6 +818,7 @@ export type OrderCreateWithoutAddressInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
+    delivery_method?: $Enums.DeliveryMethod;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     user: Prisma.UserCreateNestedOneWithoutOrdersInput;
@@ -809,6 +838,7 @@ export type OrderUncheckedCreateWithoutAddressInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -847,10 +877,11 @@ export type OrderCreateWithoutItemsInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
+    delivery_method?: $Enums.DeliveryMethod;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     user: Prisma.UserCreateNestedOneWithoutOrdersInput;
-    address: Prisma.AddressCreateNestedOneWithoutOrdersInput;
+    address?: Prisma.AddressCreateNestedOneWithoutOrdersInput;
     coupon?: Prisma.CouponCreateNestedOneWithoutOrdersInput;
     payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput;
 };
@@ -866,7 +897,8 @@ export type OrderUncheckedCreateWithoutItemsInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -896,10 +928,11 @@ export type OrderUpdateWithoutItemsInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput;
-    address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput;
+    address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput;
     coupon?: Prisma.CouponUpdateOneWithoutOrdersNestedInput;
     payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput;
 };
@@ -915,7 +948,8 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -932,10 +966,11 @@ export type OrderCreateWithoutPaymentInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
+    delivery_method?: $Enums.DeliveryMethod;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     user: Prisma.UserCreateNestedOneWithoutOrdersInput;
-    address: Prisma.AddressCreateNestedOneWithoutOrdersInput;
+    address?: Prisma.AddressCreateNestedOneWithoutOrdersInput;
     coupon?: Prisma.CouponCreateNestedOneWithoutOrdersInput;
     items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput;
 };
@@ -951,7 +986,8 @@ export type OrderUncheckedCreateWithoutPaymentInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -981,10 +1017,11 @@ export type OrderUpdateWithoutPaymentInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput;
-    address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput;
+    address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput;
     coupon?: Prisma.CouponUpdateOneWithoutOrdersNestedInput;
     items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput;
 };
@@ -1000,7 +1037,8 @@ export type OrderUncheckedUpdateWithoutPaymentInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1017,10 +1055,11 @@ export type OrderCreateWithoutCouponInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
+    delivery_method?: $Enums.DeliveryMethod;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     user: Prisma.UserCreateNestedOneWithoutOrdersInput;
-    address: Prisma.AddressCreateNestedOneWithoutOrdersInput;
+    address?: Prisma.AddressCreateNestedOneWithoutOrdersInput;
     items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput;
     payment?: Prisma.PaymentCreateNestedOneWithoutOrderInput;
 };
@@ -1036,7 +1075,8 @@ export type OrderUncheckedCreateWithoutCouponInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput;
@@ -1074,7 +1114,8 @@ export type OrderCreateManyUserInput = {
     shipping_delivery_days?: number | null;
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -1090,9 +1131,10 @@ export type OrderUpdateWithoutUserInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-    address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput;
+    address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput;
     coupon?: Prisma.CouponUpdateOneWithoutOrdersNestedInput;
     items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput;
     payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput;
@@ -1108,7 +1150,8 @@ export type OrderUncheckedUpdateWithoutUserInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1126,7 +1169,8 @@ export type OrderUncheckedUpdateManyWithoutUserInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1143,6 +1187,7 @@ export type OrderCreateManyAddressInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
     coupon_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -1158,6 +1203,7 @@ export type OrderUpdateWithoutAddressInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput;
@@ -1177,6 +1223,7 @@ export type OrderUncheckedUpdateWithoutAddressInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1195,6 +1242,7 @@ export type OrderUncheckedUpdateManyWithoutAddressInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     coupon_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1211,7 +1259,8 @@ export type OrderCreateManyCouponInput = {
     shipping_cost_estimated?: boolean;
     expires_at?: Date | string | null;
     user_id: string;
-    address_id: string;
+    delivery_method?: $Enums.DeliveryMethod;
+    address_id?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
 };
@@ -1226,10 +1275,11 @@ export type OrderUpdateWithoutCouponInput = {
     shipping_delivery_days?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     user?: Prisma.UserUpdateOneRequiredWithoutOrdersNestedInput;
-    address?: Prisma.AddressUpdateOneRequiredWithoutOrdersNestedInput;
+    address?: Prisma.AddressUpdateOneWithoutOrdersNestedInput;
     items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput;
     payment?: Prisma.PaymentUpdateOneWithoutOrderNestedInput;
 };
@@ -1245,7 +1295,8 @@ export type OrderUncheckedUpdateWithoutCouponInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput;
@@ -1263,7 +1314,8 @@ export type OrderUncheckedUpdateManyWithoutCouponInput = {
     shipping_cost_estimated?: Prisma.BoolFieldUpdateOperationsInput | boolean;
     expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     user_id?: Prisma.StringFieldUpdateOperationsInput | string;
-    address_id?: Prisma.StringFieldUpdateOperationsInput | string;
+    delivery_method?: Prisma.EnumDeliveryMethodFieldUpdateOperationsInput | $Enums.DeliveryMethod;
+    address_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1303,12 +1355,13 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     shipping_cost_estimated?: boolean;
     expires_at?: boolean;
     user_id?: boolean;
+    delivery_method?: boolean;
     address_id?: boolean;
     coupon_id?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
-    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>;
+    address?: boolean | Prisma.Order$addressArgs<ExtArgs>;
     coupon?: boolean | Prisma.Order$couponArgs<ExtArgs>;
     items?: boolean | Prisma.Order$itemsArgs<ExtArgs>;
     payment?: boolean | Prisma.Order$paymentArgs<ExtArgs>;
@@ -1326,12 +1379,13 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
     shipping_cost_estimated?: boolean;
     expires_at?: boolean;
     user_id?: boolean;
+    delivery_method?: boolean;
     address_id?: boolean;
     coupon_id?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
-    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>;
+    address?: boolean | Prisma.Order$addressArgs<ExtArgs>;
     coupon?: boolean | Prisma.Order$couponArgs<ExtArgs>;
 }, ExtArgs["result"]["order"]>;
 export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1346,12 +1400,13 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
     shipping_cost_estimated?: boolean;
     expires_at?: boolean;
     user_id?: boolean;
+    delivery_method?: boolean;
     address_id?: boolean;
     coupon_id?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
-    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>;
+    address?: boolean | Prisma.Order$addressArgs<ExtArgs>;
     coupon?: boolean | Prisma.Order$couponArgs<ExtArgs>;
 }, ExtArgs["result"]["order"]>;
 export type OrderSelectScalar = {
@@ -1366,15 +1421,16 @@ export type OrderSelectScalar = {
     shipping_cost_estimated?: boolean;
     expires_at?: boolean;
     user_id?: boolean;
+    delivery_method?: boolean;
     address_id?: boolean;
     coupon_id?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "subtotal" | "discount" | "shipping_cost" | "total" | "shipping_service" | "shipping_delivery_days" | "shipping_cost_estimated" | "expires_at" | "user_id" | "address_id" | "coupon_id" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>;
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "subtotal" | "discount" | "shipping_cost" | "total" | "shipping_service" | "shipping_delivery_days" | "shipping_cost_estimated" | "expires_at" | "user_id" | "delivery_method" | "address_id" | "coupon_id" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>;
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
-    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>;
+    address?: boolean | Prisma.Order$addressArgs<ExtArgs>;
     coupon?: boolean | Prisma.Order$couponArgs<ExtArgs>;
     items?: boolean | Prisma.Order$itemsArgs<ExtArgs>;
     payment?: boolean | Prisma.Order$paymentArgs<ExtArgs>;
@@ -1382,19 +1438,19 @@ export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 };
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
-    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>;
+    address?: boolean | Prisma.Order$addressArgs<ExtArgs>;
     coupon?: boolean | Prisma.Order$couponArgs<ExtArgs>;
 };
 export type OrderIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
-    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>;
+    address?: boolean | Prisma.Order$addressArgs<ExtArgs>;
     coupon?: boolean | Prisma.Order$couponArgs<ExtArgs>;
 };
 export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     name: "Order";
     objects: {
         user: Prisma.$UserPayload<ExtArgs>;
-        address: Prisma.$AddressPayload<ExtArgs>;
+        address: Prisma.$AddressPayload<ExtArgs> | null;
         coupon: Prisma.$CouponPayload<ExtArgs> | null;
         items: Prisma.$OrderItemPayload<ExtArgs>[];
         payment: Prisma.$PaymentPayload<ExtArgs> | null;
@@ -1411,7 +1467,8 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
         shipping_cost_estimated: boolean;
         expires_at: Date | null;
         user_id: string;
-        address_id: string;
+        delivery_method: $Enums.DeliveryMethod;
+        address_id: string | null;
         coupon_id: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -1745,7 +1802,7 @@ export interface OrderDelegate<ExtArgs extends runtime.Types.Extensions.Internal
 export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
     user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
-    address<T extends Prisma.AddressDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AddressDefaultArgs<ExtArgs>>): Prisma.Prisma__AddressClient<runtime.Types.Result.GetResult<Prisma.$AddressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
+    address<T extends Prisma.Order$addressArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$addressArgs<ExtArgs>>): Prisma.Prisma__AddressClient<runtime.Types.Result.GetResult<Prisma.$AddressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     coupon<T extends Prisma.Order$couponArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$couponArgs<ExtArgs>>): Prisma.Prisma__CouponClient<runtime.Types.Result.GetResult<Prisma.$CouponPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     items<T extends Prisma.Order$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     payment<T extends Prisma.Order$paymentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$paymentArgs<ExtArgs>>): Prisma.Prisma__PaymentClient<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
@@ -1785,6 +1842,7 @@ export interface OrderFieldRefs {
     readonly shipping_cost_estimated: Prisma.FieldRef<"Order", 'Boolean'>;
     readonly expires_at: Prisma.FieldRef<"Order", 'DateTime'>;
     readonly user_id: Prisma.FieldRef<"Order", 'String'>;
+    readonly delivery_method: Prisma.FieldRef<"Order", 'DeliveryMethod'>;
     readonly address_id: Prisma.FieldRef<"Order", 'String'>;
     readonly coupon_id: Prisma.FieldRef<"Order", 'String'>;
     readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>;
@@ -2171,6 +2229,24 @@ export type OrderDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
      * Limit how many Orders to delete.
      */
     limit?: number;
+};
+/**
+ * Order.address
+ */
+export type Order$addressArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Address
+     */
+    select?: Prisma.AddressSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Address
+     */
+    omit?: Prisma.AddressOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.AddressInclude<ExtArgs> | null;
+    where?: Prisma.AddressWhereInput;
 };
 /**
  * Order.coupon

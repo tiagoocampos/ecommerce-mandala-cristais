@@ -139,6 +139,7 @@ export const OrderScalarFieldEnum = {
     shipping_cost_estimated: 'shipping_cost_estimated',
     expires_at: 'expires_at',
     user_id: 'user_id',
+    delivery_method: 'delivery_method',
     address_id: 'address_id',
     coupon_id: 'coupon_id',
     createdAt: 'createdAt',
@@ -158,6 +159,7 @@ export const PaymentScalarFieldEnum = {
     status: 'status',
     method: 'method',
     raw_payload: 'raw_payload',
+    discount_amount: 'discount_amount',
     order_id: 'order_id',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -179,6 +181,9 @@ export const StoreSettingsScalarFieldEnum = {
     announcement_coupon_code: 'announcement_coupon_code',
     free_shipping_threshold: 'free_shipping_threshold',
     trust_strip_items: 'trust_strip_items',
+    pickup_enabled: 'pickup_enabled',
+    pickup_address: 'pickup_address',
+    pickup_instructions: 'pickup_instructions',
     updatedAt: 'updatedAt'
 };
 export const IntegrationTokenScalarFieldEnum = {

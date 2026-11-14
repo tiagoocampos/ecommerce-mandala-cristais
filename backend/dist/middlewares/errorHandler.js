@@ -39,6 +39,7 @@ export const errorHandler = (error, req, res, next) => {
     if (error instanceof InvalidToken) {
         return res.status(error.statusCode).json({
             error: error.message,
+            code: error.code,
         });
     }
     if (error instanceof CreateCategoryError) {

@@ -5,6 +5,10 @@ declare class ListAllOrdersAdminService {
             email: string;
             id: string;
         };
+        address: {
+            state: string;
+            city: string;
+        } | null;
         items: ({
             product: {
                 name: string;
@@ -18,25 +22,22 @@ declare class ListAllOrdersAdminService {
             unit_price: number;
             order_id: string;
         })[];
-        address: {
-            state: string;
-            city: string;
-        };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        expires_at: Date | null;
-        user_id: string;
-        subtotal: number;
-        address_id: string;
-        shipping_service: string | null;
         status: import("../../generated/prisma/enums.js").OrderStatus;
+        subtotal: number;
         discount: number;
         shipping_cost: number;
         total: number;
+        shipping_service: string | null;
         shipping_delivery_days: number | null;
         shipping_cost_estimated: boolean;
+        expires_at: Date | null;
+        delivery_method: import("../../generated/prisma/enums.js").DeliveryMethod;
+        user_id: string;
+        address_id: string | null;
         coupon_id: string | null;
     })[]>;
 }

@@ -1,7 +1,9 @@
 import prismaClient from "../../prisma/index.js";
+import { maybeExpireOrders } from "../order/MaybeExpireOrders.js";
 import { ListProductsError } from "../../exceptions/ProductErrors.js";
 class ListProductsService {
     async execute({ disabled }) {
+        maybeExpireOrders();
         try {
             const products = await prismaClient.product.findMany({
                 where: {

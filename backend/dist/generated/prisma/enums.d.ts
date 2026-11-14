@@ -18,6 +18,11 @@ export declare const PaymentStatus: {
     readonly REFUNDED: "REFUNDED";
 };
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
+export declare const DeliveryMethod: {
+    readonly SHIPPING: "SHIPPING";
+    readonly PICKUP: "PICKUP";
+};
+export type DeliveryMethod = (typeof DeliveryMethod)[keyof typeof DeliveryMethod];
 export declare const CouponType: {
     readonly PERCENTAGE: "PERCENTAGE";
     readonly FIXED: "FIXED";

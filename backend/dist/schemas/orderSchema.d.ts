@@ -1,9 +1,13 @@
 import { z } from "zod";
 export declare const createOrderSchema: z.ZodObject<{
     body: z.ZodObject<{
-        address_id: z.ZodString;
+        delivery_method: z.ZodDefault<z.ZodEnum<{
+            SHIPPING: "SHIPPING";
+            PICKUP: "PICKUP";
+        }>>;
+        address_id: z.ZodOptional<z.ZodString>;
         coupon_code: z.ZodOptional<z.ZodString>;
-        shipping_service: z.ZodString;
+        shipping_service: z.ZodOptional<z.ZodString>;
         shipping_quote_cents: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>;
 }, z.core.$strip>;

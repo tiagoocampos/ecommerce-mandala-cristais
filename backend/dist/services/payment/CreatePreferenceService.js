@@ -3,6 +3,7 @@ import { client } from "../../config/mercadopago.js";
 import prismaClient from "../../prisma/index.js";
 import { OrderNotFoundError, OrderNotPayableError } from "../../exceptions/OrdersErrors.js";
 import { toMercadoPagoDate } from "../../utils/orderExpiration.js";
+import { cancelOrderAndRestoreStock } from "../order/CancelOrderAndRestoreStockService.js";
 import { PaymentCreationError } from "../../exceptions/PaymentErrors.js";
 class CreatePreferenceService {
     async execute({ order_id, user_id }) {
@@ -30,6 +31,8 @@ class CreatePreferenceService {
             throw new OrderNotPayableError();
         }
         if (order.expires_at && order.expires_at.getTime() <= Date.now()) {
+            // Vencido: cancela e devolve o estoque agora (idempotente), depois responde "expirado"
+            await cancelOrderAndRestoreStock(order.id, { onlyPending: true });
             throw new OrderNotPayableError("O prazo para pagar este pedido expirou. Faça um novo pedido.");
         }
         // Com cupom, o Mercado Pago precisa cobrar o total já descontado. Como ele não aceita
@@ -100,6 +103,13 @@ class CreatePreferenceService {
                     order_id: order.id,
                 },
             });
+            // Desistiu do Pix e foi para o cartão: o Checkout Pro cobra o preço cheio
+            if (paymentExists && paymentExists.discount_amount > 0) {
+                await prismaClient.payment.update({
+                    where: { order_id: order.id },
+                    data: { discount_amount: 0 },
+                });
+            }
             if (!paymentExists) {
                 await prismaClient.payment.create({
                     data: {

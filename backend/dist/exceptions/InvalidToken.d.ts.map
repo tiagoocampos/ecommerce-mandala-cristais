@@ -1,1 +1,1 @@
-{"version":3,"file":"InvalidToken.d.ts","sourceRoot":"","sources":["../../src/exceptions/InvalidToken.ts"],"names":[],"mappings":"AAAA,qBAAa,YAAa,SAAQ,KAAK;IAC5B,UAAU,EAAE,MAAM,CAAM;;CAMlC"}
+{"version":3,"file":"InvalidToken.d.ts","sourceRoot":"","sources":["../../src/exceptions/InvalidToken.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,cAAc,GAAG,eAAe,GAAG,eAAe,GAAG,eAAe,CAAC;AAQjF,qBAAa,YAAa,SAAQ,KAAK;IAC5B,UAAU,EAAE,MAAM,CAAM;IACxB,IAAI,EAAE,cAAc,CAAA;gBACf,IAAI,GAAE,cAAgC;CAMrD"}

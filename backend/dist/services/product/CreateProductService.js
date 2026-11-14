@@ -2,9 +2,18 @@ import { CategoryNotFoundError } from "../../exceptions/CategoryErrors.js";
 import prismaClient from "../../prisma/index.js";
 import { generateSlug } from "../../utils/generateSlug.js";
 import { deleteImageByUrl, uploadImage } from "../../utils/uploadImage.js";
+import { ProductAlreadyExistsError } from "../../exceptions/ProductErrors.js";
 class CreateProductService {
     async execute({ name, price, stock, promo_price, description, category_id, imageBuffer, imageName, weight_grams, height_cm, width_cm, length_cm, meta_description, image_alt_text, featured, extraImages = [], }) {
         const slug = generateSlug(name);
+        const slugExists = await prismaClient.product.findFirst({
+            where: {
+                slug: slug
+            }
+        });
+        if (slugExists) {
+            throw new ProductAlreadyExistsError();
+        }
         const categoryExiste = await prismaClient.category.findFirst({
             where: {
                 id: category_id
@@ -35,6 +44,9 @@ class CreateProductService {
         catch (error) {
             console.log(error);
             await Promise.all(uploaded.map((url) => deleteImageByUrl(url)));
+            // Dois envios ao mesmo tempo passam pela checagem acima e o banco recusa o segundo (P2002)
+            if (error.code === "P2002")
+                throw new ProductAlreadyExistsError();
             if (error instanceof Error && error.name.startsWith("PrismaClient"))
                 throw error;
             throw new Error("Erro ao fazer upload da imagem");

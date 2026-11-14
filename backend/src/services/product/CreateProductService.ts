@@ -3,6 +3,7 @@ import prismaClient from "../../prisma/index.js";
 import { generateSlug } from "../../utils/generateSlug.js";
 import { deleteImageByUrl, uploadImage } from "../../utils/uploadImage.js";
 import type { ShippingFields } from "../../utils/parseShippingFields.js";
+import { ProductAlreadyExistsError } from "../../exceptions/ProductErrors.js";
 
 interface CreateProductServiceProps extends ShippingFields {
     meta_description?: string | null | undefined,
@@ -11,7 +12,7 @@ interface CreateProductServiceProps extends ShippingFields {
     name: string,
     price: number,
     promo_price?: number | null | undefined,
-    stock: number,          
+    stock: number,
     description: string,
     category_id: string,
     imageBuffer: Buffer,
@@ -20,14 +21,14 @@ interface CreateProductServiceProps extends ShippingFields {
     extraImages?: { buffer: Buffer; name: string }[],
 }
 
-class CreateProductService{
+class CreateProductService {
     async execute({
         name,
-        price, 
+        price,
         stock,
         promo_price,
-        description, 
-        category_id, 
+        description,
+        category_id,
         imageBuffer,
         imageName,
         weight_grams,
@@ -38,16 +39,25 @@ class CreateProductService{
         image_alt_text,
         featured,
         extraImages = [],
-    }: CreateProductServiceProps){
+    }: CreateProductServiceProps) {
 
-        const slug = generateSlug(name);        
+        const slug = generateSlug(name);
+        const slugExists = await prismaClient.product.findFirst({
+            where: {
+                slug: slug
+            }
+        })
+
+        if (slugExists) {
+            throw new ProductAlreadyExistsError();
+        }
         const categoryExiste = await prismaClient.category.findFirst({
             where: {
                 id: category_id
             }
         });
 
-        if(!categoryExiste){
+        if (!categoryExiste) {
             throw new CategoryNotFoundError();
         }
 
@@ -74,6 +84,8 @@ class CreateProductService{
         } catch (error) {
             console.log(error);
             await Promise.all(uploaded.map((url) => deleteImageByUrl(url)));
+            // Dois envios ao mesmo tempo passam pela checagem acima e o banco recusa o segundo (P2002)
+            if ((error as { code?: string }).code === "P2002") throw new ProductAlreadyExistsError();
             if (error instanceof Error && error.name.startsWith("PrismaClient")) throw error;
             throw new Error("Erro ao fazer upload da imagem");
         }

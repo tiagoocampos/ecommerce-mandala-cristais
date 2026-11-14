@@ -1339,6 +1339,7 @@ export declare const OrderScalarFieldEnum: {
     readonly shipping_cost_estimated: "shipping_cost_estimated";
     readonly expires_at: "expires_at";
     readonly user_id: "user_id";
+    readonly delivery_method: "delivery_method";
     readonly address_id: "address_id";
     readonly coupon_id: "coupon_id";
     readonly createdAt: "createdAt";
@@ -1360,6 +1361,7 @@ export declare const PaymentScalarFieldEnum: {
     readonly status: "status";
     readonly method: "method";
     readonly raw_payload: "raw_payload";
+    readonly discount_amount: "discount_amount";
     readonly order_id: "order_id";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
@@ -1383,6 +1385,9 @@ export declare const StoreSettingsScalarFieldEnum: {
     readonly announcement_coupon_code: "announcement_coupon_code";
     readonly free_shipping_threshold: "free_shipping_threshold";
     readonly trust_strip_items: "trust_strip_items";
+    readonly pickup_enabled: "pickup_enabled";
+    readonly pickup_address: "pickup_address";
+    readonly pickup_instructions: "pickup_instructions";
     readonly updatedAt: "updatedAt";
 };
 export type StoreSettingsScalarFieldEnum = (typeof StoreSettingsScalarFieldEnum)[keyof typeof StoreSettingsScalarFieldEnum];
@@ -1481,6 +1486,14 @@ export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'OrderStatus[]'
  */
 export type ListEnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderStatus[]'>;
+/**
+ * Reference to a field of type 'DeliveryMethod'
+ */
+export type EnumDeliveryMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryMethod'>;
+/**
+ * Reference to a field of type 'DeliveryMethod[]'
+ */
+export type ListEnumDeliveryMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryMethod[]'>;
 /**
  * Reference to a field of type 'PaymentStatus'
  */

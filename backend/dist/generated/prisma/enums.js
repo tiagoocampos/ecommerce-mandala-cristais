@@ -24,6 +24,10 @@ export const PaymentStatus = {
     REJECTED: 'REJECTED',
     REFUNDED: 'REFUNDED'
 };
+export const DeliveryMethod = {
+    SHIPPING: 'SHIPPING',
+    PICKUP: 'PICKUP'
+};
 export const CouponType = {
     PERCENTAGE: 'PERCENTAGE',
     FIXED: 'FIXED'

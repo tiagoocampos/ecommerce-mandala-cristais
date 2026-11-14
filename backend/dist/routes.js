@@ -23,7 +23,7 @@ import { ListUsersAdminController } from './controllers/user/admin/ListUsersAdmi
 import { DeleteUserAdminController } from './controllers/user/admin/DeleteUserAdminController.js';
 import { createUserDiscountSchema, userIdParamsSchema } from './schemas/userAdminSchema.js';
 import { GetUserAdminController } from './controllers/user/admin/GetUserAdminController.js';
-import { createCouponSchema, updateCouponStatusSchema, validateCouponSchema } from './schemas/couponSchema.js';
+import { createCouponSchema, deleteCouponSchema, editCouponSchema, updateCouponStatusSchema, validateCouponSchema } from './schemas/couponSchema.js';
 import { CreateUserDiscountController } from './controllers/coupon/CreateUserDiscountController.js';
 import { CreateCouponAdminController } from './controllers/coupon/CreateCouponAdminController.js';
 import { ListCouponsAdminController } from './controllers/coupon/ListCouponsAdminController.js';
@@ -64,7 +64,15 @@ import { UpdateOrderStatusController } from './controllers/order/UpdateOrderStat
 import { ListAllOrdersAdminController } from './controllers/order/ListAllOrdersAdminController.js';
 import { GetOrderAdminController } from './controllers/order/GetOrderAdminController.js';
 import { CreatePreferenceController } from './controllers/payment/CreatePreferenceController.js';
+import { CancelMyOrderController } from './controllers/order/CancelMyOrderController.js';
+import { cancelMyOrderSchema } from './schemas/cancelMyOrderSchema.js';
+import { CreatePixPaymentController } from './controllers/payment/CreatePixPaymentController.js';
+import { GetPixInfoController } from './controllers/payment/GetPixInfoController.js';
+import { createPixPaymentSchema } from './schemas/pixPaymentSchema.js';
 import { WebhookController } from './controllers/payment/WebhookController.js';
+import { DeleteCouponController } from './controllers/coupon/DeleteCouponController.js';
+import { SyncOrderPaymentController } from './controllers/order/SyncOrderPaymentController.js';
+import { EditCouponAdminController } from './controllers/coupon/EditCouponAdminController.js';
 const router = Router();
 const upload = multer(uploadConfig);
 router.post("/users", validateSchema(createUserSchema), new CreateUserController().handle);
@@ -107,6 +115,8 @@ router.get("/integrations/melhorenvio/callback", new MelhorEnvioIntegrationContr
 router.get("/order/:order_id", isAuthenticated, validateSchema(getOrderSchema), new GetOrderController().handle);
 router.get("/orders", isAuthenticated, new ListOrdersController().handle);
 router.patch("/order/:order_id/status", isAuthenticated, isAdmin, validateSchema(updateOrderStatusSchema), new UpdateOrderStatusController().handle);
+router.post("/order/:order_id/sync-payment", isAuthenticated, validateSchema(getOrderSchema), new SyncOrderPaymentController().handle);
+router.post("/admin/orders/:order_id/sync-payment", isAuthenticated, isAdmin, validateSchema(getOrderSchema), new SyncOrderPaymentController().handleAdmin);
 router.get("/admin/orders", isAuthenticated, isAdmin, new ListAllOrdersAdminController().handle);
 router.get("/admin/orders/:order_id", isAuthenticated, isAdmin, new GetOrderAdminController().handle);
 router.get("/admin/users", isAuthenticated, isAdmin, new ListUsersAdminController().handle);
@@ -116,7 +126,9 @@ router.post("/admin/users/:id/discount", isAuthenticated, isAdmin, validateSchem
 router.get("/admin/coupons", isAuthenticated, isAdmin, new ListCouponsAdminController().handle);
 router.post("/admin/coupons", isAuthenticated, isAdmin, validateSchema(createCouponSchema), new CreateCouponAdminController().handle);
 router.patch("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(updateCouponStatusSchema), new UpdateCouponStatusController().handle);
+router.put("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(editCouponSchema), new EditCouponAdminController().handle);
 router.post("/coupons/validate", isAuthenticated, validateSchema(validateCouponSchema), new ValidateCouponController().handle);
+router.delete("/admin/coupons/:id", isAuthenticated, isAdmin, validateSchema(deleteCouponSchema), new DeleteCouponController().handle);
 router.get("/admin/dashboard", isAuthenticated, isAdmin, new GetDashboardAdminController().handle);
 router.get("/store-settings", new GetStoreSettingsController().handle);
 router.put("/admin/store-settings", isAuthenticated, isAdmin, validateSchema(updateStoreSettingsSchema), new UpdateStoreSettingsController().handle);
@@ -128,6 +140,9 @@ router.get("/health", (req, res) => {
     return res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 router.post("/payment/preference", isAuthenticated, new CreatePreferenceController().handle);
+router.post("/order/:id/cancel", isAuthenticated, validateSchema(cancelMyOrderSchema), new CancelMyOrderController().handle);
+router.post("/payment/pix", isAuthenticated, validateSchema(createPixPaymentSchema), new CreatePixPaymentController().handle);
+router.get("/payment/pix-info", new GetPixInfoController().handle);
 router.post("/payment/webhook", new WebhookController().handle);
 export { router };
 //# sourceMappingURL=routes.js.map

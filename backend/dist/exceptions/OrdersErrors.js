@@ -62,4 +62,13 @@ export class InsufficientStockError extends Error {
         Object.setPrototypeOf(this, InsufficientStockError.prototype);
     }
 }
+export class OrderNotCancelableError extends Error {
+    statusCode;
+    constructor(message, statusCode = 409) {
+        super(message);
+        this.name = "OrderNotCancelableError";
+        this.statusCode = statusCode;
+        Object.setPrototypeOf(this, OrderNotCancelableError.prototype);
+    }
+}
 //# sourceMappingURL=OrdersErrors.js.map
